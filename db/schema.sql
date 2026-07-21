@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS inquiries (
   is_support    BOOLEAN NOT NULL DEFAULT TRUE,
   issue_type    TEXT,                          -- "Where is my order", "Damaged item", ...
   summary       TEXT,                          -- one line
+  body          TEXT,                          -- original email text
   order_number  TEXT,
 
   order_status  JSONB,                         -- resolved line-item ledger (see lib/fulfillment.js)
@@ -34,10 +35,50 @@ CREATE TABLE IF NOT EXISTS risk_orders (
   order_number      TEXT,
   customer_name     TEXT,
   customer_email    TEXT,
+  items             TEXT,
   reasons           JSONB,
+  rule_key          TEXT,
   severity          TEXT NOT NULL DEFAULT 'medium',  -- high | medium
   age_days          INT,
   shopify_admin_url TEXT,
   detected_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_risk_severity ON risk_orders (severity, age_days DESC);
+
+-- Manually cleared risk orders (persist until a new kind of problem appears).
+CREATE TABLE IF NOT EXISTS risk_dismissals (
+  order_id     TEXT PRIMARY KEY,
+  rule_key     TEXT,
+  dismissed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ===== Product builder + editable settings =====
+
+-- Printify stores for the product builder. brand_key links a store to its shared voice.
+CREATE TABLE IF NOT EXISTS stores (
+  brand_key         TEXT PRIMARY KEY,        -- elderemo | poppunks | ...
+  name              TEXT NOT NULL,
+  printify_shop_id  TEXT NOT NULL,
+  is_default        BOOLEAN NOT NULL DEFAULT false
+);
+
+-- Per-store, per-garment price + tags for the builder.
+CREATE TABLE IF NOT EXISTS product_config (
+  brand_key    TEXT NOT NULL,
+  garment_key  TEXT NOT NULL,               -- gildan_tee | comfort_colors_tee | tank | womens_tee | crop
+  price_cents  INT NOT NULL,
+  tags         TEXT,                         -- comma separated
+  PRIMARY KEY (brand_key, garment_key)
+);
+
+-- One shared brand voice per brand, used by BOTH product descriptions and CS reply drafts.
+CREATE TABLE IF NOT EXISTS brand_voices (
+  brand_key  TEXT PRIMARY KEY,
+  voice      TEXT NOT NULL
+);
+
+-- Editable global settings (e.g. the CS reply structure) as key/value.
+CREATE TABLE IF NOT EXISTS app_settings (
+  key    TEXT PRIMARY KEY,
+  value  TEXT
+);

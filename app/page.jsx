@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import Builder from './Builder';
+import Settings from './Settings';
 
 const BRANDS = {
   elderemo:  { name: 'Elder Emo', color: 'var(--violet)', bg: 'var(--violet-bg)' },
@@ -121,12 +123,14 @@ export default function Page() {
           <button className={'tab' + (tab === 'risk' ? ' active' : '')} onClick={() => setTab('risk')}>
             At risk {riskHigh > 0 && <span className="badge">{riskHigh}</span>}
           </button>
+          <button className={'tab' + (tab === 'builder' ? ' active' : '')} onClick={() => setTab('builder')}>Builder</button>
+          <button className={'tab' + (tab === 'settings' ? ' active' : '')} onClick={() => setTab('settings')}>Settings</button>
         </div>
         <div className="spacer" />
         <div className="avatar">M</div>
       </div>
 
-      {tab === 'inbox' ? (
+      {tab === 'inbox' && (
         <div className={'shell ' + (mobileDetail ? 'show-detail' : 'show-queue')}>
           <aside className="rail">
             <div className="eyebrow">Brands</div>
@@ -240,7 +244,8 @@ export default function Page() {
             )}
           </main>
         </div>
-      ) : (
+      )}
+      {tab === 'risk' && (
         <div className="risk-wrap">
           <div className="risk-head">Orders likely to become a problem &nbsp;·&nbsp; {risk.length} flagged</div>
           {loaded && risk.length === 0 && <div className="risk-empty">Nothing at risk right now. Run the scan to check your recent orders.</div>}
@@ -269,6 +274,8 @@ export default function Page() {
           })}
         </div>
       )}
+      {tab === 'builder' && <Builder />}
+      {tab === 'settings' && <Settings />}
     </div>
   );
 }
