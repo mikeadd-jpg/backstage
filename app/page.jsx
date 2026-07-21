@@ -43,7 +43,7 @@ function normalizeRisk(r) {
   return {
     id: r.order_id, brand: r.brand in BRANDS ? r.brand : 'unknown',
     order: r.order_number, customer: r.customer_name || r.customer_email || 'Unknown customer',
-    reasons: r.reasons || [], severity: r.severity || 'medium',
+    items: r.items || '', reasons: r.reasons || [], severity: r.severity || 'medium',
     ruleKey: r.rule_key, age: r.age_days, url: r.shopify_admin_url,
   };
 }
@@ -254,6 +254,7 @@ export default function Page() {
                     <span className="risk-order">{r.order}</span>
                   </div>
                   <div className="risk-cust">{r.customer}</div>
+                  {r.items && <div className="risk-items">{r.items}</div>}
                   <div className="risk-reasons">
                     {r.reasons.map((reason, i) => <span className="reason-pill" key={i}>{reason}</span>)}
                   </div>

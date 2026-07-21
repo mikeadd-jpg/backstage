@@ -178,3 +178,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
   font-family: 'Inter', sans-serif; margin-bottom: 14px; outline: none; }
 .edited-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.5px; color: var(--amber); background: var(--amber-bg);
   padding: 2px 7px; border-radius: 5px; }
+
+/* Risk card line items (slash-separated, single compact line) */
+.risk-items { font-size: 12px; color: var(--text); margin-bottom: 10px; line-height: 1.5; }
