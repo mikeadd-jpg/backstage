@@ -56,6 +56,8 @@ export default function Page() {
   const [selected, setSelected] = useState(null);
   const [copied, setCopied] = useState(false);
   const [mobileDetail, setMobileDetail] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [drafts, setDrafts] = useState({}); // local per-inquiry edited reply text
 
   useEffect(() => {
     Promise.all([
@@ -76,9 +78,9 @@ export default function Page() {
   const counts = {};
   for (const r of rows) counts[r.brand] = (counts[r.brand] || 0) + 1;
 
-  function openInquiry(id) { setSelected(id); setMobileDetail(true); }
+  function openInquiry(id) { setSelected(id); setMobileDetail(true); setEditing(false); }
   function copyReply() {
-    const text = current.draft;
+    const text = (drafts[current.id] != null ? drafts[current.id] : current.draft);
     const done = () => { setCopied(true); setTimeout(() => setCopied(false), 1600); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(done);
     else done();
@@ -90,6 +92,19 @@ export default function Page() {
       body: JSON.stringify({ orderId: r.id, ruleKey: r.ruleKey }),
     }).catch(() => {});
   }
+  function resolveInquiry(id) {
+    setRows((prev) => {
+      const next = prev.filter((r) => r.id !== id);
+      setSelected(next.length ? next[0].id : null);
+      return next;
+    });
+    setMobileDetail(false);
+    fetch('/api/resolve', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    }).catch(() => {});
+  }
+
   const vendorLinks = current ? [
     current.items.find((i) => i.fulfiller === 'printify' && i.vendorLink),
     current.items.find((i) => i.fulfiller === 'gelato' && i.vendorLink),
@@ -196,12 +211,28 @@ export default function Page() {
                   )}
                 </div>
                 <div className="card">
-                  <div className="card-label">Proposed reply</div>
-                  <div className="reply-box">{current.draft}</div>
+                  <div className="card-label">Proposed reply {drafts[current.id] != null && <span className="edited-tag">edited</span>}</div>
+                  {editing ? (
+                    <textarea
+                      className="reply-edit"
+                      value={drafts[current.id] != null ? drafts[current.id] : current.draft}
+                      autoFocus
+                      onChange={(e) => setDrafts((d) => ({ ...d, [current.id]: e.target.value }))}
+                    />
+                  ) : (
+                    <div className="reply-box">{drafts[current.id] != null ? drafts[current.id] : current.draft}</div>
+                  )}
                   <div className="reply-actions">
                     <button className={'btn btn-primary' + (copied ? ' copied' : '')} onClick={copyReply}>{copied ? 'Copied \u2713' : 'Copy reply'}</button>
-                    <button className="btn btn-ghost">Edit</button>
-                    <button className="btn btn-ghost">Mark resolved</button>
+                    {editing ? (
+                      <button className="btn btn-ghost" onClick={() => setEditing(false)}>Done</button>
+                    ) : (
+                      <button className="btn btn-ghost" onClick={() => setEditing(true)}>Edit</button>
+                    )}
+                    {drafts[current.id] != null && !editing && (
+                      <button className="btn btn-ghost" onClick={() => setDrafts((d) => { const n = { ...d }; delete n[current.id]; return n; })}>Reset</button>
+                    )}
+                    <button className="btn btn-ghost" onClick={() => resolveInquiry(current.id)}>Mark resolved</button>
                     {current.confidence != null && <span className="confidence">draft confidence {current.confidence}</span>}
                   </div>
                 </div>

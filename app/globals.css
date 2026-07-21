@@ -171,3 +171,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .login-input:focus { border-color: var(--action); }
 .login-error { color: var(--red); font-size: 12.5px; margin-top: 10px; }
 .login-btn { width: 100%; margin-top: 16px; justify-content: center; }
+
+/* Editable reply */
+.reply-edit { width: 100%; min-height: 180px; resize: vertical; background: var(--bg); border: 1px solid var(--action);
+  border-radius: 9px; padding: 15px 16px; font-size: 13.5px; line-height: 1.65; color: #2E333C;
+  font-family: 'Inter', sans-serif; margin-bottom: 14px; outline: none; }
+.edited-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.5px; color: var(--amber); background: var(--amber-bg);
+  padding: 2px 7px; border-radius: 5px; }
