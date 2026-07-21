@@ -1,0 +1,19 @@
+{
+  "name": "backstage-cs-triage",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "ingest": "node scripts/run-ingest.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
+    "googleapis": "^144.0.0",
+    "next": "^15.1.0",
+    "pg": "^8.13.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
