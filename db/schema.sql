@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS inquiries (
   confidence    REAL,
 
   status        TEXT NOT NULL DEFAULT 'open',  -- open | resolved
+  resolved_at   TIMESTAMPTZ,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

@@ -37,7 +37,7 @@ function normalize(r) {
     type: r.issue_type || 'General question', summary: r.summary || '', original: r.body || '',
     order: r.order_number || os.orderNumber, placed: os.placedAt || '',
     items: os.items || [], shopifyUrl: os.shopifyAdminUrl || null,
-    needsAction: r.needs_action, draft: r.draft_reply || '',
+    needsAction: r.needs_action, draft: r.draft_reply || '', resolvedAt: r.resolved_at || null,
     confidence: typeof r.confidence === 'number' ? r.confidence.toFixed(2) : r.confidence,
   };
 }
@@ -60,21 +60,46 @@ export default function Page() {
   const [mobileDetail, setMobileDetail] = useState(false);
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState({}); // local per-inquiry edited reply text
+  const [filter, setFilter] = useState('all'); // all | <brandKey> | needs | resolved
+  const [resolvedRows, setResolvedRows] = useState([]);
+  const [resolvedLoaded, setResolvedLoaded] = useState(false);
 
+  function loadOpen() {
+    return fetch('/api/inquiries').then((r) => r.json()).then((d) => {
+      const n = (d.inquiries || []).map(normalize);
+      setRows(n);
+      setSelected((sel) => sel || (n.length ? n[0].id : null));
+    }).catch(() => {});
+  }
+  function loadResolved() {
+    return fetch('/api/inquiries?status=resolved').then((r) => r.json()).then((d) => {
+      setResolvedRows((d.inquiries || []).map(normalize));
+      setResolvedLoaded(true);
+    }).catch(() => {});
+  }
   useEffect(() => {
     Promise.all([
-      fetch('/api/inquiries').then((r) => r.json()).then((d) => {
-        const n = (d.inquiries || []).map(normalize);
-        setRows(n);
-        if (n.length) setSelected(n[0].id);
-      }).catch(() => {}),
+      loadOpen(),
       fetch('/api/risk-orders').then((r) => r.json()).then((d) => {
         setRisk((d.riskOrders || []).map(normalizeRisk));
       }).catch(() => {}),
     ]).finally(() => setLoaded(true));
   }, []);
 
-  const current = useMemo(() => rows.find((r) => r.id === selected), [rows, selected]);
+  function selectFilter(f) {
+    setFilter(f);
+    setSelected(null);
+    if (f === 'resolved' && !resolvedLoaded) loadResolved();
+  }
+
+  const displayed = useMemo(() => {
+    if (filter === 'resolved') return resolvedRows;
+    if (filter === 'needs') return rows.filter((r) => r.needsAction);
+    if (filter !== 'all') return rows.filter((r) => r.brand === filter);
+    return rows;
+  }, [filter, rows, resolvedRows]);
+  const viewingResolved = filter === 'resolved';
+  const current = useMemo(() => displayed.find((r) => r.id === selected) || displayed[0] || null, [displayed, selected]);
   const actionCount = rows.filter((r) => r.needsAction).length;
   const riskHigh = risk.filter((r) => r.severity === 'high').length;
   const counts = {};
@@ -95,16 +120,23 @@ export default function Page() {
     }).catch(() => {});
   }
   function resolveInquiry(id) {
-    setRows((prev) => {
-      const next = prev.filter((r) => r.id !== id);
-      setSelected(next.length ? next[0].id : null);
-      return next;
-    });
+    setRows((prev) => prev.filter((r) => r.id !== id));
+    setSelected(null);
+    setResolvedLoaded(false); // history will refetch next time it is opened
     setMobileDetail(false);
     fetch('/api/resolve', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     }).catch(() => {});
+  }
+  function reopenInquiry(id) {
+    setResolvedRows((prev) => prev.filter((r) => r.id !== id));
+    setSelected(null);
+    setMobileDetail(false);
+    fetch('/api/resolve', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, action: 'reopen' }),
+    }).then(() => loadOpen()).catch(() => {});
   }
 
   const vendorLinks = current ? [
@@ -135,20 +167,21 @@ export default function Page() {
         <div className={'shell ' + (mobileDetail ? 'show-detail' : 'show-queue')}>
           <aside className="rail">
             <div className="eyebrow">Brands</div>
-            <div className="filter active"><span className="dot" style={{ background: 'var(--action)' }} />All inboxes <span className="n">{rows.length}</span></div>
+            <div className={'filter' + (filter === 'all' ? ' active' : '')} onClick={() => selectFilter('all')}><span className="dot" style={{ background: 'var(--action)' }} />All inboxes <span className="n">{rows.length}</span></div>
             {RAIL_BRANDS.map((b) => (
-              <div className="filter" key={b}><span className="dot" style={{ background: BRANDS[b].color }} />{BRANDS[b].name} <span className="n">{counts[b] || 0}</span></div>
+              <div className={'filter' + (filter === b ? ' active' : '')} key={b} onClick={() => selectFilter(b)}><span className="dot" style={{ background: BRANDS[b].color }} />{BRANDS[b].name} <span className="n">{counts[b] || 0}</span></div>
             ))}
             <div className="eyebrow" style={{ marginTop: 22 }}>View</div>
-            <div className="filter"><span className="dot" style={{ background: 'var(--red)' }} />Needs action <span className="n">{actionCount}</span></div>
+            <div className={'filter' + (filter === 'needs' ? ' active' : '')} onClick={() => selectFilter('needs')}><span className="dot" style={{ background: 'var(--red)' }} />Needs action <span className="n">{actionCount}</span></div>
+            <div className={'filter' + (filter === 'resolved' ? ' active' : '')} onClick={() => selectFilter('resolved')}><span className="dot" style={{ background: 'var(--faint)' }} />Resolved <span className="n">{resolvedLoaded ? resolvedRows.length : ''}</span></div>
           </aside>
 
           <section className="queue">
-            <div className="qhead">Incoming</div>
-            {loaded && rows.length === 0 && (
-              <div className="queue-empty">No inquiries yet.<br />Run the ingest to pull mail from the shared inbox.</div>
+            <div className="qhead">{viewingResolved ? 'Resolved history' : filter === 'needs' ? 'Needs action' : 'Incoming'}</div>
+            {loaded && displayed.length === 0 && (
+              <div className="queue-empty">{viewingResolved ? 'No resolved cases yet.' : filter === 'all' ? 'No inquiries yet.' : 'Nothing in this view.'}</div>
             )}
-            {rows.map((r) => {
+            {displayed.map((r) => {
               const b = BRANDS[r.brand]; const sm = STATUS[worst(r.items)];
               return (
                 <div key={r.id} className={'qitem' + (r.id === selected ? ' selected' : '') + (r.needsAction ? ' flagged' : '')} onClick={() => openInquiry(r.id)}>
@@ -178,6 +211,7 @@ export default function Page() {
                 <div className="detail-meta">
                   from <a href={'mailto:' + current.from}>{current.from}</a> &nbsp;&rarr;&nbsp; {current.to || 'unknown'}<br />
                   order {current.order || 'not matched'} &nbsp;·&nbsp; {current.placed && 'placed ' + current.placed + ' · '}{current.time} ago
+                  {viewingResolved && current.resolvedAt && <><br />resolved {new Date(current.resolvedAt).toLocaleString()}</>}
                 </div>
                 <div className="card">
                   <div className="card-label">Issue <span className="issue-type">{current.type}</span></div>
@@ -237,7 +271,9 @@ export default function Page() {
                     {drafts[current.id] != null && !editing && (
                       <button className="btn btn-ghost" onClick={() => setDrafts((d) => { const n = { ...d }; delete n[current.id]; return n; })}>Reset</button>
                     )}
-                    <button className="btn btn-ghost" onClick={() => resolveInquiry(current.id)}>Mark resolved</button>
+                    {viewingResolved
+                      ? <button className="btn btn-ghost" onClick={() => reopenInquiry(current.id)}>Reopen</button>
+                      : <button className="btn btn-ghost" onClick={() => resolveInquiry(current.id)}>Mark resolved</button>}
                     {current.confidence != null && <span className="confidence">draft confidence {current.confidence}</span>}
                   </div>
                 </div>
