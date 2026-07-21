@@ -207,3 +207,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
   .cfg-row { grid-template-columns: 1fr 1fr; }
   .cfg-label { grid-column: 1 / -1; }
 }
+
+/* Printful fulfiller pill (Wallspoke) */
+.fulfiller.printful { color: var(--emerald); background: var(--emerald-bg); }

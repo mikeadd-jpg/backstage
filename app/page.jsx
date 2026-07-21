@@ -15,7 +15,7 @@ const STATUS = {
   production: { cls: 's-production', dot: 'var(--amber)', label: 'In production' },
   action:     { cls: 's-action',     dot: 'var(--red)',   label: 'Needs action' },
 };
-const FULFILLER = { you: 'Fulfilled by You', printify: 'Printify', gelato: 'Gelato' };
+const FULFILLER = { you: 'Fulfilled by You', printify: 'Printify', gelato: 'Gelato', printful: 'Printful' };
 
 function worst(items = []) {
   if (items.some((i) => i.status === 'action')) return 'action';
@@ -110,6 +110,7 @@ export default function Page() {
   const vendorLinks = current ? [
     current.items.find((i) => i.fulfiller === 'printify' && i.vendorLink),
     current.items.find((i) => i.fulfiller === 'gelato' && i.vendorLink),
+    current.items.find((i) => i.fulfiller === 'printful' && i.vendorLink),
   ].filter(Boolean) : [];
 
   return (
