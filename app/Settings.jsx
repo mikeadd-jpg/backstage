@@ -9,7 +9,8 @@ export default function Settings() {
   const [voices, setVoices] = useState({});
   const [structure, setStructure] = useState('');
   const [cfg, setCfg] = useState({}); // `${brand}|${garment}` -> { price, tags }
-  const [newStore, setNewStore] = useState({ name: '', brandKey: '', printifyShopId: '', isDefault: false });
+  const [newStore, setNewStore] = useState({ name: '', brandKey: '', printifyShopId: '', isDefault: false, copyFrom: '' });
+  const [storeMsg, setStoreMsg] = useState('');
   const [saved, setSaved] = useState('');
 
   useEffect(() => { load(); }, []);
@@ -24,8 +25,12 @@ export default function Settings() {
   }
   function flash(msg) { setSaved(msg); setTimeout(() => setSaved(''), 1500); }
   async function post(body, msg) {
-    await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {});
+    const d = await fetch('/api/settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    }).then((r) => r.json()).catch(() => ({ error: 'Request failed' }));
+    if (d && d.error) { setStoreMsg(d.error); return d; }
     flash(msg);
+    return d;
   }
 
   if (!data) return <div className="pane"><div className="pane-head">Settings</div><p className="pane-sub">Loading...</p></div>;
@@ -107,9 +112,36 @@ export default function Settings() {
           <label className="field"><span>Brand key</span><input className="input" placeholder="elderemo" value={newStore.brandKey} onChange={(e) => setNewStore({ ...newStore, brandKey: e.target.value })} /></label>
           <label className="field"><span>Printify shop id</span><input className="input" value={newStore.printifyShopId} onChange={(e) => setNewStore({ ...newStore, printifyShopId: e.target.value })} /></label>
         </div>
+        <label className="field" style={{ marginTop: 10 }}>
+          <span>Copy pricing, tags and voice from</span>
+          <select className="input" value={newStore.copyFrom} onChange={(e) => setNewStore({ ...newStore, copyFrom: e.target.value })}>
+            <option value="">Nothing, start empty</option>
+            {(data.stores || []).map((s2) => <option key={s2.brand_key} value={s2.brand_key}>{s2.name}</option>)}
+          </select>
+        </label>
+        <p className="pane-sub" style={{ marginTop: 0 }}>
+          Copies every garment price and tag list across, swapping the brand name inside the tags.
+          Nothing already set on the new store is overwritten. Edit the copied voice, it still describes the old brand.
+        </p>
+
         <label className="check"><input type="checkbox" checked={newStore.isDefault} onChange={(e) => setNewStore({ ...newStore, isDefault: e.target.checked })} /> Default store</label>
+        {storeMsg && <div className="ledger-note" style={{ marginTop: 6 }}>{storeMsg}</div>}
         <button className="btn btn-primary" style={{ marginTop: 8, alignSelf: 'flex-start' }}
-          onClick={async () => { await post({ kind: 'store', ...newStore }, 'Store saved'); setNewStore({ name: '', brandKey: '', printifyShopId: '', isDefault: false }); load(); }}>Add / update store</button>
+          onClick={async () => {
+            setStoreMsg('');
+            const d = await post({ kind: 'store', ...newStore }, 'Store saved');
+            if (d && d.error) return;                       // validation failed, keep the form filled in
+            if (d && d.copy) {
+              const c = d.copy;
+              setStoreMsg(
+                'Copied ' + c.copied + ' of ' + c.available + ' product rows' +
+                (c.skipped ? ' (' + c.skipped + ' already set, left alone)' : '') +
+                (c.voiceCopied ? ' and the brand voice.' : '.')
+              );
+            }
+            setNewStore({ name: '', brandKey: '', printifyShopId: '', isDefault: false, copyFrom: '' });
+            load();
+          }}>Add / update store</button>
       </div>
     </div>
   );

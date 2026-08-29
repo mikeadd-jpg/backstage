@@ -3,7 +3,7 @@
 import { NextResponse } from 'next/server';
 import {
   getStores, upsertStore, getAllProductConfig, upsertProductConfig,
-  getAllVoices, upsertVoice, getSetting, setSetting,
+  getAllVoices, upsertVoice, getSetting, setSetting, copyBrandConfig,
 } from '../../../lib/db.js';
 import { garmentList } from '../../../lib/builder.js';
 import { kidsGarmentList } from '../../../lib/kids.js';
@@ -31,7 +31,25 @@ export async function POST(req) {
     if (b.kind === 'voice') await upsertVoice(b.brandKey, b.voice);
     else if (b.kind === 'replyStructure') await setSetting('cs_reply_structure', b.value);
     else if (b.kind === 'config') await upsertProductConfig({ brandKey: b.brandKey, garmentKey: b.garmentKey, priceCents: Math.round(Number(b.price) * 100), tags: b.tags });
-    else if (b.kind === 'store') await upsertStore({ brandKey: b.brandKey, name: b.name, printifyShopId: b.printifyShopId, isDefault: b.isDefault });
+    else if (b.kind === 'store') {
+      // brand_key is a primary key and is uppercased into env var names elsewhere, so
+      // normalise it here rather than trusting whatever was typed.
+      const brandKey = String(b.brandKey || '').trim().toLowerCase();
+      const name = String(b.name || '').trim();
+      const printifyShopId = String(b.printifyShopId || '').trim();
+      if (!brandKey || !name || !printifyShopId) {
+        return NextResponse.json({ error: 'Name, brand key and Printify shop id are all required.' }, { status: 400 });
+      }
+      if (!/^[a-z0-9_]+$/.test(brandKey)) {
+        return NextResponse.json({ error: 'Brand key must be lowercase letters, numbers or underscores.' }, { status: 400 });
+      }
+      await upsertStore({ brandKey, name, printifyShopId, isDefault: b.isDefault });
+
+      let copy = null;
+      const from = String(b.copyFrom || '').trim().toLowerCase();
+      if (from && from !== brandKey) copy = await copyBrandConfig(from, brandKey);
+      return NextResponse.json({ ok: true, copy });
+    }
     else return NextResponse.json({ error: 'unknown kind' }, { status: 400 });
     return NextResponse.json({ ok: true });
   } catch (err) {
