@@ -150,7 +150,7 @@ export default function Page() {
   return (
     <div className="app">
       <div className="topbar">
-        <div className="wordmark">Backstage<small>SUPPORT TRIAGE</small></div>
+        <div className="wordmark">Backstage</div>
         <div className="tabs" style={{ marginLeft: 8 }}>
           <button className={'tab' + (tab === 'inbox' ? ' active' : '')} onClick={() => setTab('inbox')}>
             Inbox {actionCount > 0 && <span className="badge">{actionCount}</span>}

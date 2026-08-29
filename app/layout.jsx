@@ -1,7 +1,7 @@
 import './globals.css';
 export const metadata = {
-  title: 'Backstage — CS Triage',
-  description: 'Multi-brand customer support triage',
+  title: 'Backstage',
+  description: 'Multi-brand customer service, order risk, and product building',
 };
 
 export default function RootLayout({ children }) {

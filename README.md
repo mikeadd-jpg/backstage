@@ -1,4 +1,4 @@
-# Backstage — CS Triage
+# Backstage
 
 A standalone dashboard that pulls customer support email from one shared Gmail inbox,
 routes each message to the right brand, classifies the issue, resolves order status

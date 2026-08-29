@@ -1,4 +1,4 @@
--- Backstage CS triage store.
+-- Backstage store.
 -- Each inbound support email becomes one inquiry row after the pipeline processes it.
 
 CREATE TABLE IF NOT EXISTS inquiries (

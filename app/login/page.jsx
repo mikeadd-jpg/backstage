@@ -16,7 +16,7 @@ export default function Login() {
   return (
     <div className="login-wrap">
       <div className="login-card">
-        <div className="wordmark" style={{ marginBottom: 6 }}>Backstage<small>SUPPORT TRIAGE</small></div>
+        <div className="wordmark" style={{ marginBottom: 6 }}>Backstage</div>
         <p className="login-sub">Sign in with your Google account to continue.</p>
 
         <a className="btn btn-primary login-btn google-btn"
