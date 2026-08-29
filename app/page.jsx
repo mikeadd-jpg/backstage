@@ -60,6 +60,7 @@ export default function Page() {
   const [mobileDetail, setMobileDetail] = useState(false);
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState({}); // local per-inquiry edited reply text
+  const [me, setMe] = useState(null);
   const [filter, setFilter] = useState('all'); // all | <brandKey> | needs | resolved
   const [resolvedRows, setResolvedRows] = useState([]);
   const [resolvedLoaded, setResolvedLoaded] = useState(false);
@@ -78,6 +79,7 @@ export default function Page() {
     }).catch(() => {});
   }
   useEffect(() => {
+    fetch('/api/me').then((r) => r.json()).then((d) => setMe(d.user || null)).catch(() => {});
     Promise.all([
       loadOpen(),
       fetch('/api/risk-orders').then((r) => r.json()).then((d) => {
@@ -160,7 +162,15 @@ export default function Page() {
           <button className={'tab' + (tab === 'settings' ? ' active' : '')} onClick={() => setTab('settings')}>Settings</button>
         </div>
         <div className="spacer" />
-        <div className="avatar">M</div>
+        {me && (
+          <button className="tab" title={me.email + (me.role === 'admin' ? ' (admin)' : '')}
+            onClick={() => fetch('/api/auth/logout', { method: 'POST' }).then(() => { window.location.href = '/login'; })}>
+            Sign out
+          </button>
+        )}
+        <div className="avatar" title={me ? me.email : ''}>
+          {me && me.email ? me.email[0].toUpperCase() : 'M'}
+        </div>
       </div>
 
       {tab === 'inbox' && (

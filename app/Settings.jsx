@@ -6,6 +6,10 @@ const BRAND_NAMES = { elderemo: 'Elder Emo', poppunks: 'PopPunks', wallspoke: 'W
 
 export default function Settings() {
   const [data, setData] = useState(null);
+  const [me, setMe] = useState(null);
+  const [users, setUsers] = useState(null);   // null until loaded; [] means none yet
+  const [newUser, setNewUser] = useState({ email: '', role: 'member' });
+  const [userMsg, setUserMsg] = useState('');
   const [voices, setVoices] = useState({});
   const [structure, setStructure] = useState('');
   const [cfg, setCfg] = useState({}); // `${brand}|${garment}` -> { price, tags }
@@ -13,7 +17,36 @@ export default function Settings() {
   const [storeMsg, setStoreMsg] = useState('');
   const [saved, setSaved] = useState('');
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadMe(); }, []);
+
+  async function loadMe() {
+    const d = await fetch('/api/me').then((r) => r.json()).catch(() => ({}));
+    setMe(d.user || null);
+    if (d.user && d.user.role === 'admin') loadUsers();
+  }
+  async function loadUsers() {
+    const d = await fetch('/api/users').then((r) => r.json()).catch(() => ({}));
+    setUsers(d.users || []);
+  }
+  async function addUser() {
+    setUserMsg('');
+    const d = await fetch('/api/users', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newUser),
+    }).then((r) => r.json()).catch(() => ({ error: 'Request failed' }));
+    if (d.error) return setUserMsg(d.error);
+    setNewUser({ email: '', role: 'member' });
+    loadUsers();
+    flash('User saved');
+  }
+  async function removeUser(email) {
+    setUserMsg('');
+    const d = await fetch('/api/users?email=' + encodeURIComponent(email), { method: 'DELETE' })
+      .then((r) => r.json()).catch(() => ({ error: 'Request failed' }));
+    if (d.error) return setUserMsg(d.error);
+    loadUsers();
+    flash('Access removed');
+  }
   async function load() {
     const d = await fetch('/api/settings').then((r) => r.json());
     setData(d);
@@ -98,6 +131,49 @@ export default function Settings() {
           </div>
         ))}
       </div>
+
+      {/* Who can sign in. Admin only: this is the single thing the role gates. */}
+      {me && me.role === 'admin' && (
+        <div className="card">
+          <div className="card-label">Who can sign in</div>
+          <p className="pane-sub" style={{ marginTop: 0 }}>
+            Anyone listed here can sign in with that Google account. Admins can also manage this list.
+          </p>
+          {users === null && <div className="ledger-note">Loading...</div>}
+          {users && users.map((u) => (
+            <div className="build-row" key={u.email}>
+              <span className="li-name">
+                {u.name || u.email}
+                <span className="li-sub" style={{ display: 'inline', marginLeft: 8 }}>
+                  {u.name ? u.email + ' · ' : ''}{u.role}
+                  {u.last_seen ? ' · last seen ' + new Date(u.last_seen).toLocaleDateString() : ' · never signed in'}
+                </span>
+              </span>
+              {u.email !== me.email && (
+                <button className="btn btn-ghost" onClick={() => removeUser(u.email)}>Remove</button>
+              )}
+            </div>
+          ))}
+          <div className="field-row" style={{ marginTop: 12, alignItems: 'flex-end' }}>
+            <label className="field" style={{ flex: 2 }}>
+              <span>Google email</span>
+              <input className="input" placeholder="person@gmail.com" value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+            </label>
+            <label className="field">
+              <span>Role</span>
+              <select className="input" value={newUser.role}
+                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}>
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+          </div>
+          {userMsg && <div className="login-error" style={{ marginTop: 8 }}>{userMsg}</div>}
+          <button className="btn btn-primary" style={{ marginTop: 8, alignSelf: 'flex-start' }}
+            onClick={addUser}>Add / update user</button>
+        </div>
+      )}
 
       {/* Stores */}
       <div className="card">

@@ -126,3 +126,16 @@ CREATE TABLE IF NOT EXISTS oauth_tokens (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_oauth_tokens_expiry ON oauth_tokens (expires_at);
+
+-- ===== Who is allowed to sign in =====
+-- Google login replaced the single shared password. Access is an allowlist: signing in
+-- with Google proves who you are, this table decides whether you get in. Two roles only,
+-- and the only thing 'admin' unlocks is managing this table.
+CREATE TABLE IF NOT EXISTS allowed_users (
+  email      TEXT PRIMARY KEY,          -- lowercased Google account address
+  role       TEXT NOT NULL DEFAULT 'member',  -- admin | member
+  name       TEXT,                      -- from Google, filled in on first sign-in
+  added_by   TEXT,
+  last_seen  TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

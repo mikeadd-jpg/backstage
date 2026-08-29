@@ -227,3 +227,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .acc-regions { display: flex; flex-wrap: wrap; gap: 16px; padding-left: 26px; margin-top: 2px; }
 .acc-region { margin: 2px 0; font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
 .acc-note { font-size: 11px; color: var(--faint); align-self: center; }
+
+/* Google sign-in button */
+.google-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  text-decoration: none; }

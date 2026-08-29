@@ -1,16 +1,17 @@
 // The consent screen. GET renders it, POST approves and redirects back with a code.
 //
-// There is no user database here: the whole app already sits behind one shared
-// APP_PASSWORD, so that is what the approval step checks. Anyone who could open the
-// dashboard can approve a connection, which is exactly the right bar.
+// Approval requires a signed-in Backstage user. This route is exempt from the middleware
+// gate so the OAuth handshake can reach it, which means it has to check the session
+// itself: without that, anyone who found the URL could approve a connector.
 import { checkRedirect, issueCode, SCOPE } from '../../../../lib/oauth.js';
+import { readSession, SESSION_COOKIE } from '../../../../lib/session.js';
 
 export const dynamic = 'force-dynamic';
 
 const esc = (v) => String(v == null ? '' : v)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-function page({ params, error }) {
+function page({ params, error, user }) {
   const hidden = ['client_id', 'redirect_uri', 'state', 'code_challenge', 'code_challenge_method', 'scope']
     .map((k) => '<input type="hidden" name="' + k + '" value="' + esc(params[k]) + '">').join('');
   return `<!doctype html><html><head><meta charset="utf-8">
@@ -41,8 +42,8 @@ function page({ params, error }) {
     <li>Draft replies, without sending anything</li>
   </ul>
   <div class="who">${esc(params.client_name || params.client_id)}</div>
-  <form method="POST" style="margin-top:16px">${hidden}
-    <input type="password" name="password" placeholder="Backstage password" autofocus required>
+  <p style="margin:14px 0 0;font-size:13px;color:#555">Signed in as <strong>${esc(user.email)}</strong></p>
+  <form method="POST" style="margin-top:10px">${hidden}
     <button type="submit">Approve</button>
     ${error ? '<div class="err">' + esc(error) + '</div>' : ''}
   </form>
@@ -81,8 +82,17 @@ export async function GET(req) {
   const p = readParams(new URL(req.url).searchParams);
   const bad = await validate(p);
   if (bad) return fail(bad);
+
+  // Not signed in: bounce through Google and come straight back to this same consent URL.
+  const session = await readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  if (!session) {
+    const here = new URL(req.url);
+    const next = here.pathname + here.search;
+    return Response.redirect(new URL('/api/auth/google/start?next=' + encodeURIComponent(next), req.url).toString(), 302);
+  }
+
   const client = await checkRedirect(p.client_id, p.redirect_uri);
-  return html(page({ params: { ...p, client_name: client.client.client_name }, error: null }));
+  return html(page({ params: { ...p, client_name: client.client.client_name }, error: null, user: session }));
 }
 
 export async function POST(req) {
@@ -91,11 +101,8 @@ export async function POST(req) {
   const bad = await validate(p);
   if (bad) return fail(bad);
 
-  const expected = process.env.APP_PASSWORD;
-  if (!expected) return fail('APP_PASSWORD is not set on the server, so nothing can be approved.');
-  if (form.get('password') !== expected) {
-    return html(page({ params: p, error: 'Incorrect password.' }), 401);
-  }
+  const session = await readSession(req.cookies.get(SESSION_COOKIE)?.value);
+  if (!session) return fail('Your session expired before you approved. Start the connection again.');
 
   const code = await issueCode({
     clientId: p.client_id,

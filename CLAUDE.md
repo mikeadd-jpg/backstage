@@ -3,11 +3,36 @@
 Multi-brand customer-service triage for three Shopify merch stores (Elder Emo,
 PopPunks, Wallspoke), plus a proactive at-risk order scan and a Printify product
 builder. Next.js 15 App Router, plain JavaScript, Postgres on Neon, deployed on
-Vercel. `middleware.js` gates the entire app behind one shared password
-(`APP_PASSWORD`), exempting only `/login`, `/api/login`, and the two cron endpoints.
+Vercel. `middleware.js` gates the entire app behind Google sign-in.
 
 Read `README.md` for setup. This file covers the decisions and traps that are not
 obvious from any single file.
+
+## Access control
+
+Google sign-in, two steps: Google proves **who you are**, and the `allowed_users` table
+decides **whether you get in**. The old shared `APP_PASSWORD` is gone, along with the
+cookie that stored it in plaintext.
+
+Two roles. The only thing `admin` unlocks is managing `allowed_users`; members can do
+everything else. The role is re-read from the signed cookie on every `/api/users` call
+rather than trusted from the client, so a member cannot promote themselves.
+
+- **`lib/session.js` must stay Edge-safe.** `middleware.js` imports it, so it uses Web
+  Crypto rather than `node:crypto` and never touches Postgres. Anything needing the
+  database goes in `lib/users.js`.
+- **`ADMIN_EMAIL` is the bootstrap and the lockout recovery.** The table starts empty, so
+  without it nobody could sign in and nobody could add anyone. That address is always
+  treated as admin regardless of what the table says, and cannot be removed. If you ever
+  lock yourself out, change that env var.
+- Sign-in reuses the **Gmail OAuth client** (`GMAIL_CLIENT_ID` / `GMAIL_CLIENT_SECRET`),
+  so `/api/auth/google/callback` has to be registered on it for every origin you use.
+- Sessions are HMAC-signed with `SESSION_SECRET`, 14 day expiry. Rotating that secret
+  signs everyone out, which is the intended panic button.
+
+The cron endpoints and `/api/mcp` are unaffected: they carry their own secrets and stay
+exempt. The MCP consent screen now checks the Google session instead of the password, and
+bounces through sign-in when there isn't one.
 
 ## Entry points
 
