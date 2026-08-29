@@ -53,6 +53,16 @@ CREATE TABLE IF NOT EXISTS risk_dismissals (
   dismissed_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Which at-risk orders have already been announced to Slack. Separate from risk_orders
+-- because that table is deleted and rewritten on every scan, so a notified flag stored
+-- there would be lost and every order would re-alert six times a day. Keyed by rule_key
+-- like risk_dismissals, so a NEW kind of problem on an already-announced order re-alerts.
+CREATE TABLE IF NOT EXISTS risk_notifications (
+  order_id    TEXT PRIMARY KEY,
+  rule_key    TEXT,
+  notified_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- ===== Product builder + editable settings =====
 
 -- Printify stores for the product builder. brand_key links a store to its shared voice.

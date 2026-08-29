@@ -82,6 +82,32 @@ Two rules that exist because of past bugs, do not "simplify" them away:
   hides it only for that same set of reasons, so a new kind of problem re-surfaces it.
   `pruneDismissals` drops dismissals for orders that are no longer flagged at all.
 
+## Slack alerts (`lib/notify.js`)
+
+`runScan` posts at-risk orders to a Slack Incoming Webhook (`SLACK_WEBHOOK_URL`). Unset
+means every notification path quietly no-ops and the scan behaves exactly as before.
+
+The hard part is not posting, it is **not** posting. `replaceRiskOrders` deletes and
+rewrites `risk_orders` on every scan, so alerting on the table's contents would re-send
+every standing problem six times a day. `risk_notifications` tracks what has been
+announced, keyed on `(order_id, rule_key)` exactly like `risk_dismissals`. It has to be a
+separate table precisely because `risk_orders` is wiped. Since severity is derived from
+the reasons, an order gaining a new kind of problem changes its `rule_key` and correctly
+re-alerts.
+
+Two rules worth preserving:
+
+- **Only successful posts are recorded.** `markRisksNotified` runs after Slack accepts, so
+  a failed webhook retries on the next scan instead of being swallowed.
+- **Notification failure never fails a scan.** The whole block is try/caught after
+  `replaceRiskOrders` has already written, matching the best-effort vendor lookups.
+
+High severity alerts immediately. Medium goes into a daily digest that **rides the
+existing four-hourly scan** rather than taking a third Vercel cron slot, since Hobby caps
+cron jobs and ingest and scan already use both. The digest fires on whichever scan lands
+in `RISK_DIGEST_HOUR_UTC` (default 12, one of the scan's 0/4/8/12/16/20 hours) and stamps
+`app_settings.risk_digest_last_sent` with the date so a manual re-POST cannot double-send.
+
 ## Brand voice is shared
 
 `brand_voices` in Postgres drives **both** the CS reply drafts (`lib/classify.js`) and
