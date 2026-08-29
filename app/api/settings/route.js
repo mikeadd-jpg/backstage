@@ -6,6 +6,7 @@ import {
   getAllVoices, upsertVoice, getSetting, setSetting,
 } from '../../../lib/db.js';
 import { garmentList } from '../../../lib/builder.js';
+import { kidsGarmentList } from '../../../lib/kids.js';
 import { REPLY_STRUCTURE } from '../../../lib/brands.js';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +17,7 @@ export async function GET() {
       getStores(), getAllProductConfig(), getAllVoices(), getSetting('cs_reply_structure'),
     ]);
     return NextResponse.json({
-      stores, config, voices, garments: garmentList(),
+      stores, config, voices, garments: [...garmentList(), ...kidsGarmentList()],
       replyStructure: structure || REPLY_STRUCTURE,
     });
   } catch (err) {

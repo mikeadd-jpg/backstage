@@ -67,17 +67,26 @@ export default function Settings() {
         {(data.stores || []).map((s) => (
           <div key={s.brand_key} style={{ marginBottom: 18 }}>
             <div className="li-name" style={{ marginBottom: 8 }}>{s.name}</div>
-            {garments.map((g) => {
-              const k = s.brand_key + '|' + g.key;
-              const row = cfg[k] || { price: '', tags: '' };
+            {['Adults', 'Kids'].map((groupName) => {
+              const inGroup = garments.filter((g) => (g.group || 'Adults') === groupName);
+              if (!inGroup.length) return null;
               return (
-                <div className="cfg-row" key={k}>
-                  <span className="cfg-label">{g.label}</span>
-                  <input className="input cfg-price" placeholder="24.99" value={row.price}
-                    onChange={(e) => setCfg((c) => ({ ...c, [k]: { ...row, price: e.target.value } }))} />
-                  <input className="input cfg-tags" placeholder="comma, separated, tags" value={row.tags}
-                    onChange={(e) => setCfg((c) => ({ ...c, [k]: { ...row, tags: e.target.value } }))} />
-                  <button className="btn btn-ghost" onClick={() => post({ kind: 'config', brandKey: s.brand_key, garmentKey: g.key, price: row.price || 0, tags: row.tags || '' }, 'Saved')}>Save</button>
+                <div key={groupName}>
+                  <div className="eyebrow" style={{ marginTop: 10 }}>{groupName}</div>
+                  {inGroup.map((g) => {
+                    const k = s.brand_key + '|' + g.key;
+                    const row = cfg[k] || { price: '', tags: '' };
+                    return (
+                      <div className="cfg-row" key={k}>
+                        <span className="cfg-label">{g.label}</span>
+                        <input className="input cfg-price" placeholder="24.99" value={row.price}
+                          onChange={(e) => setCfg((c) => ({ ...c, [k]: { ...row, price: e.target.value } }))} />
+                        <input className="input cfg-tags" placeholder="comma, separated, tags" value={row.tags}
+                          onChange={(e) => setCfg((c) => ({ ...c, [k]: { ...row, tags: e.target.value } }))} />
+                        <button className="btn btn-ghost" onClick={() => post({ kind: 'config', brandKey: s.brand_key, garmentKey: g.key, price: row.price || 0, tags: row.tags || '' }, 'Saved')}>Save</button>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}

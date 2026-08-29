@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "ingest": "node scripts/run-ingest.mjs"
+    "ingest": "node scripts/run-ingest.mjs",
+    "seed": "node scripts/seed-db.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
