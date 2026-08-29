@@ -93,3 +93,36 @@ CREATE TABLE IF NOT EXISTS app_settings (
   key    TEXT PRIMARY KEY,
   value  TEXT
 );
+
+-- ===== OAuth for the remote MCP server =====
+-- Claude connects to /api/mcp from Anthropic's servers, and its connector UI only accepts
+-- OAuth (or no auth), so the app has to be its own authorization server. Public clients
+-- with PKCE throughout: no client secrets are issued. Tokens are stored as SHA-256
+-- hashes, so a database leak does not hand over live credentials.
+
+CREATE TABLE IF NOT EXISTS oauth_clients (
+  client_id     TEXT PRIMARY KEY,
+  client_name   TEXT,
+  redirect_uris TEXT[] NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS oauth_codes (
+  code_hash      TEXT PRIMARY KEY,
+  client_id      TEXT NOT NULL,
+  redirect_uri   TEXT NOT NULL,
+  code_challenge TEXT NOT NULL,          -- S256 only
+  scope          TEXT,
+  expires_at     TIMESTAMPTZ NOT NULL,   -- short, single use
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS oauth_tokens (
+  token_hash   TEXT PRIMARY KEY,
+  kind         TEXT NOT NULL,            -- access | refresh
+  client_id    TEXT NOT NULL,
+  scope        TEXT,
+  expires_at   TIMESTAMPTZ NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_oauth_tokens_expiry ON oauth_tokens (expires_at);

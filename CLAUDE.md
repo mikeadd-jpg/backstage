@@ -203,6 +203,36 @@ reach. If you add write tools, weigh them against that, not just against conveni
 Tool errors are returned in-band as `isError: true` content rather than as JSON-RPC errors,
 so the model can read the failure and recover instead of seeing an opaque transport error.
 
+## OAuth for the MCP server (`lib/oauth.js`, `app/api/oauth/*`)
+
+Claude's connector UI accepts OAuth or no authentication, with nothing in between, so
+reaching `/api/mcp` from claude.ai, Desktop or mobile means being an authorization server.
+A static bearer token only works in Claude Code, which can send an arbitrary header.
+
+Deliberately narrow: public clients with PKCE S256, authorization code and refresh grants,
+no client secrets, **no user accounts**. The consent screen authenticates against the same
+`APP_PASSWORD` the dashboard uses, so there is no second identity system to maintain.
+Anyone who can open the dashboard can approve a connection, which is the right bar.
+
+Things that will break the flow if changed carelessly:
+
+- **`/.well-known/*` is served through rewrites in `next.config.js`.** The App Router will
+  not route a directory whose name begins with a dot.
+- **The `resource` field must equal the MCP URL exactly as typed into Claude.** It is
+  derived from the request host rather than hardcoded, so preview URLs work too.
+- **Claude only honours `WWW-Authenticate` on a 401**, never on a 200, and needs the
+  `resource_metadata` pointer to find the authorization server at all. Without it the
+  connection fails as "couldn't reach the MCP server".
+- **Claude Code uses a loopback redirect on an ephemeral port**, so `redirectAllowed()`
+  matches `localhost` and `127.0.0.1` ignoring the port. Every other URI matches exactly,
+  which is what stops this being an open redirector.
+- **`/token` must accept form-urlencoded** (Claude sends both exchange and refresh that
+  way) while `/register` is JSON. Different parsers, same file tree.
+- Refresh tokens rotate, as OAuth 2.1 requires for public clients, and codes are burned on
+  use **and on failure**, so a failed PKCE check cannot be retried.
+
+Tokens are stored as SHA-256 hashes, so the database never holds a usable credential.
+
 ## Adding a brand
 
 Four places, easy to half-do:

@@ -8,6 +8,7 @@
 // own secret. The path is exempt from the password middleware for the same reason they are.
 import { NextResponse } from 'next/server';
 import { listTools, callTool, writesEnabled } from '../../../lib/mcp.js';
+import { verifyAccessToken, baseUrl } from '../../../lib/oauth.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -17,12 +18,31 @@ const SERVER_INFO = { name: 'backstage', version: '1.0.0' };
 const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const DEFAULT_PROTOCOL = '2025-06-18';
 
-function authorized(req) {
-  const expected = process.env.MCP_TOKEN;
-  if (!expected) return false; // unset means the server stays shut, not wide open
+// Two ways in. A static MCP_TOKEN is the simple path for Claude Code, which can send an
+// arbitrary header. Claude's hosted surfaces cannot, so they arrive with an OAuth access
+// token minted by /api/oauth/token instead.
+async function authorized(req) {
   const header = req.headers.get('authorization') || '';
   const bearer = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
-  return bearer === expected;
+  if (!bearer) return false;
+
+  const staticToken = process.env.MCP_TOKEN;
+  if (staticToken && bearer === staticToken) return true; // unset means closed, not open
+
+  return Boolean(await verifyAccessToken(bearer));
+}
+
+// Claude only follows this handshake on a 401, and needs the pointer to know where the
+// authorization server lives. Without it the connection fails as "couldn't reach server".
+function unauthorized(req, asJsonRpc) {
+  const headers = {
+    'WWW-Authenticate':
+      'Bearer resource_metadata="' + baseUrl(req) + '/.well-known/oauth-protected-resource"',
+  };
+  const body = asJsonRpc
+    ? { jsonrpc: '2.0', id: null, error: { code: -32001, message: 'unauthorized' } }
+    : { error: 'unauthorized' };
+  return NextResponse.json(body, { status: 401, headers });
 }
 
 const rpcResult = (id, result) => NextResponse.json({ jsonrpc: '2.0', id, result });
@@ -73,12 +93,7 @@ async function handleRpc(msg) {
 }
 
 export async function POST(req) {
-  if (!authorized(req)) {
-    return NextResponse.json(
-      { jsonrpc: '2.0', id: null, error: { code: -32001, message: 'unauthorized' } },
-      { status: 401, headers: { 'WWW-Authenticate': 'Bearer' } }
-    );
-  }
+  if (!(await authorized(req))) return unauthorized(req, true);
 
   let body;
   try {
@@ -107,9 +122,7 @@ export async function POST(req) {
 
 // A bare GET is how people check the URL in a browser. Say what this is rather than 405.
 export async function GET(req) {
-  if (!authorized(req)) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'WWW-Authenticate': 'Bearer' } });
-  }
+  if (!(await authorized(req))) return unauthorized(req, false);
   return NextResponse.json({
     server: SERVER_INFO,
     transport: 'Streamable HTTP, POST JSON-RPC to this URL',

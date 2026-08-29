@@ -4,9 +4,12 @@
 //   - the cron endpoints /api/ingest and /api/scan, which authenticate with their own
 //     secret headers (x-ingest-key or the Vercel Bearer token), not the cookie.
 //   - /api/mcp, which authenticates with its own MCP_TOKEN bearer token.
+//   - /api/oauth/* and /.well-known/*, the OAuth flow Claude uses to reach /api/mcp. The
+//     consent screen checks APP_PASSWORD itself, so it gates its own approval step.
 import { NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/login', '/api/login', '/api/ingest', '/api/scan', '/api/mcp'];
+const PUBLIC_PATHS = ['/login', '/api/login', '/api/ingest', '/api/scan', '/api/mcp',
+  '/api/oauth', '/.well-known'];
 
 export function middleware(req) {
   const { pathname } = req.nextUrl;
