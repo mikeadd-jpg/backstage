@@ -210,3 +210,20 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 
 /* Printful fulfiller pill (Wallspoke) */
 .fulfiller.printful { color: var(--emerald); background: var(--emerald-bg); }
+
+/* Product picker in the builder: which of the region variants to actually create. */
+.acc { border: 1px solid var(--line); border-radius: 10px; margin-top: 12px; overflow: hidden; }
+.acc-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 14px;
+  background: var(--surface-2); border: none; cursor: pointer; font-size: 13px; font-weight: 600;
+  color: var(--text); text-align: left; }
+.acc-head:hover { background: var(--hover); }
+.acc-caret { color: var(--faint); font-size: 11px; }
+.acc-count { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+.acc-body { padding: 6px 14px 12px; }
+.acc-group { padding: 10px 0; border-top: 1px solid var(--line); }
+.acc-group:first-child { border-top: none; }
+.acc-group-head { margin: 0; }
+.acc-blurb { display: inline; color: var(--faint); font-size: 11px; margin-left: 8px; }
+.acc-regions { display: flex; flex-wrap: wrap; gap: 16px; padding-left: 26px; margin-top: 2px; }
+.acc-region { margin: 2px 0; font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+.acc-note { font-size: 11px; color: var(--faint); align-self: center; }
