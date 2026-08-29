@@ -141,6 +141,26 @@ export default function Page() {
     }).then(() => loadOpen()).catch(() => {});
   }
 
+  // Defined once and rendered twice: topbar tabs on desktop, bottom nav on mobile.
+  const TABS = [
+    { key: 'inbox', label: 'Inbox', short: 'Inbox', icon: '\u2709' },
+    { key: 'risk', label: 'At risk', short: 'At risk', icon: '\u26A0' },
+    { key: 'builder', label: 'Builder', short: 'Builder', icon: '\u2726' },
+    { key: 'settings', label: 'Settings', short: 'Settings', icon: '\u2699' },
+  ];
+  const badgeFor = (key) => (key === 'inbox' ? actionCount : key === 'risk' ? riskHigh : 0);
+
+  // Likewise for the filters: the desktop rail and the mobile chip row are the same list.
+  const FILTERS = [
+    { key: 'all', group: 'brand', label: 'All inboxes', short: 'All', color: 'var(--action)', count: rows.length },
+    ...RAIL_BRANDS.map((b) => ({
+      key: b, group: 'brand', label: BRANDS[b].name, short: BRANDS[b].name,
+      color: BRANDS[b].color, count: counts[b] || 0,
+    })),
+    { key: 'needs', group: 'view', label: 'Needs action', short: 'Needs action', color: 'var(--red)', count: actionCount },
+    { key: 'resolved', group: 'view', label: 'Resolved', short: 'Resolved', color: 'var(--faint)', count: resolvedLoaded ? resolvedRows.length : '' },
+  ];
+
   const vendorLinks = current ? [
     current.items.find((i) => i.fulfiller === 'printify' && i.vendorLink),
     current.items.find((i) => i.fulfiller === 'gelato' && i.vendorLink),
@@ -151,15 +171,12 @@ export default function Page() {
     <div className="app">
       <div className="topbar">
         <div className="wordmark">Backstage</div>
-        <div className="tabs" style={{ marginLeft: 8 }}>
-          <button className={'tab' + (tab === 'inbox' ? ' active' : '')} onClick={() => setTab('inbox')}>
-            Inbox {actionCount > 0 && <span className="badge">{actionCount}</span>}
-          </button>
-          <button className={'tab' + (tab === 'risk' ? ' active' : '')} onClick={() => setTab('risk')}>
-            At risk {riskHigh > 0 && <span className="badge">{riskHigh}</span>}
-          </button>
-          <button className={'tab' + (tab === 'builder' ? ' active' : '')} onClick={() => setTab('builder')}>Builder</button>
-          <button className={'tab' + (tab === 'settings' ? ' active' : '')} onClick={() => setTab('settings')}>Settings</button>
+        <div className="tabs topbar-tabs" style={{ marginLeft: 8 }}>
+          {TABS.map((t) => (
+            <button key={t.key} className={'tab' + (tab === t.key ? ' active' : '')} onClick={() => setTab(t.key)}>
+              {t.label}{badgeFor(t.key) > 0 && <span className="badge">{badgeFor(t.key)}</span>}
+            </button>
+          ))}
         </div>
         <div className="spacer" />
         {me && (
@@ -177,16 +194,31 @@ export default function Page() {
         <div className={'shell ' + (mobileDetail ? 'show-detail' : 'show-queue')}>
           <aside className="rail">
             <div className="eyebrow">Brands</div>
-            <div className={'filter' + (filter === 'all' ? ' active' : '')} onClick={() => selectFilter('all')}><span className="dot" style={{ background: 'var(--action)' }} />All inboxes <span className="n">{rows.length}</span></div>
-            {RAIL_BRANDS.map((b) => (
-              <div className={'filter' + (filter === b ? ' active' : '')} key={b} onClick={() => selectFilter(b)}><span className="dot" style={{ background: BRANDS[b].color }} />{BRANDS[b].name} <span className="n">{counts[b] || 0}</span></div>
+            {FILTERS.filter((f) => f.group === 'brand').map((f) => (
+              <div className={'filter' + (filter === f.key ? ' active' : '')} key={f.key} onClick={() => selectFilter(f.key)}>
+                <span className="dot" style={{ background: f.color }} />{f.label} <span className="n">{f.count}</span>
+              </div>
             ))}
             <div className="eyebrow" style={{ marginTop: 22 }}>View</div>
-            <div className={'filter' + (filter === 'needs' ? ' active' : '')} onClick={() => selectFilter('needs')}><span className="dot" style={{ background: 'var(--red)' }} />Needs action <span className="n">{actionCount}</span></div>
-            <div className={'filter' + (filter === 'resolved' ? ' active' : '')} onClick={() => selectFilter('resolved')}><span className="dot" style={{ background: 'var(--faint)' }} />Resolved <span className="n">{resolvedLoaded ? resolvedRows.length : ''}</span></div>
+            {FILTERS.filter((f) => f.group === 'view').map((f) => (
+              <div className={'filter' + (filter === f.key ? ' active' : '')} key={f.key} onClick={() => selectFilter(f.key)}>
+                <span className="dot" style={{ background: f.color }} />{f.label} <span className="n">{f.count}</span>
+              </div>
+            ))}
           </aside>
 
           <section className="queue">
+            {/* The rail is hidden on phones, so the same filters appear as a scrollable
+                chip row. Without this there is no way to filter on mobile at all. */}
+            <div className="chipbar">
+              {FILTERS.map((f) => (
+                <button key={f.key} className={'chip' + (filter === f.key ? ' active' : '')} onClick={() => selectFilter(f.key)}>
+                  <span className="dot" style={{ background: f.color }} />
+                  {f.short}
+                  {f.count !== '' && <span className="chip-n">{f.count}</span>}
+                </button>
+              ))}
+            </div>
             <div className="qhead">{viewingResolved ? 'Resolved history' : filter === 'needs' ? 'Needs action' : 'Incoming'}</div>
             {loaded && displayed.length === 0 && (
               <div className="queue-empty">{viewingResolved ? 'No resolved cases yet.' : filter === 'all' ? 'No inquiries yet.' : 'Nothing in this view.'}</div>
@@ -323,6 +355,18 @@ export default function Page() {
       )}
       {tab === 'builder' && <Builder />}
       {tab === 'settings' && <Settings />}
+
+      {/* Thumb-reach navigation. Hidden above 680px, where the topbar tabs take over. */}
+      <nav className="bottom-nav">
+        {TABS.map((t) => (
+          <button key={t.key} className={'bn-item' + (tab === t.key ? ' active' : '')}
+            onClick={() => { setTab(t.key); setMobileDetail(false); }} aria-label={t.label}>
+            <span className="bn-icon" aria-hidden="true">{t.icon}</span>
+            <span className="bn-label">{t.short}</span>
+            {badgeFor(t.key) > 0 && <span className="bn-badge">{badgeFor(t.key)}</span>}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
