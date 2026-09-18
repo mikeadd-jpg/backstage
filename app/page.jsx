@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import Builder from './Builder';
+import Mockups from './Mockups';
 import Settings from './Settings';
 
 const BRANDS = {
@@ -146,6 +147,7 @@ export default function Page() {
     { key: 'inbox', label: 'Inbox', short: 'Inbox', icon: '\u2709' },
     { key: 'risk', label: 'At risk', short: 'At risk', icon: '\u26A0' },
     { key: 'builder', label: 'Builder', short: 'Builder', icon: '\u2726' },
+    { key: 'mockups', label: 'Mockups', short: 'Mockups', icon: '\u2751' },
     { key: 'settings', label: 'Settings', short: 'Settings', icon: '\u2699' },
   ];
   const badgeFor = (key) => (key === 'inbox' ? actionCount : key === 'risk' ? riskHigh : 0);
@@ -354,6 +356,7 @@ export default function Page() {
         </div>
       )}
       {tab === 'builder' && <Builder />}
+      {tab === 'mockups' && <Mockups />}
       {tab === 'settings' && <Settings />}
 
       {/* Thumb-reach navigation. Hidden above 680px, where the topbar tabs take over. */}

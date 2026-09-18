@@ -203,6 +203,46 @@ through `kidsGarmentList()`, and `product_config` needs no schema change.
 Note the adult builder auto-appends the `upsellprod` tag; the kids builder does not. Kids
 tags come entirely from `product_config`.
 
+## Lifestyle mockups (`lib/mockups.js`, `app/Mockups.jsx`)
+
+Takes a live product's own storefront image, which is a flat print-on-demand mockup, and
+asks an image model to place it in a scene. Pick a product, review, attach. Nothing is
+automatic.
+
+**The model redraws the whole frame, artwork included.** Text-heavy designs come back with
+mangled lettering, which is most of the catalog. `HARD_RULES` in `lib/mockups.js` hammers
+on preserving the artwork and says it twice, because one mention does not hold. That is
+also why there is a review step at all, and why the UI puts a warning next to every
+result. If fidelity turns out to be unfixable by prompt, the answer is to generate the
+scene with a blank garment and composite the real print file with `sharp`, not to loosen
+the review.
+
+**Generated images are never stored.** They live in React state between generate and
+attach. No blob store, nothing in Neon, and closing the tab discards them. The cost is
+that you lose unattached work; the benefit is that a review step cannot be skipped.
+
+**Product reads go through GraphQL, not REST.** Shopify made the REST product endpoints
+legacy, so `listActiveProducts` and `addProductImage` in `lib/shopify.js` use
+`graphql.json` while the order functions above them stay on REST where it still works.
+Attaching cannot post raw bytes: it stages the upload to Shopify's bucket first, then
+points `productCreateMedia` at the result. Signed parameters go into the form *before*
+the file or the bucket rejects it.
+
+**Scopes are the thing that will bite.** Each brand's Shopify app needs `read_products`
+and `write_products` on top of the order scopes. The client-credentials token carries its
+scopes, so changing them in the Dev Dashboard does nothing until a redeploy issues a
+fresh token. `shopifyGraphql` detects the denial and says so rather than passing through
+"Access denied for products field".
+
+Scene direction per brand lives in `app_settings` under `mockup_scene_<brand>`, so it is
+editable from the tab with no schema change. `DEFAULT_SCENES` is only the fallback, and
+the scenes are written to match the `brand_voices` rows. Note Wallspoke sells wall art,
+not apparel, so the prompt says "the product" throughout rather than "the garment".
+
+One generation per request, under the same 60 second Vercel cap that shaped `lib/kids.js`,
+with a 55 second abort so a slow image returns a real message instead of a platform
+timeout. High quality can exceed it; medium is the default.
+
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
 `POST /api/mcp` exposes Backstage to Claude as an MCP server. Tools are thin wrappers over
