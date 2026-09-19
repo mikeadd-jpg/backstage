@@ -38,9 +38,10 @@ card your team can read and copy.
 - Gelato: one API key. The resolver matches on `orderReferenceId`; confirm that field
   against how your Shopify-Gelato integration tags orders.
 - Lifestyle mockups: `OPENAI_API_KEY`, used by the Mockups tab to put a product's own
-  storefront image into a scene. `gpt-image-1` is gated behind OpenAI organisation
-  verification, so verify the org before the first run. Optional: `MOCKUP_MODEL` to
-  point at a different image model.
+  storefront image into a scene. Defaults to `gpt-image-2.5-sunburst`, the variant OpenAI
+  positions for editing precision. OpenAI gates its image models behind organisation
+  verification, so verify the org before the first run. Optional: `MOCKUP_MODEL` to point
+  at a different image model, `MOCKUP_INPUT_FIDELITY` which only applies on `gpt-image-1`.
 - Product scopes: the Mockups tab reads products over Shopify's GraphQL Admin API, so
   each brand's app needs `read_products`, plus `write_products` to attach a generated
   image back to a product. Those are on top of the order scopes the pipeline needs. The

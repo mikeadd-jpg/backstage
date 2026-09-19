@@ -209,13 +209,27 @@ Takes a live product's own storefront image, which is a flat print-on-demand moc
 asks an image model to place it in a scene. Pick a product, review, attach. Nothing is
 automatic.
 
-**The model redraws the whole frame, artwork included.** Text-heavy designs come back with
-mangled lettering, which is most of the catalog. `HARD_RULES` in `lib/mockups.js` hammers
-on preserving the artwork and says it twice, because one mention does not hold. That is
-also why there is a review step at all, and why the UI puts a warning next to every
-result. If fidelity turns out to be unfixable by prompt, the answer is to generate the
-scene with a blank garment and composite the real print file with `sharp`, not to loosen
-the review.
+**The model choice is not cosmetic.** GPT Image 2.5 ships as two variants: `flare` for
+fast general generation, `sunburst` for editing precision. Putting an existing shirt into
+a scene without disturbing its print is an editing-precision job, so
+`gpt-image-2.5-sunburst` is the default. Override with `MOCKUP_MODEL`.
+
+**Fidelity parameters differ per model family, and getting it wrong is a hard error.**
+`gpt-image-1` defaults `input_fidelity` to `low`, which is what made lettering come back
+redrawn, so it gets `high` (override with `MOCKUP_INPUT_FIDELITY`). The 2.5 models do not
+document that parameter and reject it, so the guard at the call site matches
+`gpt-image-1` specifically rather than any `gpt-image` prefix. Widening it back would
+break every request. Quality also differs: 2.5 accepts `xhigh` and `max` on top of the
+old ladder.
+
+**The model still redraws the whole frame.** Text-heavy designs are most of the catalog,
+so a review step sits in front of every attach and the UI warns next to every result.
+Each result can show the exact prompt that produced it, which is the fastest way to
+compare against a hand-run in ChatGPT. Two other levers before reaching for anything
+bigger: `quality` defaults to `medium` to stay inside the function cap, and the source is
+whatever Shopify holds as the featured image, which is a mockup with the design already
+small in frame. If fidelity is still not there, the answer is to generate the scene with
+a blank garment and composite the real print file with `sharp`, not to loosen the review.
 
 **Generated images are never stored.** They live in React state between generate and
 attach. No blob store, nothing in Neon, and closing the tab discards them. The cost is

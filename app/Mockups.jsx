@@ -4,7 +4,7 @@
 // browser and nowhere else, so leaving the tab discards anything not attached.
 import { useEffect, useMemo, useState } from 'react';
 
-const QUALITIES = ['low', 'medium', 'high'];
+const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max', 'auto'];
 const SIZE_LABELS = { portrait: 'Portrait', square: 'Square', landscape: 'Landscape' };
 
 export default function Mockups() {
@@ -99,7 +99,8 @@ export default function Mockups() {
       if (!res.ok) setError(d.error || 'Generation failed.');
       else {
         setShots((s) => [{
-          key: Date.now(), b64: d.b64, product: picked, state: 'new', message: '',
+          key: Date.now(), b64: d.b64, prompt: d.prompt || '', product: picked,
+          state: 'new', message: '',
         }, ...s]);
       }
     } catch { setError('Something went wrong. Try again.'); }
@@ -215,7 +216,7 @@ export default function Mockups() {
             </select>
           </label>
         </div>
-        <div className="ledger-note">High quality can run past the 60 second function limit. Medium is the safe default.</div>
+        <div className="ledger-note">Anything above high can run past the 60 second function limit. Medium is the safe default, and a timeout still costs you the generation.</div>
 
         {error && <div className="login-error">{error}</div>}
 
@@ -243,6 +244,13 @@ export default function Mockups() {
             <span className="ico">&#9873;</span>
             <span>Check the artwork against the store image before attaching, especially any lettering. The model redraws the whole frame.</span>
           </div>
+
+          {shot.prompt && (
+            <details className="mk-prompt">
+              <summary>Prompt that produced this</summary>
+              <pre>{shot.prompt}</pre>
+            </details>
+          )}
 
           <div className="reply-actions" style={{ marginTop: 14 }}>
             <a
