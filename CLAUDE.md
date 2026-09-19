@@ -268,6 +268,44 @@ so a slow render returns a real message instead of a platform timeout. The split
 separate requests is for progress reporting and blast radius, not for a time limit. Raise
 `maxDuration` and `TIME_BUDGET_MS` together or the guard stops meaning anything.
 
+## Sending a mockup to Meta (`lib/meta.js`)
+
+An approved mockup can go to Shopify, to a brand's Meta ad account, or both. Three
+buttons, one per destination plus "send everywhere".
+
+**The Meta side uploads to the ad image library and stops there.** It does not create a
+creative, does not create or run an ad, does not touch a budget, and shows nothing to
+anyone. That is the same line the Shopify side draws: the asset is in place, a human
+still decides what to do with it. If this ever grows write surface, weigh it against
+that rather than against convenience, the same way `lib/mcp.js` does.
+
+**The brand to ad account mapping is env, never code, and it is many-to-one.** This
+business has ten ad accounts, their names do not line up with the brand keys, and one
+account can serve several brands: Elder Emo and PopPunks both advertise out of We Supply
+Threads (`1570427393807863`), while Wallspoke has its own (`1368884801082745`). A
+hardcoded guess would push creative into the wrong advertiser, so it is
+`<BRAND>_META_AD_ACCOUNT_ID`, next to the Shopify and Printify vars. The tab surfaces the
+account id it is about to push into, because "configured" alone would not tell you
+whether it is configured *correctly*.
+
+Because accounts are shared, uploaded assets are named `<brand>-<handle>-lifestyle.png`,
+prefixed in the route rather than by the client so it holds however the action is called.
+In a shared library the product handle on its own does not say which store an image came
+from.
+
+**The Graph API version is pinned.** An unversioned Graph call resolves to the oldest
+version still alive, which is a slow trap rather than a useful default. `META_API_VERSION`
+overrides the `v26.0` default.
+
+"Send everywhere" is the client calling the two actions in turn, not one combined server
+action. A half-success then reports which half, and each destination keeps its own error
+instead of one opaque failure standing for both. The two are independent: a Shopify
+failure never stops the Meta upload.
+
+Token expiry is the failure you will hit. `uploadAdImage` names it specifically on Graph
+error 190, and permission trouble on 200/368/272, rather than passing through a Graph
+error that reads identically for every cause.
+
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
 `POST /api/mcp` exposes Backstage to Claude as an MCP server. Tools are thin wrappers over

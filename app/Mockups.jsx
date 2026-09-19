@@ -12,6 +12,7 @@ export default function Mockups() {
   const [brand, setBrand] = useState('');
   const [scenes, setScenes] = useState({});
   const [defaults, setDefaults] = useState({});
+  const [metaAccounts, setMetaAccounts] = useState({});   // brand -> ad account id, or null
   const [sizes, setSizes] = useState(['portrait', 'square', 'landscape']);
   const [ready, setReady] = useState(true);
 
@@ -35,6 +36,7 @@ export default function Mockups() {
       setBrands(bs);
       setScenes(d.scenes || {});
       setDefaults(d.defaults || {});
+      setMetaAccounts(d.meta || {});
       setSizes(d.sizes || sizes);
       setReady(d.ready !== false);
       if (bs.length) setBrand(bs[0].key);
@@ -100,32 +102,55 @@ export default function Mockups() {
       else {
         setShots((s) => [{
           key: Date.now(), b64: d.b64, prompt: d.prompt || '', product: picked,
-          state: 'new', message: '',
+          brand, dest: {},
         }, ...s]);
       }
     } catch { setError('Something went wrong. Try again.'); }
     setBusy(false);
   }
 
-  function mark(key, state, message) {
-    setShots((s) => s.map((sh) => (sh.key === key ? { ...sh, state, message: message || '' } : sh)));
+  function mark(key, dest, state, message) {
+    setShots((s) => s.map((sh) => (sh.key === key
+      ? { ...sh, dest: { ...sh.dest, [dest]: { state, message: message || '' } } }
+      : sh)));
   }
 
-  async function attach(shot) {
-    mark(shot.key, 'attaching');
+  // One destination at a time. Shopify and Meta are independent, so a failure in one
+  // never stops the other and each keeps its own error.
+  async function send(shot, dest) {
+    mark(shot.key, dest, 'sending');
+    const payload = dest === 'shopify'
+      ? {
+          action: 'attach', brand: shot.brand, productId: shot.product.id, b64: shot.b64,
+          alt: shot.product.title + ' lifestyle',
+        }
+      : {
+          action: 'attach-meta', brand: shot.brand, b64: shot.b64,
+          name: shot.product.handle + '-lifestyle.png',
+        };
     try {
       const res = await fetch('/api/mockups', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'attach', brand, productId: shot.product.id, b64: shot.b64,
-          alt: shot.product.title + ' lifestyle',
-        }),
+        body: JSON.stringify(payload),
       });
       const d = await res.json();
-      if (!res.ok) mark(shot.key, 'failed', d.error || 'Attach failed.');
-      else mark(shot.key, 'attached');
-    } catch { mark(shot.key, 'failed', 'Attach failed.'); }
+      if (!res.ok) { mark(shot.key, dest, 'failed', d.error || 'Failed.'); return false; }
+      mark(shot.key, dest, 'done', d.hash ? 'image hash ' + d.hash : '');
+      return true;
+    } catch {
+      mark(shot.key, dest, 'failed', 'Request failed.');
+      return false;
+    }
   }
+
+  async function sendEverywhere(shot) {
+    await send(shot, 'shopify');
+    if (metaAccounts[shot.brand]) await send(shot, 'meta');
+  }
+
+  const destState = (shot, dest) => (shot.dest || {})[dest] || {};
+  const busyDest = (shot, dest) => destState(shot, dest).state === 'sending';
+  const doneDest = (shot, dest) => destState(shot, dest).state === 'done';
 
   return (
     <div className="pane">
@@ -258,16 +283,58 @@ export default function Mockups() {
               href={'data:image/png;base64,' + shot.b64}
               download={shot.product.handle + '-lifestyle.png'}
             >Download</a>
+
             <button
-              className={'btn btn-primary' + (shot.state === 'attached' ? ' copied' : '')}
-              onClick={() => attach(shot)}
-              disabled={shot.state === 'attaching' || shot.state === 'attached'}
+              className={'btn btn-ghost' + (doneDest(shot, 'shopify') ? ' copied' : '')}
+              onClick={() => send(shot, 'shopify')}
+              disabled={busyDest(shot, 'shopify') || doneDest(shot, 'shopify')}
             >
-              {shot.state === 'attaching' ? 'Attaching...'
-                : shot.state === 'attached' ? 'Attached to product'
-                : 'Attach to this product'}
+              {busyDest(shot, 'shopify') ? 'Sending...'
+                : doneDest(shot, 'shopify') ? 'On the product'
+                : 'Send to Shopify'}
             </button>
-            {shot.state === 'failed' && <span className="confidence" style={{ color: 'var(--red)' }}>{shot.message}</span>}
+
+            <button
+              className={'btn btn-ghost' + (doneDest(shot, 'meta') ? ' copied' : '')}
+              onClick={() => send(shot, 'meta')}
+              disabled={!metaAccounts[shot.brand] || busyDest(shot, 'meta') || doneDest(shot, 'meta')}
+              title={metaAccounts[shot.brand]
+                ? 'Ad account ' + metaAccounts[shot.brand]
+                : 'No Meta ad account configured for this store'}
+            >
+              {busyDest(shot, 'meta') ? 'Sending...'
+                : doneDest(shot, 'meta') ? 'In the ad account'
+                : 'Send to Meta'}
+            </button>
+
+            <button
+              className="btn btn-primary"
+              onClick={() => sendEverywhere(shot)}
+              disabled={busyDest(shot, 'shopify') || busyDest(shot, 'meta')
+                || (doneDest(shot, 'shopify') && (!metaAccounts[shot.brand] || doneDest(shot, 'meta')))}
+            >Send everywhere</button>
+          </div>
+
+          <div className="mk-dests">
+            {['shopify', 'meta'].map((dest) => {
+              const st = destState(shot, dest);
+              if (!st.state || st.state === 'sending') return null;
+              const label = dest === 'shopify' ? 'Shopify' : 'Meta';
+              return (
+                <div className="mk-dest" key={dest}>
+                  <span className="mini-dot" style={{
+                    background: st.state === 'done' ? 'var(--green)' : 'var(--red)',
+                  }} />
+                  <span>{label}: {st.state === 'done' ? (st.message || 'sent') : st.message}</span>
+                </div>
+              );
+            })}
+            {!metaAccounts[shot.brand] && (
+              <div className="mk-dest">
+                <span className="mini-dot" style={{ background: 'var(--faint)' }} />
+                <span>Meta: no ad account configured for this store</span>
+              </div>
+            )}
           </div>
         </div>
       ))}

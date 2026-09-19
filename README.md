@@ -42,6 +42,10 @@ card your team can read and copy.
   positions for editing precision. OpenAI gates its image models behind organisation
   verification, so verify the org before the first run. Optional: `MOCKUP_MODEL` to point
   at a different image model, `MOCKUP_INPUT_FIDELITY` which only applies on `gpt-image-1`.
+- Meta: `META_ACCESS_TOKEN`, a system user token with `ads_management`, plus
+  `<BRAND>_META_AD_ACCOUNT_ID` per brand (the numeric id; a pasted `act_123` is tolerated).
+  Used only to upload an approved mockup into that account's ad image library. Optional:
+  `META_API_VERSION`, pinned to `v26.0` by default.
 - Product scopes: the Mockups tab reads products over Shopify's GraphQL Admin API, so
   each brand's app needs `read_products`, plus `write_products` to attach a generated
   image back to a product. Those are on top of the order scopes the pipeline needs. The

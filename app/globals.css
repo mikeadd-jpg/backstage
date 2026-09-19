@@ -294,3 +294,6 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .mk-prompt pre { margin-top: 8px; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line);
   border-radius: 9px; font-size: 11.5px; line-height: 1.5; color: var(--muted);
   white-space: pre-wrap; word-break: break-word; font-family: 'Space Mono', monospace; }
+.mk-dests { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.mk-dest { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted);
+  font-family: 'Space Mono', monospace; word-break: break-word; }
