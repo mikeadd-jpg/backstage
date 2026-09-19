@@ -253,9 +253,10 @@ editable from the tab with no schema change. `DEFAULT_SCENES` is only the fallba
 the scenes are written to match the `brand_voices` rows. Note Wallspoke sells wall art,
 not apparel, so the prompt says "the product" throughout rather than "the garment".
 
-One generation per request, under the same 60 second Vercel cap that shaped `lib/kids.js`,
-with a 55 second abort so a slow image returns a real message instead of a platform
-timeout. High quality can exceed it; medium is the default.
+One generation per request, with `maxDuration = 300` on the route and a 290 second abort
+so a slow render returns a real message instead of a platform timeout. The split into
+separate requests is for progress reporting and blast radius, not for a time limit. Raise
+`maxDuration` and `TIME_BUDGET_MS` together or the guard stops meaning anything.
 
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
@@ -322,6 +323,33 @@ Four places, easy to half-do:
    `<BRAND>_PRINTFUL_STORE_ID`. `configuredShopifyBrands()` keys off the first three.
 3. `BRANDS` and `RAIL_BRANDS` in `app/page.jsx`, plus color vars in `app/globals.css`.
 4. `CS_BRANDS` and `BRAND_NAMES` in `app/Settings.jsx`.
+
+## Vercel plan limits
+
+This account is on **Pro**, not Hobby. `vercel.json` schedules ingest every 20 minutes,
+and Hobby rejects any cron expression that runs more than once a day *at deploy time*, so
+a successful deploy is itself the proof.
+
+Two numbers repeated throughout this codebase are wrong, and several design decisions were
+made to work around limits that do not apply:
+
+- **Functions are not capped at 60 seconds.** With Fluid compute, on by default, the
+  platform default is 300s and Pro allows up to 800s (1800s in beta). Every route still
+  declares `export const maxDuration = 60`, which caps them *below* the default for no
+  reason. `/api/mockups` has been raised to 300. The others have not, so raising them is
+  free headroom whenever a route needs it.
+- **Cron jobs are 100 per project on every plan**, not two. Hobby restricts frequency,
+  never count. The risk digest rides the four-hourly scan specifically to avoid taking a
+  third cron slot, and that rationale is void: it can have its own schedule whenever that
+  is worth doing. The digest's date stamp in `app_settings` still earns its keep as
+  double-send protection.
+
+Related knock-on effects, none of them fixed yet: `MAX_PER_RUN = 8` and
+`TIME_BUDGET_MS = 45000` in `lib/pipeline.js` were sized against the imaginary 60 second
+ceiling, and the two-step prepare/build split in `lib/kids.js` was introduced because 14
+sequential creates "will not fit in one request". At 300s they very likely do. The split
+still has independent value (progress, and one failed group not killing the rest), so it
+is worth keeping on those grounds rather than removing it on the old ones.
 
 ## Database
 

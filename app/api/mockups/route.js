@@ -1,5 +1,6 @@
-// POST /api/mockups -> lifestyle product images, split into steps so that no single
-// request comes near the 60 second function limit on Vercel's Hobby plan.
+// POST /api/mockups -> lifestyle product images, split into steps so no single request
+// has to carry a whole batch. The split is for progress and blast radius, not for a time
+// limit: this account is on Pro, where functions get 300s by default and up to 800s.
 //
 //   { action: 'list', brand }                   active products for one store
 //   { action: 'generate', brand, imageUrl, ... } exactly one image, returned as base64
@@ -14,7 +15,7 @@ import { listActiveProducts, addProductImage } from '../../../lib/shopify.js';
 import { generateMockup, sceneFor, defaultScene, saveScene, SIZES } from '../../../lib/mockups.js';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function checkBrand(brand) {
   if (!brand || !configuredShopifyBrands().includes(brand)) {

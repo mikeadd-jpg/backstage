@@ -216,7 +216,7 @@ export default function Mockups() {
             </select>
           </label>
         </div>
-        <div className="ledger-note">Anything above high can run past the 60 second function limit. Medium is the safe default, and a timeout still costs you the generation.</div>
+        <div className="ledger-note">Higher quality takes longer and costs more. There is 300 seconds of headroom, so max is reachable, but you will wait for it.</div>
 
         {error && <div className="login-error">{error}</div>}
 
