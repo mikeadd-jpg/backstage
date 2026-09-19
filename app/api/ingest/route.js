@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 import { runIngest } from '../../../lib/pipeline.js';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function cronAuthorized(req) {
   if (req.headers.get('x-vercel-cron')) return true; // Vercel-internal, cannot be spoofed externally

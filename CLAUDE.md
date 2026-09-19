@@ -54,10 +54,20 @@ Order matters and is deliberate:
 1. `listMessageIds()` is one cheap Gmail call.
 2. `filterUnprocessed()` dedupes against `inquiries.gmail_id` **before** any body
    fetch, because `fetchMessagesByIds` costs one API call per message.
-3. Only `MAX_PER_RUN = 8` messages are fully processed, under a
-   `TIME_BUDGET_MS = 45000` guard, inside `maxDuration = 60`. Leftovers are not an
-   error: the next run picks them up. Do not raise these without checking the
-   function time limit and the Gmail quota.
+3. Up to `MAX_PER_RUN = 25` messages are fully processed, under a
+   `TIME_BUDGET_MS = 255000` guard, inside `maxDuration = 300`. Leftovers are not an
+   error: the next run picks them up.
+
+   The **time budget is the real governor**, not the count. The budget stops well short
+   of `maxDuration` on purpose: the check runs *before* a message, not during one, so
+   there must be room for the slowest possible message (two model calls plus a
+   cross-brand order lookup) to finish after the last check passes. Raise the two
+   together or the slack disappears.
+
+   Bodies are fetched `FETCH_CHUNK = 8` at a time rather than all at once, because
+   `fetchMessagesByIds` costs one Gmail call per message and anything fetched after the
+   budget expires is paid for and discarded. That waste was invisible at 8 per run and
+   would not have stayed invisible at 25.
 4. Brand routing, classify, order lookup, draft, insert.
 
 Brand routing (`lib/brands.js`) reads the **original** recipient, which forwarding
@@ -344,12 +354,15 @@ made to work around limits that do not apply:
   is worth doing. The digest's date stamp in `app_settings` still earns its keep as
   double-send protection.
 
-Related knock-on effects, none of them fixed yet: `MAX_PER_RUN = 8` and
-`TIME_BUDGET_MS = 45000` in `lib/pipeline.js` were sized against the imaginary 60 second
-ceiling, and the two-step prepare/build split in `lib/kids.js` was introduced because 14
-sequential creates "will not fit in one request". At 300s they very likely do. The split
-still has independent value (progress, and one failed group not killing the rest), so it
-is worth keeping on those grounds rather than removing it on the old ones.
+`/api/ingest`, `/api/scan` and `/api/mockups` now ask for 300. The scan mattered most of
+the three: it has no batching and no time budget at all, so hitting a ceiling loses the
+entire run rather than degrading.
+
+Still on 60, and free headroom whenever they want it: `/api/builder`, `/api/kids`,
+`/api/mcp`. Note the two-step prepare/build split in `lib/kids.js` was introduced because
+14 sequential creates "will not fit in one request". At 300s they very likely do, but the
+split has independent value (progress, and one failed group not killing the rest), so
+keep it on those grounds rather than removing it on the old ones.
 
 ## Database
 

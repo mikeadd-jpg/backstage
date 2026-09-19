@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { runScan } from '../../../lib/risk.js';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function cronAuthorized(req) {
   if (req.headers.get('x-vercel-cron')) return true;
