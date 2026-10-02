@@ -13,6 +13,7 @@ export default function Mockups() {
   const [scenes, setScenes] = useState({});
   const [defaults, setDefaults] = useState({});
   const [metaAccounts, setMetaAccounts] = useState({});   // brand -> ad account id, or null
+  const [metaToken, setMetaToken] = useState(true);       // META_ACCESS_TOKEN present at all
   const [sizes, setSizes] = useState(['portrait', 'square', 'landscape']);
   const [ready, setReady] = useState(true);
 
@@ -25,6 +26,11 @@ export default function Mockups() {
   const [size, setSize] = useState('portrait');
   const [quality, setQuality] = useState('medium');
 
+  const [count, setCount] = useState(5);                  // shots per batch
+  const [maxBatch, setMaxBatch] = useState(6);
+  const [variations, setVariations] = useState({});       // brand -> ordered shot list
+  const [done, setDone] = useState(0);                    // completed in the running batch
+  const [failures, setFailures] = useState([]);           // per-image, never fatal
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [savedNote, setSavedNote] = useState('');
@@ -36,7 +42,10 @@ export default function Mockups() {
       setBrands(bs);
       setScenes(d.scenes || {});
       setDefaults(d.defaults || {});
+      setVariations(d.variations || {});
+      if (d.maxBatch) setMaxBatch(d.maxBatch);
       setMetaAccounts(d.meta || {});
+      setMetaToken(d.metaToken !== false);
       setSizes(d.sizes || sizes);
       setReady(d.ready !== false);
       if (bs.length) setBrand(bs[0].key);
@@ -85,27 +94,56 @@ export default function Mockups() {
     else setSavedNote('Saved as the default for this store.');
   }
 
-  async function generate() {
-    setError(''); setSavedNote('');
-    if (!picked) return setError('Pick a product first.');
-    if (!scene.trim()) return setError('Write a scene for the shot.');
-    setBusy(true);
+  // One request per image. A batch is a client-side loop, not a server-side one, so a
+  // slow or failed shot cannot take the others with it and results appear as they land.
+  async function generateOne(index, product) {
     try {
       const res = await fetch('/api/mockups', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'generate', brand, imageUrl: picked.image, scene, notes, size, quality,
+          action: 'generate', brand, imageUrl: product.image, scene, notes, size, quality,
+          variationIndex: index,
         }),
       });
       const d = await res.json();
-      if (!res.ok) setError(d.error || 'Generation failed.');
-      else {
-        setShots((s) => [{
-          key: Date.now(), b64: d.b64, prompt: d.prompt || '', product: picked,
-          brand, dest: {},
-        }, ...s]);
+      if (!res.ok) return { ok: false, index, error: d.error || 'Generation failed.' };
+      setShots((s) => [{
+        key: String(Date.now()) + '-' + index, b64: d.b64, prompt: d.prompt || '',
+        variation: d.variation || '', product, brand, dest: {},
+      }, ...s]);
+      return { ok: true };
+    } catch {
+      return { ok: false, index, error: 'Request failed.' };
+    }
+  }
+
+  async function generate() {
+    setError(''); setSavedNote(''); setFailures([]); setDone(0);
+    if (!picked) return setError('Pick a product first.');
+    if (!scene.trim()) return setError('Write a scene for the shot.');
+    setBusy(true);
+
+    const product = picked;          // pinned, so changing the selection mid-batch is safe
+    const total = Math.max(1, Math.min(count, maxBatch));
+    const fails = [];
+    let next = 0;
+    let finished = 0;
+
+    // Two at a time. Five parallel image calls invite a rate limit and buy little over
+    // two, while running them one by one makes a batch of five a five minute wait.
+    const CONCURRENCY = 2;
+    const workers = Array.from({ length: Math.min(CONCURRENCY, total) }, async () => {
+      while (next < total) {
+        const index = next++;
+        const r = await generateOne(index, product);
+        if (!r.ok) fails.push(r);
+        finished++;
+        setDone(finished);
+        setFailures([...fails]);
       }
-    } catch { setError('Something went wrong. Try again.'); }
+    });
+    await Promise.all(workers);
+
     setBusy(false);
   }
 
@@ -145,7 +183,17 @@ export default function Mockups() {
 
   async function sendEverywhere(shot) {
     await send(shot, 'shopify');
-    if (metaAccounts[shot.brand]) await send(shot, 'meta');
+    if (metaReady(shot.brand)) await send(shot, 'meta');
+  }
+
+  // Both halves have to be present. Kept as one helper so the button, the "everywhere"
+  // path and the status line cannot drift apart on what "ready" means.
+  const metaReady = (b) => Boolean(metaToken && metaAccounts[b]);
+  function metaBlockedReason(b) {
+    if (!metaToken && !metaAccounts[b]) return 'META_ACCESS_TOKEN is not set, and no ad account is configured for this store';
+    if (!metaToken) return 'META_ACCESS_TOKEN is not set';
+    if (!metaAccounts[b]) return 'no ad account configured for this store';
+    return null;
   }
 
   const destState = (shot, dest) => (shot.dest || {})[dest] || {};
@@ -229,6 +277,14 @@ export default function Mockups() {
 
         <div className="field-row">
           <label className="field">
+            <span>Shots</span>
+            <select className="input" value={count} onChange={(e) => setCount(Number(e.target.value))}>
+              {Array.from({ length: maxBatch }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
             <span>Shape</span>
             <select className="input" value={size} onChange={(e) => setSize(e.target.value)}>
               {sizes.map((s) => <option key={s} value={s}>{SIZE_LABELS[s] || s}</option>)}
@@ -241,19 +297,43 @@ export default function Mockups() {
             </select>
           </label>
         </div>
+        {count > 1 && (variations[brand] || []).length > 0 && (
+          <details className="mk-prompt" style={{ marginBottom: 12 }}>
+            <summary>How the {count} shots will differ</summary>
+            <ol className="mk-varlist">
+              {(variations[brand] || []).slice(0, count).map((v, i) => <li key={i}>{v}</li>)}
+            </ol>
+          </details>
+        )}
+
         <div className="ledger-note">Higher quality takes longer and costs more. There is 300 seconds of headroom, so max is reachable, but you will wait for it.</div>
 
         {error && <div className="login-error">{error}</div>}
 
         <button className="btn btn-primary" onClick={generate} disabled={busy || !picked}>
-          {busy ? 'Generating...' : picked ? 'Generate a mockup' : 'Pick a product first'}
+          {busy ? 'Generating ' + done + ' of ' + count + '...'
+            : !picked ? 'Pick a product first'
+            : 'Generate ' + count + ' mockup' + (count === 1 ? '' : 's')}
         </button>
         {picked && <div className="ledger-note" style={{ marginTop: 8 }}>Using: {picked.title}</div>}
+
+        {failures.length > 0 && (
+          <div className="mk-dests" style={{ marginTop: 10 }}>
+            {failures.map((f) => (
+              <div className="mk-dest" key={f.index}>
+                <span className="mini-dot" style={{ background: 'var(--red)' }} />
+                <span>Shot {f.index + 1} failed: {f.error}</span>
+              </div>
+            ))}
+            {!busy && <span className="ledger-note">The rest of the batch is above. Generate again to retry just these.</span>}
+          </div>
+        )}
       </div>
 
       {shots.map((shot) => (
         <div className="card" key={shot.key}>
           <div className="card-label">{shot.product.title}</div>
+          {shot.variation && <div className="ledger-note" style={{ marginTop: -6 }}>{shot.variation}</div>}
           <div className="mk-compare">
             <figure>
               <img src={shot.product.image} alt="" />
@@ -297,10 +377,10 @@ export default function Mockups() {
             <button
               className={'btn btn-ghost' + (doneDest(shot, 'meta') ? ' copied' : '')}
               onClick={() => send(shot, 'meta')}
-              disabled={!metaAccounts[shot.brand] || busyDest(shot, 'meta') || doneDest(shot, 'meta')}
-              title={metaAccounts[shot.brand]
+              disabled={!metaReady(shot.brand) || busyDest(shot, 'meta') || doneDest(shot, 'meta')}
+              title={metaReady(shot.brand)
                 ? 'Ad account ' + metaAccounts[shot.brand]
-                : 'No Meta ad account configured for this store'}
+                : metaBlockedReason(shot.brand)}
             >
               {busyDest(shot, 'meta') ? 'Sending...'
                 : doneDest(shot, 'meta') ? 'In the ad account'
@@ -311,7 +391,7 @@ export default function Mockups() {
               className="btn btn-primary"
               onClick={() => sendEverywhere(shot)}
               disabled={busyDest(shot, 'shopify') || busyDest(shot, 'meta')
-                || (doneDest(shot, 'shopify') && (!metaAccounts[shot.brand] || doneDest(shot, 'meta')))}
+                || (doneDest(shot, 'shopify') && (!metaReady(shot.brand) || doneDest(shot, 'meta')))}
             >Send everywhere</button>
           </div>
 
@@ -329,10 +409,10 @@ export default function Mockups() {
                 </div>
               );
             })}
-            {!metaAccounts[shot.brand] && (
+            {!metaReady(shot.brand) && (
               <div className="mk-dest">
                 <span className="mini-dot" style={{ background: 'var(--faint)' }} />
-                <span>Meta: no ad account configured for this store</span>
+                <span>Meta: {metaBlockedReason(shot.brand)}</span>
               </div>
             )}
           </div>

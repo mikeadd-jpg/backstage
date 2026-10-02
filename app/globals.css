@@ -297,3 +297,5 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .mk-dests { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
 .mk-dest { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted);
   font-family: 'Space Mono', monospace; word-break: break-word; }
+.mk-varlist { margin: 8px 0 0 18px; padding: 0; font-size: 11.5px; line-height: 1.6; color: var(--muted); }
+.mk-varlist li { margin-bottom: 3px; }

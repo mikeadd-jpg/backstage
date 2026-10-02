@@ -4,6 +4,12 @@
 //
 //   { action: 'list', brand }                   active products for one store
 //   { action: 'generate', brand, imageUrl, ... } exactly one image, returned as base64
+//
+// A batch of five is five 'generate' calls from the client, not one call that loops.
+// Same reason the kids builder is split: one slow or failed image cannot take the rest
+// with it, results appear as they land, and no single request grows toward the limit.
+// The client sends variationIndex; the variation text itself is resolved here so the
+// list stays in one place and the response can echo back what was actually used.
 //   { action: 'attach', brand, productId, b64 }  push an approved image onto the product
 //   { action: 'attach-meta', brand, b64 }        push it into the Meta ad image library
 //   { action: 'save-scene', brand, scene }       store that brand's scene direction
@@ -17,11 +23,17 @@
 import { NextResponse } from 'next/server';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
 import { listActiveProducts, addProductImage } from '../../../lib/shopify.js';
-import { generateMockup, sceneFor, defaultScene, saveScene, SIZES } from '../../../lib/mockups.js';
+import {
+  generateMockup, sceneFor, defaultScene, saveScene, variationsFor, SIZES,
+} from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
+
+// How many shots one batch may ask for. Not a technical ceiling, since each image is its
+// own request: it is a spending guard, because the button spends real money per image.
+const MAX_BATCH = 6;
 
 function checkBrand(brand) {
   if (!brand || !configuredShopifyBrands().includes(brand)) {
@@ -36,20 +48,29 @@ export async function GET() {
   const brands = configuredShopifyBrands();
   const scenes = {};
   const defaults = {};
+  const variations = {};
   const meta = {};
   for (const b of brands) {
     scenes[b] = await sceneFor(b);
     defaults[b] = defaultScene(b);
+    variations[b] = variationsFor(b, MAX_BATCH);
     // Surfaced so the tab can show which advertiser it is about to push into. The
     // account names in this business do not match the brand keys, so "configured" on
     // its own would not tell you whether it is configured *correctly*.
-    meta[b] = process.env.META_ACCESS_TOKEN ? metaAccountFor(b) : null;
+    //
+    // Reported independently of the token on purpose. Gating this on META_ACCESS_TOKEN
+    // made a missing token look like a missing ad account, which sends you to fix the
+    // wrong thing. Two facts, two fields.
+    meta[b] = metaAccountFor(b);
   }
   return NextResponse.json({
     brands: brands.map((b) => ({ key: b, name: BRANDS[b].name })),
     scenes,
     defaults,
+    variations,
+    maxBatch: MAX_BATCH,
     meta,
+    metaToken: Boolean(process.env.META_ACCESS_TOKEN),
     sizes: Object.keys(SIZES),
     ready: Boolean(process.env.OPENAI_API_KEY),
   });
@@ -66,6 +87,10 @@ export async function POST(req) {
 
     if (body.action === 'generate') {
       const brand = checkBrand(body.brand);
+      const idx = Number(body.variationIndex);
+      const variation = Number.isInteger(idx) && idx >= 0
+        ? variationsFor(brand, idx + 1)[idx]
+        : null;
       const result = await generateMockup({
         brand,
         imageUrl: body.imageUrl,
@@ -73,6 +98,7 @@ export async function POST(req) {
         notes: body.notes,
         size: body.size,
         quality: body.quality,
+        variation,
       });
       return NextResponse.json(result);
     }

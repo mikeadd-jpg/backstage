@@ -268,6 +268,24 @@ so a slow render returns a real message instead of a platform timeout. The split
 separate requests is for progress reporting and blast radius, not for a time limit. Raise
 `maxDuration` and `TIME_BUDGET_MS` together or the guard stops meaning anything.
 
+**A batch of five is five requests from the client, not one request that loops.** Same
+reasoning as `lib/kids.js`: one slow or failed shot cannot take the others with it,
+results appear as they land, and no single request grows toward the limit. Two run at a
+time. Five in parallel invites a rate limit and buys little over two, while one at a time
+makes a batch of five a five minute wait. A failed shot is reported on its own and the
+batch continues; generating again retries only what is missing, since nothing is
+remembered between runs anyway.
+
+**Variation is stated, not left to chance.** Asking the same prompt five times returns
+five near-identical frames, because `HARD_RULES` clamps almost everything that could
+differ. `DEFAULT_VARIATIONS` therefore names the person, framing and light per shot, and
+the client sends a `variationIndex` while the route resolves the text, so the list lives
+in one place and the response echoes back what was actually used. The variations are
+keyed per brand for the same reason the scenes are: Wallspoke sells wall art and has no
+model to photograph, so it gets room and camera variants instead. Nothing in a variation
+may touch the product; that is `HARD_RULES`' job and the two must not argue. `MAX_BATCH`
+in the route is a spending guard, not a technical ceiling.
+
 ## Sending a mockup to Meta (`lib/meta.js`)
 
 An approved mockup can go to Shopify, to a brand's Meta ad account, or both. Three
