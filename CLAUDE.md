@@ -117,6 +117,22 @@ Two rules that exist because of past bugs, do not "simplify" them away:
   hides it only for that same set of reasons, so a new kind of problem re-surfaces it.
   `pruneDismissals` drops dismissals for orders that are no longer flagged at all.
 
+**`assessOrder` is the only judgement, and two callers share it.** The scheduled scan
+runs it over every recent order. `refreshRiskOrders` runs it again over just the listed
+rows each time the tab or the MCP tool reads them, because the table is up to four hours
+stale and parcels get delivered and holds get released in between. The re-check deletes
+settled rows and rewrites changed ones, never adds new ones, and leaves a brand untouched
+if Shopify or any of its vendors fails to answer, so a failed lookup never reads as
+"solved".
+
+Vendor lists are paged back to a date cutoff, not read as one page. Elder Emo does ~350
+Printify orders a month, so a single page of 50 only saw the last few days and an older
+hold was never flagged. Shopify's order list is paged the same way (it was capped at 250).
+
+A shipment counts as delivered if Shopify says so **or** Printify has seen its tracking
+number delivered, since Shopify's DHL eCommerce feed sometimes stops updating. A Printful
+`draft` was never submitted, so it is flagged after the same grace period as a manual item.
+
 ## Slack alerts (`lib/notify.js`)
 
 `runScan` posts at-risk orders to a Slack Incoming Webhook (`SLACK_WEBHOOK_URL`). Unset
