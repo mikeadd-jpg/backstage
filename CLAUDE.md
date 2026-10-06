@@ -362,8 +362,31 @@ reason in the risk scan on its next re-check.
 ## Profit tab (`lib/profit.js`, `/api/profit`, `app/Profit.jsx`)
 
 Reads the `combined_flat` tab of the **Profit Combined** Google Sheet (`PROFIT_SHEET_ID`),
-which stacks the Apps Script P&Ls in the EE Profit and PP Profit sheets. The sheet is the
-source of truth; Backstage only reads and sums. Wallspoke is not in it.
+which stacks the Apps Script P&Ls in the EE Profit, PP Profit and WS Profit sheets. The
+sheet is the source of truth; Backstage only reads and sums.
+
+### The sheet scripts (`sheets/`)
+
+Copies of the Apps Scripts that build those sheets, plus the Google Ads script that feeds
+them. **These are not deployed from here.** Each lives in its own Google project and is
+pasted in by hand, so the repo copy is a record, not the live code; when one changes, it
+has to be pasted into its sheet (or into Google Ads) as well.
+
+- `profit-combined/` stacks the brand sheets. `combined_flat` columns are matched by
+  header, but its own `getDashboardData()` reads them by **position**, so new columns go
+  after `profit`, never before.
+- `pp-pnl/` runs in PP Profit and WS Profit (a copy of PP). Differences live in Script
+  Properties: Printify or Printful by which token is set, and `META_INCLUDE_CAMPAIGNS`,
+  which is required on purpose so a copied sheet can never silently count another brand's
+  Meta campaigns.
+- `ee-pnl/` is **not** the same script. EE has a `gelato_cost` column that shifts every
+  letter from G onward, plus GA4 tabs and hardening for Google's 10M-cell limit. Do not
+  merge it with pp-pnl on the assumption that they match; they were checked and do not.
+- `google-ads/` runs on the manager account and writes each brand's daily cost into its
+  sheet's `google_input` tab hourly. Brand sheets read it by formula, so Google spend
+  needs no API token and no brand-script run.
+- In every brand sheet, new columns are appended after `last_updated` (K or L), because
+  the dashboards address `daily_pnl` by column letter.
 
 - **Auth is a service account** (`GOOGLE_SERVICE_ACCOUNT_JSON`, the whole key file as one
   value) that the sheet is shared with as Viewer. Not the Gmail OAuth client: that belongs
