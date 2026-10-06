@@ -325,3 +325,49 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
   .approve-mock { width: 50%; }
   .approve-actions .btn { width: 100%; }
 }
+
+/* Profit: owner-only reporting from the Profit Combined sheet */
+.pf-pane { max-width: 1000px; }
+.pf-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.pf-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; background: var(--surface-2); border-radius: 9px; padding: 3px; }
+.pf-seg button { font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--muted);
+  background: transparent; border: none; border-radius: 7px; padding: 6px 11px; cursor: pointer; }
+.pf-seg button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(20,25,40,0.08); }
+.pf-seg.small button { font-size: 11.5px; padding: 4px 9px; }
+.pf-period { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.pf-cmp { color: var(--faint); }
+.pf-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 22px; }
+.pf-tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; min-width: 0; }
+.pf-tile.hero { border-color: var(--line-strong); }
+.pf-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.2px; }
+.pf-value { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; margin: 4px 0 2px; color: var(--text); }
+.pf-tile.hero .pf-value { font-size: 24px; }
+.pf-value.neg, .pf-table td.neg { color: var(--red); }
+.pf-delta { font-size: 11.5px; font-weight: 600; }
+.pf-delta.good { color: var(--green); }
+.pf-delta.bad { color: var(--red); }
+.pf-delta.muted { color: var(--faint); }
+.pf-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.pf-chart { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px 4px; }
+.pf-chart svg { display: block; width: 100%; height: auto; }
+.pf-grid { stroke: var(--line); stroke-width: 1; }
+.pf-zero { stroke: var(--line-strong); stroke-width: 1; }
+.pf-axis { font-size: 10px; fill: var(--faint); font-family: 'Inter', sans-serif; }
+.pf-pos { fill: var(--blue); }
+.pf-neg { fill: var(--red); }
+.pf-pos.on, .pf-neg.on { opacity: 0.75; }
+.pf-chart rect:focus { outline: none; }
+.pf-tip { position: absolute; top: 8px; transform: translateX(-50%); pointer-events: none; background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; box-shadow: 0 2px 8px rgba(20,25,40,0.1);
+  display: flex; flex-direction: column; gap: 1px; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.pf-tip strong { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text); }
+.pf-table-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.pf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.pf-table th { text-align: right; font-size: 10.5px; color: var(--faint); font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.pf-table td { text-align: right; padding: 6px 10px; font-family: 'Space Mono', monospace; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.pf-table th:first-child, .pf-table td:first-child { text-align: left; }
+@media (max-width: 680px) {
+  .pf-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pf-value { font-size: 17px; }
+  .pf-tile.hero .pf-value { font-size: 19px; }
+}

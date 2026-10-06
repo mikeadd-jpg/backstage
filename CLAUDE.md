@@ -359,6 +359,29 @@ by the time anyone looks. For full resolution, open the order in Printful. Files
 Approving removes the draft, which also settles the "Printful: draft, never submitted"
 reason in the risk scan on its next re-check.
 
+## Profit tab (`lib/profit.js`, `/api/profit`, `app/Profit.jsx`)
+
+Reads the `combined_flat` tab of the **Profit Combined** Google Sheet (`PROFIT_SHEET_ID`),
+which stacks the Apps Script P&Ls in the EE Profit and PP Profit sheets. The sheet is the
+source of truth; Backstage only reads and sums. Wallspoke is not in it.
+
+- **Auth is a service account** (`GOOGLE_SERVICE_ACCOUNT_JSON`, the whole key file as one
+  value) that the sheet is shared with as Viewer. Not the Gmail OAuth client: that belongs
+  to the support inbox and has only Gmail scopes.
+- **Visibility is `canViewProfit()` and nothing else.** Today it is the `ADMIN_EMAIL`
+  address only. The route re-checks it per request against the signed session and
+  answers 404 otherwise; hiding the tab in `page.jsx` is cosmetic. To widen access, change
+  that one function (e.g. to a column on `allowed_users`), not the route.
+- **Never expose profit over MCP.** That connection has no per-person identity, so every
+  connected Claude would see the margins.
+- Windows end **today inclusive**, today being in progress, because that is how the
+  sheet's own dashboards count. That is what makes the two agree to the cent; "fixing" it
+  to complete days only makes Backstage disagree with the sheet. Total costs is
+  `net - profit`, so anything the sheet books outside the three cost columns still lands.
+- Columns are matched by header name, so the sheet can gain columns safely. Renaming
+  `brand`, `date`, `shopify_net` or `profit` breaks it loudly, which is intended.
+- Results are cached in-module for 5 minutes; the sheet changes a few times a day.
+
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
 `POST /api/mcp` exposes Backstage to Claude as an MCP server. Tools are thin wrappers over

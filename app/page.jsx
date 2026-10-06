@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Approvals from './Approvals';
 import Builder from './Builder';
 import Mockups from './Mockups';
+import Profit from './Profit';
 import Settings from './Settings';
 
 const BRANDS = {
@@ -160,6 +161,8 @@ export default function Page() {
     { key: 'mockups', label: 'Mockups', short: 'Mockups', icon: '\u2751' },
     { key: 'settings', label: 'Settings', short: 'Settings', icon: '\u2699' },
   ];
+  // Only shown to people the server says may see it; /api/profit enforces that itself.
+  if (me && me.canViewProfit) TABS.splice(TABS.length - 1, 0, { key: 'profit', label: 'Profit', short: 'Profit', icon: '$' });
   const draftCount = approvals ? approvals.drafts.length : 0;
   const badgeFor = (key) => (key === 'inbox' ? actionCount : key === 'risk' ? riskHigh : key === 'approvals' ? draftCount : 0);
 
@@ -372,6 +375,7 @@ export default function Page() {
       )}
       {tab === 'builder' && <Builder />}
       {tab === 'mockups' && <Mockups />}
+      {tab === 'profit' && me && me.canViewProfit && <Profit />}
       {tab === 'settings' && <Settings />}
 
       {/* Thumb-reach navigation. Hidden above 680px, where the topbar tabs take over. */}
