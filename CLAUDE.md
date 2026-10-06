@@ -407,6 +407,15 @@ has to be pasted into its sheet (or into Google Ads) as well.
 - Columns are matched by header name, so the sheet can gain columns safely. Renaming
   `brand`, `date`, `shopify_net` or `profit` breaks it loudly, which is intended.
 - Results are cached in-module for 5 minutes; the sheet changes a few times a day.
+- **The tab does the arithmetic, not the route.** `/api/profit` returns the daily rows and
+  `lib/profitMath.js` (pure, no Node imports) slices them on the device, so brand toggles
+  and custom ranges cost no request. Keep that module free of server imports or the
+  client bundle breaks.
+- Total costs is `net - profit`; the breakdown itemises Printify, Printful, Gelato, Meta,
+  Google and fees, and shows any remainder as "Other / not itemised" rather than hiding
+  it. Old Elder Emo rows with hand-entered profit are the usual source.
+- When a selected brand's first row falls inside the comparison window (Wallspoke's
+  history is short), every % change overstates growth, and the tab says so.
 
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 

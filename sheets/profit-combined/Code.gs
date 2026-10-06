@@ -29,6 +29,9 @@
  *            purpose: getDashboardData() reads combined_flat by column position, so
  *            inserting them earlier would shift every existing number. A brand sheet
  *            without these columns yet simply contributes 0.
+ *            Later: gelato_cost appended too (Elder Emo only). It was always inside
+ *            EE's profit but never carried here, so any cost breakdown built on
+ *            combined_flat had an unexplained gap.
  *            Rebuild moved from daily (7am) to hourly, so "today" is current in the
  *            dashboard and in Backstage instead of frozen at 7am.
  */
@@ -40,7 +43,7 @@ const COMBINED_ID = '1GSm5YA2kCWW61QqxNzZ-lQqS5_ei8LjN53Dyq5zawmE';
 const SCHEMA = [
   'date', 'shopify_revenue', 'shopify_refunds', 'shopify_net', 'shopify_orders',
   'printify_cost', 'meta_spend', 'shopify_fees_est', 'profit',
-  'printful_cost', 'google_spend'
+  'printful_cost', 'google_spend', 'gelato_cost'
 ];
 
 // GA tab name candidates, tried in order per brand sheet
@@ -256,8 +259,8 @@ function doGet(e) {
  * Field meanings are kept stable for index.html:
  *   spend    — TOTAL ad spend (Meta + Google), so MER / ROAS on the dashboard stays right
  *              once Google Ads is running. meta and google are also returned separately.
- *   printify — production cost from Printify only; printful is returned separately,
- *              and cogs is the two together.
+ *   printify — production cost from Printify only; printful and gelato are returned
+ *              separately, and cogs is all three together.
  */
 function getDashboardData() {
   const ss = SpreadsheetApp.openById(COMBINED_ID);
@@ -275,11 +278,12 @@ function getDashboardData() {
     const google = Number(v[11]) || 0;
     const printify = Number(v[6]) || 0;
     const printful = Number(v[10]) || 0;
+    const gelato = Number(v[12]) || 0;
     rows.push({
       brand: String(v[0]), date: date,
       gross: Number(v[2]) || 0, refunds: Number(v[3]) || 0,
       net: Number(v[4]) || 0, orders: Number(v[5]) || 0,
-      printify: printify, printful: printful, cogs: printify + printful,
+      printify: printify, printful: printful, gelato: gelato, cogs: printify + printful + gelato,
       spend: meta + google, meta: meta, google: google,
       fees: Number(v[8]) || 0, profit: Number(v[9]) || 0
     });
