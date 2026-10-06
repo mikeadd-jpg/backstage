@@ -327,7 +327,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 }
 
 /* Profit: owner-only reporting from the Profit Combined sheet */
-.pf-pane { max-width: 1000px; }
+.pf-pane { max-width: 1600px; }
 .pf-filter-label { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--faint); margin: 2px 0 6px; }
 .pf-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 /* Periods: one line that scrolls sideways on a phone instead of stacking into rows. */
@@ -524,4 +524,41 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
   .users-actions { justify-content: space-between; }
   .users-role { flex: 1; width: auto; }
   .users-add-row select, .users-add-row .btn { flex: 1; }
+}
+
+/* Profit: desktop layout. Toolbar on one line, KPI strip, chart and brand table on the
+   left, the cost breakdown always open on the right. Phones keep the stacked layout with
+   the tap-to-expand breakdown. */
+.pf-toolbar { display: flex; flex-direction: column; }
+.pf-group { min-width: 0; max-width: 100%; }
+.pf-side { display: none; }
+.pf-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: 1px; }
+.pf-brands { margin-top: 18px; }
+.pf-brands-head { margin-bottom: 8px; }
+.pf-table-wrap.flush { margin-top: 0; }
+.pf-brand-table td, .pf-brand-table th { font-family: 'Inter', sans-serif; }
+.pf-brand-table td:not(:first-child) { font-family: 'Space Mono', monospace; }
+.pf-brand-table td:first-child { font-weight: 600; white-space: nowrap; }
+.pf-brand-table tbody tr { cursor: pointer; }
+.pf-brand-table tbody tr:hover, .pf-brand-table tbody tr:focus { background: var(--hover); outline: none; }
+.pf-brand-table .pf-delta { margin-left: 6px; font-family: 'Inter', sans-serif; font-size: 11px; }
+.pf-side-head { margin-bottom: 8px; }
+
+@media (min-width: 900px) {
+  .pf-toolbar { flex-direction: row; flex-wrap: wrap; gap: 0 28px; align-items: flex-start; }
+  .pf-group-period { flex: 1 1 360px; }
+}
+@media (min-width: 1280px) {
+  .pf-body { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+  .pf-side { display: block; position: sticky; top: 0; }
+  .pf-side .pf-costs { border-color: var(--line); }
+  .pf-costs-inline { display: none; }
+  /* The breakdown is always on screen here, so the Total costs tile stops being a toggle. */
+  .pf-tile-btn { pointer-events: none; }
+  .pf-tile-btn .pf-chev, .pf-tile-hint { display: none; }
+}
+@media (min-width: 1560px) {
+  .pf-tiles { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  .pf-value { font-size: 18px; }
+  .pf-tile.hero .pf-value { font-size: 21px; }
 }

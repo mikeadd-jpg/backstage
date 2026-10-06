@@ -125,7 +125,7 @@ export default function Page() {
     pick();
     window.addEventListener('hashchange', pick);
     return () => window.removeEventListener('hashchange', pick);
-  }, [me]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [me]);  // allowed derives from me, so me is the only real dependency
   function go(k) {
     if (window.location.hash === '#' + k) { setTab(k); setMobileDetail(false); }
     else window.location.hash = k;  // the hashchange listener does the rest

@@ -53,12 +53,12 @@ function Delta({ d, good }) {
 }
 
 /** Every cost line, grouped, with share of revenue, change vs prior and per-brand split. */
-function CostBreakdown({ cur, prior, brands }) {
+function CostBreakdown({ cur, prior, brands, className = '' }) {
   const lines = COST_LINES.filter((l) => Math.abs(cur[l.key]) >= 0.005 || (prior && Math.abs(prior[l.key]) >= 0.005));
   const groups = [...new Set(lines.map((l) => l.group))];
   const max = Math.max(1, ...lines.map((l) => Math.abs(cur[l.key])));
   return (
-    <div className="pf-costs" role="region" aria-label="Cost breakdown">
+    <div className={'pf-costs ' + className} role="region" aria-label="Cost breakdown">
       {lines.length === 0 && <div className="pf-costs-empty">No costs in this period.</div>}
       {groups.map((g) => (
         <div key={g} className="pf-cost-group">
@@ -93,6 +93,36 @@ function CostBreakdown({ cur, prior, brands }) {
   );
 }
 
+/** One row per selected brand, best profit first. Clicking a row narrows to that brand. */
+function BrandTable({ cur, prior, brands, onOnly }) {
+  const rows = brands.map((b) => ({ b, c: cur.byBrand[b], p: prior ? prior.byBrand[b] : null }))
+    .sort((x, y) => y.c.profit - x.c.profit);
+  return (
+    <div className="pf-brands">
+      <div className="pf-label pf-brands-head">By brand</div>
+      <div className="pf-table-wrap flush">
+        <table className="pf-table pf-brand-table">
+          <thead><tr><th>Brand</th><th>Revenue</th><th>Profit</th><th>Margin</th><th>Ad spend</th><th>MER</th><th>Orders</th></tr></thead>
+          <tbody>
+            {rows.map(({ b, c, p }) => (
+              <tr key={b} onClick={() => onOnly(b)} title={'Show only ' + b} tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter') onOnly(b); }}>
+                <td><i className="pf-dot" style={{ background: BRAND_COLOR[b] || 'var(--muted)' }} />{b}</td>
+                <td>{usd(c.net)}</td>
+                <td className={c.profit < 0 ? 'neg' : ''}>{usd(c.profit)} {p && <Delta d={delta(c.profit, p.profit)} good="up" />}</td>
+                <td>{pct(c.margin)}</td>
+                <td>{usd(c.ads)}</td>
+                <td>{mult(c.mer)}</td>
+                <td>{Math.round(c.orders).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function ProfitChart({ days }) {
   const [hover, setHover] = useState(null);
   // Drawn at the width it actually has, not a fixed 760 scaled down: on a phone that
@@ -106,7 +136,7 @@ function ProfitChart({ days }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const H = W < 500 ? 200 : 220, padL = 52, padR = 8, padT = 12, padB = 26;
+  const H = W < 500 ? 200 : W > 700 ? 280 : 220, padL = 52, padR = 8, padT = 12, padB = 26;
   const max = Math.max(1, ...days.map((d) => d.profit));
   const min = Math.min(0, ...days.map((d) => d.profit));
   const y = (v) => padT + ((max - v) / (max - min)) * (H - padT - padB);
@@ -241,26 +271,32 @@ export default function Profit() {
 
       {data && selected && (
         <>
-          <div className="pf-filter-label">Brands</div>
-          <div className="pf-chips" role="group" aria-label="Brands">
-            <button className={'pf-chip' + (allOn ? ' on' : '')} aria-pressed={allOn}
-              onClick={() => setSelected(data.brands)}>All</button>
-            {data.brands.map((b) => {
-              const on = selected.includes(b);
-              return (
-                <button key={b} className={'pf-chip' + (on ? ' on' : '')} aria-pressed={on} onClick={() => toggleBrand(b)}>
-                  <i style={{ background: BRAND_COLOR[b] || 'var(--muted)' }} />{b}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="pf-filter-label">Period</div>
-          <div className="pf-chips scroll" role="group" aria-label="Period">
-            {[...presets, { key: 'custom', label: 'Custom' }].map((p) => (
-              <button key={p.key} className={'pf-chip' + (periodKey === p.key ? ' on' : '')} aria-pressed={periodKey === p.key}
-                onClick={() => setPeriodKey(p.key)}>{p.label}</button>
-            ))}
+          {/* One toolbar: stacked on phones, side by side on wider screens. */}
+          <div className="pf-toolbar">
+            <div className="pf-group">
+              <div className="pf-filter-label">Brands</div>
+              <div className="pf-chips" role="group" aria-label="Brands">
+                <button className={'pf-chip' + (allOn ? ' on' : '')} aria-pressed={allOn}
+                  onClick={() => setSelected(data.brands)}>All</button>
+                {data.brands.map((b) => {
+                  const on = selected.includes(b);
+                  return (
+                    <button key={b} className={'pf-chip' + (on ? ' on' : '')} aria-pressed={on} onClick={() => toggleBrand(b)}>
+                      <i style={{ background: BRAND_COLOR[b] || 'var(--muted)' }} />{b}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="pf-group pf-group-period">
+              <div className="pf-filter-label">Period</div>
+              <div className="pf-chips scroll" role="group" aria-label="Period">
+                {[...presets, { key: 'custom', label: 'Custom' }].map((p) => (
+                  <button key={p.key} className={'pf-chip' + (periodKey === p.key ? ' on' : '')} aria-pressed={periodKey === p.key}
+                    onClick={() => setPeriodKey(p.key)}>{p.label}</button>
+                ))}
+              </div>
+            </div>
           </div>
           {periodKey === 'custom' && (
             <div className="pf-custom">
@@ -300,14 +336,15 @@ export default function Profit() {
                       <div className={'pf-value' + (m.key === 'profit' && view.cur.profit < 0 ? ' neg' : '')}>{m.fmt(view.cur[m.key])}</div>
                       {view.prior && <Delta d={delta(view.cur[m.key], view.prior[m.key])} good={m.good} />}
                       {m.sub && <div className="pf-sub">{m.sub(view.cur)}</div>}
-                      {m.expands && <div className="pf-sub">{showCosts ? 'Hide breakdown' : 'Tap for breakdown'}</div>}
+                      {m.expands && <div className="pf-sub pf-tile-hint">{showCosts ? 'Hide breakdown' : 'Tap for breakdown'}</div>}
                     </>
                   );
                   return m.expands ? (
                     [
                       <button key={m.key} className={'pf-tile pf-tile-btn' + (showCosts ? ' open' : '')}
                         aria-expanded={showCosts} onClick={() => setShowCosts((s) => !s)}>{body}</button>,
-                      showCosts && <CostBreakdown key="costs" cur={view.cur} prior={view.prior} brands={selected} />,
+                      // Phones only: on desktop the same breakdown sits permanently in the side column.
+                      showCosts && <CostBreakdown key="costs" className="pf-costs-inline" cur={view.cur} prior={view.prior} brands={selected} />,
                     ]
                   ) : (
                     <div key={m.key} className={'pf-tile' + (m.hero ? ' hero' : '')}>{body}</div>
@@ -315,32 +352,43 @@ export default function Profit() {
                 })}
               </div>
 
-              <div className="pf-chart-head">
-                <div className="pf-label">Daily profit</div>
-                <button className={'pf-chip small' + (showTable ? ' on' : '')} aria-pressed={showTable}
-                  onClick={() => setShowTable((s) => !s)}>Table</button>
-              </div>
-              {view.days.length > 0
-                ? <ProfitChart days={view.days} />
-                : <div className="risk-empty">No rows for these brands in this period.</div>}
+              <div className="pf-body">
+                <div className="pf-main">
+                  <div className="pf-chart-head">
+                    <div className="pf-label">Daily profit</div>
+                    <button className={'pf-chip small' + (showTable ? ' on' : '')} aria-pressed={showTable}
+                      onClick={() => setShowTable((s) => !s)}>Table</button>
+                  </div>
+                  {view.days.length > 0
+                    ? <ProfitChart days={view.days} />
+                    : <div className="risk-empty">No rows for these brands in this period.</div>}
 
-              {showTable && view.days.length > 0 && (
-                <div className="pf-table-wrap">
-                  <table className="pf-table">
-                    <thead><tr><th>Date</th><th>Net</th><th>Orders</th><th>Printify</th><th>Printful</th><th>Gelato</th><th>Meta</th><th>Google</th><th>Fees</th><th>Other</th><th>Profit</th></tr></thead>
-                    <tbody>
-                      {[...view.days].reverse().map((d) => (
-                        <tr key={d.date}>
-                          <td>{d.date}</td><td>{usd(d.net, 2)}</td><td>{d.orders}</td><td>{usd(d.printify, 2)}</td>
-                          <td>{usd(d.printful, 2)}</td><td>{usd(d.gelato, 2)}</td><td>{usd(d.meta, 2)}</td>
-                          <td>{usd(d.google, 2)}</td><td>{usd(d.fees, 2)}</td><td>{usd(d.other, 2)}</td>
-                          <td className={d.profit < 0 ? 'neg' : ''}>{usd(d.profit, 2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  {selected.length > 1 && (
+                    <BrandTable cur={view.cur} prior={view.prior} brands={selected} onOnly={(b) => setSelected([b])} />
+                  )}
+                  {showTable && view.days.length > 0 && (
+                    <div className="pf-table-wrap">
+                      <table className="pf-table">
+                        <thead><tr><th>Date</th><th>Net</th><th>Orders</th><th>Printify</th><th>Printful</th><th>Gelato</th><th>Meta</th><th>Google</th><th>Fees</th><th>Other</th><th>Profit</th></tr></thead>
+                        <tbody>
+                          {[...view.days].reverse().map((d) => (
+                            <tr key={d.date}>
+                              <td>{d.date}</td><td>{usd(d.net, 2)}</td><td>{d.orders}</td><td>{usd(d.printify, 2)}</td>
+                              <td>{usd(d.printful, 2)}</td><td>{usd(d.gelato, 2)}</td><td>{usd(d.meta, 2)}</td>
+                              <td>{usd(d.google, 2)}</td><td>{usd(d.fees, 2)}</td><td>{usd(d.other, 2)}</td>
+                              <td className={d.profit < 0 ? 'neg' : ''}>{usd(d.profit, 2)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
-              )}
+                <aside className="pf-side" aria-label="Where the money went">
+                  <div className="pf-label pf-side-head">Where the {usd(view.cur.costs)} went</div>
+                  <CostBreakdown cur={view.cur} prior={view.prior} brands={selected} />
+                </aside>
+              </div>
             </>
           )}
         </>
