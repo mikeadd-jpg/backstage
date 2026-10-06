@@ -23,10 +23,12 @@ const METRICS = [
   { key: 'costs', label: 'Total costs', fmt: (v) => usd(v), good: 'down' },
   { key: 'profit', label: 'Profit', fmt: (v) => usd(v), good: 'up', hero: true },
   { key: 'margin', label: 'Margin', fmt: pct, good: 'up' },
-  { key: 'mer', label: 'MER (rev / ad $)', fmt: mult, good: 'up' },
+  { key: 'mer', label: 'MER (rev / Meta + Google)', fmt: mult, good: 'up' },
   { key: 'perOrder', label: 'Profit / order', fmt: (v) => usd(v, 2), good: 'up' },
   { key: 'orders', label: 'Orders', fmt: (v) => (v == null ? '—' : Math.round(v).toLocaleString()), good: 'up' },
-  { key: 'ads', label: 'Meta spend', fmt: (v) => usd(v), good: 'neutral' },
+  // Spend is neither good nor bad on its own, so its delta stays grey.
+  { key: 'ads', label: 'Ad spend', fmt: (v) => usd(v), good: 'neutral',
+    sub: (c) => 'Meta ' + usd(c.meta) + ' · Google ' + usd(c.google) },
 ];
 
 function Delta({ d, good }) {
@@ -92,7 +94,8 @@ function ProfitChart({ days }) {
         <div className="pf-tip" style={{ left: `${((padL + hover * slot + slot / 2) / W) * 100}%` }}>
           <strong>{usd(h.profit, 2)}</strong>
           <span>{h.date} · profit</span>
-          <span>{usd(h.net, 2)} net · {h.orders} orders · {usd(h.ads, 2)} Meta</span>
+          <span>{usd(h.net, 2)} net · {h.orders} orders</span>
+          <span>{usd(h.meta, 2)} Meta · {usd(h.google, 2)} Google</span>
         </div>
       )}
     </div>
@@ -153,6 +156,7 @@ export default function Profit() {
                 <div className="pf-label">{m.label}</div>
                 <div className={'pf-value' + (m.key === 'profit' && period.current.profit < 0 ? ' neg' : '')}>{m.fmt(period.current[m.key])}</div>
                 {period.prior && <Delta d={delta(period.current[m.key], period.prior[m.key])} good={m.good} />}
+                {m.sub && <div className="pf-sub">{m.sub(period.current)}</div>}
               </div>
             ))}
           </div>
@@ -169,12 +173,12 @@ export default function Profit() {
           {showTable && (
             <div className="pf-table-wrap">
               <table className="pf-table">
-                <thead><tr><th>Date</th><th>Net</th><th>Orders</th><th>Printify</th><th>Meta</th><th>Fees</th><th>Profit</th></tr></thead>
+                <thead><tr><th>Date</th><th>Net</th><th>Orders</th><th>Printify</th><th>Printful</th><th>Meta</th><th>Google</th><th>Fees</th><th>Profit</th></tr></thead>
                 <tbody>
                   {[...days].reverse().map((d) => (
                     <tr key={d.date}>
-                      <td>{d.date}</td><td>{usd(d.net, 2)}</td><td>{d.orders}</td><td>{usd(d.cogs, 2)}</td>
-                      <td>{usd(d.ads, 2)}</td><td>{usd(d.fees, 2)}</td>
+                      <td>{d.date}</td><td>{usd(d.net, 2)}</td><td>{d.orders}</td><td>{usd(d.printify, 2)}</td>
+                      <td>{usd(d.printful, 2)}</td><td>{usd(d.meta, 2)}</td><td>{usd(d.google, 2)}</td><td>{usd(d.fees, 2)}</td>
                       <td className={d.profit < 0 ? 'neg' : ''}>{usd(d.profit, 2)}</td>
                     </tr>
                   ))}

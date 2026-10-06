@@ -401,6 +401,9 @@ has to be pasted into its sheet (or into Google Ads) as well.
   sheet's own dashboards count. That is what makes the two agree to the cent; "fixing" it
   to complete days only makes Backstage disagree with the sheet. Total costs is
   `net - profit`, so anything the sheet books outside the three cost columns still lands.
+- Production cost is `printify_cost + printful_cost` and ad spend is `meta_spend +
+  google_spend`; **MER divides by both ad columns**, matching the brand sheets. Each
+  vendor is also kept separately for the tooltip, the Ad spend tile and the table.
 - Columns are matched by header name, so the sheet can gain columns safely. Renaming
   `brand`, `date`, `shopify_net` or `profit` breaks it loudly, which is intended.
 - Results are cached in-module for 5 minutes; the sheet changes a few times a day.
