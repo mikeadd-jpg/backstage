@@ -1,11 +1,14 @@
 // GET /api/inquiries                 -> open support inquiries for the dashboard.
 // GET /api/inquiries?status=resolved  -> the resolved history.
 import { NextResponse } from 'next/server';
+import { requireArea } from '../../../lib/access.js';
 import { getOpenInquiries, getResolvedInquiries } from '../../../lib/db.js';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
+  const gate = await requireArea(req, 'inbox');
+  if (gate.error) return gate.error;
   try {
     const status = new URL(req.url).searchParams.get('status');
     const rows = status === 'resolved' ? await getResolvedInquiries() : await getOpenInquiries();

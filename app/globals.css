@@ -406,3 +406,122 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
   .pf-value { font-size: 17px; }
   .pf-tile.hero .pf-value { font-size: 19px; }
 }
+
+/* ---------------------------------------------------------------------------------
+   App frame (app/Shell.jsx). Three widths:
+     >= 1100px  sidebar with labels and grouped sections
+     681-1099   icon rail: same items, labels as tooltips
+     <= 680     slim title bar + bottom tabs; Settings/Users/Sign out live behind the avatar
+   --------------------------------------------------------------------------------- */
+.frame { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
+.ico { flex-shrink: 0; display: block; }
+
+.side { width: 228px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--surface);
+  border-right: 1px solid var(--line); padding: 14px 10px 10px; }
+.side-brand { padding: 4px 10px 16px; }
+.wordmark-mini { display: none; }
+.side-nav { flex: 1; overflow-y: auto; }
+.side-group + .side-group { margin-top: 16px; }
+.side-label { font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--faint); padding: 0 10px 6px; }
+.side-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 36px; padding: 8px 10px; border: none; border-radius: 8px;
+  background: none; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 500; color: var(--muted); cursor: pointer; text-align: left; position: relative; }
+.side-item:hover { background: var(--hover); color: var(--text); }
+.side-item.on { background: var(--surface-2); color: var(--text); font-weight: 600; }
+.side-badge { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; line-height: 1; color: var(--red);
+  background: var(--red-bg); padding: 3px 7px; border-radius: 999px; }
+.side-foot { position: relative; border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
+.side-acct { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 8px; border: none; border-radius: 8px;
+  background: none; cursor: pointer; text-align: left; font-family: 'Inter', sans-serif; min-height: 44px; }
+.side-acct:hover, .side-acct.on { background: var(--hover); }
+.side-acct-text { min-width: 0; }
+.side-acct-text b { display: block; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.side-acct-text small { display: block; font-size: 11.5px; color: var(--faint); }
+
+.acct-menu { position: absolute; z-index: 50; min-width: 230px; padding: 6px; background: var(--surface);
+  border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: 0 8px 24px rgba(20,25,40,0.12); }
+.acct-menu.up { bottom: calc(100% + 6px); left: 0; }
+.acct-menu.down { top: calc(100% + 8px); right: 0; }
+.acct-who { padding: 8px 10px 10px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.acct-name { font-size: 13.5px; font-weight: 600; word-break: break-word; }
+.acct-sub { font-size: 12px; color: var(--faint); margin-top: 2px; word-break: break-word; }
+.acct-item { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 9px 10px; border: none; border-radius: 8px;
+  background: none; font-family: 'Inter', sans-serif; font-size: 13.5px; color: var(--text); cursor: pointer; text-align: left; }
+.acct-item:hover { background: var(--hover); }
+
+.main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.mtop { display: none; }
+.view { flex: 1; min-height: 0; display: flex; overflow: hidden; }
+.view > .risk-empty { flex: 1; }
+.pane-wide { max-width: 1100px; }
+.avatar-btn { border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+/* Create chooser: a bottom sheet, only reachable from the phone tabs. */
+.sheet-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(20,25,40,0.35); display: flex; align-items: flex-end; }
+.sheet { width: 100%; background: var(--surface); border-radius: 16px 16px 0 0; padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+.sheet-grip { width: 36px; height: 4px; border-radius: 2px; background: var(--line-strong); margin: 0 auto 12px; }
+.sheet-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.sheet-option { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 12px; margin-bottom: 8px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--surface); font-family: 'Inter', sans-serif; text-align: left; cursor: pointer; color: var(--faint); }
+.sheet-option > span:nth-child(2) { flex: 1; }
+.sheet-option b { display: block; font-size: 15px; font-weight: 600; color: var(--text); }
+.sheet-option small { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.sheet-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--surface-2); display: grid; place-items: center; color: var(--text); }
+
+/* Users screen */
+.users-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+.users-add { margin-bottom: 12px; }
+.users-add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.users-add-row .input:first-child { flex: 1; min-width: 200px; }
+.users-add-row select { width: 160px; }
+.users-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 14px 0 8px; font-size: 12px; color: var(--faint); }
+.users-search { max-width: 240px; }
+.users-list { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.users-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.users-row:last-child { border-bottom: none; }
+.users-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.users-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center;
+  font-size: 12px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+.users-id { min-width: 0; }
+.users-name { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.users-you { font-size: 10px; font-weight: 700; color: var(--muted); background: var(--surface-2); border-radius: 5px; padding: 1px 6px; margin-left: 6px; }
+.users-sub { font-size: 12px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.users-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.users-role { width: 160px; padding: 7px 10px; }
+.users-remove { padding: 8px 12px; font-size: 12.5px; }
+.users-fixed { font-size: 12.5px; color: var(--muted); flex-shrink: 0; }
+.users-role-def { margin-bottom: 12px; }
+.users-role-name { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+.users-role-name span { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--faint); }
+.users-role-desc { font-size: 12px; color: var(--muted); line-height: 1.45; margin-top: 2px; }
+
+/* Icon rail: tablets and narrow laptops. */
+@media (max-width: 1099px) and (min-width: 681px) {
+  .side { width: 64px; padding: 14px 8px 10px; align-items: stretch; }
+  .side-text, .side-label, .side-brand .wordmark { display: none; }
+  .side-brand { padding: 2px 0 14px; text-align: center; }
+  .wordmark-mini { display: block; font-family: 'Anton', sans-serif; font-size: 22px; line-height: 1; }
+  .side-item { justify-content: center; padding: 10px; }
+  .side-group + .side-group { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .side-badge { position: absolute; top: 2px; right: 2px; padding: 2px 5px; font-size: 10px; }
+  .side-acct { justify-content: center; padding: 6px 0; }
+  .users-layout { grid-template-columns: 1fr; }
+}
+
+/* Phones: no sidebar; title bar on top, tabs at the bottom. */
+@media (max-width: 680px) {
+  .side { display: none; }
+  .mtop { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0;
+    padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top, 0px));
+    background: var(--surface); border-bottom: 1px solid var(--line); }
+  .mtop-title { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
+  /* The title bar already names the screen; a second heading just under it wastes a line. */
+  .view .pane > .pane-head:first-child { display: none; }
+  .mtop-acct { position: relative; }
+  .mtop .avatar { width: 32px; height: 32px; font-size: 13px; }
+  .bn-item svg { margin-bottom: 1px; }
+  .users-layout { grid-template-columns: 1fr; }
+  .users-row { flex-direction: column; align-items: stretch; }
+  .users-actions { justify-content: space-between; }
+  .users-role { flex: 1; width: auto; }
+  .users-add-row select, .users-add-row .btn { flex: 1; }
+}

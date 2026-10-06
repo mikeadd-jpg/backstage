@@ -1,15 +1,14 @@
-// Who is signed in, for the UI. Middleware has already verified the cookie by the time
-// this runs, so this only has to decode it.
+// Who is signed in and which areas they can reach, for building the navigation. The role
+// comes from the database (lib/access.js), not the cookie, so the menu reflects a role
+// change on the next load. A 401 here means the person was removed: the page sends them
+// to sign in again.
 import { NextResponse } from 'next/server';
-import { readSession, SESSION_COOKIE } from '../../../lib/session.js';
-import { canViewProfit } from '../../../lib/profit.js';
+import { getAccess } from '../../../lib/access.js';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
-  const session = await readSession(req.cookies.get(SESSION_COOKIE)?.value);
-  if (!session) return NextResponse.json({ user: null }, { status: 401 });
-  return NextResponse.json({
-    user: { email: session.email, role: session.role, name: session.name, canViewProfit: canViewProfit(session.email) },
-  });
+  const access = await getAccess(req);
+  if (!access) return NextResponse.json({ user: null }, { status: 401 });
+  return NextResponse.json({ user: access });
 }

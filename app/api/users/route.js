@@ -1,54 +1,63 @@
-// Manage the sign-in allowlist. Every route here is admin only: that restriction is the
-// entire difference between the two roles.
+// Manage who can sign in and what role they hold. Needs the users area (admin, owner),
+// and the finer rules in lib/roles.js roleChangeError: only an owner touches owners, and
+// nobody changes their own access. The actor's role is read fresh from the database by
+// requireArea, never from the cookie, so a demoted admin loses this immediately.
 import { NextResponse } from 'next/server';
-import { readSession, SESSION_COOKIE } from '../../../lib/session.js';
-import { listUsers, upsertUser, removeUser } from '../../../lib/users.js';
+import { requireArea, forgetAccess } from '../../../lib/access.js';
+import { listUsers, findUser, upsertUser, removeUser, bootstrapAdmin } from '../../../lib/users.js';
+import { roleChangeError } from '../../../lib/roles.js';
 
 export const dynamic = 'force-dynamic';
 
-// Re-read the role from the cookie on every call rather than trusting the client. The
-// cookie is signed, so a member cannot promote themselves by editing it.
-async function requireAdmin(req) {
-  const session = await readSession(req.cookies.get(SESSION_COOKIE)?.value);
-  if (!session) return { error: NextResponse.json({ error: 'unauthorized' }, { status: 401 }) };
-  if (session.role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Only an admin can manage users.' }, { status: 403 }) };
-  }
-  return { session };
-}
+const norm = (e) => String(e || '').trim().toLowerCase();
+const bad = (msg, status = 400) => NextResponse.json({ error: msg }, { status });
 
 export async function GET(req) {
-  const { error, session } = await requireAdmin(req);
-  if (error) return error;
-  return NextResponse.json({ users: await listUsers(), me: session.email });
+  const gate = await requireArea(req, 'users');
+  if (gate.error) return gate.error;
+  return NextResponse.json({ users: await listUsers(), me: gate.access.email, myRole: gate.access.role });
 }
 
+// Add someone, or change an existing person's role.
 export async function POST(req) {
-  const { error, session } = await requireAdmin(req);
-  if (error) return error;
+  const gate = await requireArea(req, 'users');
+  if (gate.error) return gate.error;
+  const { access } = gate;
   try {
     const b = await req.json();
-    const user = await upsertUser({
-      email: b.email, role: b.role, name: b.name, addedBy: session.email,
+    const email = norm(b.email);
+    if (!email || !email.includes('@')) return bad('Enter a valid email address.');
+    if (email === bootstrapAdmin()) return bad('That address is the permanent owner (ADMIN_EMAIL) and cannot be changed here.');
+    const current = await findUser(email);
+    const why = roleChangeError({
+      actorEmail: access.email, actorRole: access.role,
+      targetEmail: email, currentRole: current ? current.role : undefined, newRole: b.role,
     });
+    if (why) return bad(why, 403);
+    const user = await upsertUser({ email, role: b.role, name: b.name, addedBy: access.email });
+    forgetAccess(email);
     return NextResponse.json({ ok: true, user });
   } catch (err) {
-    return NextResponse.json({ error: String(err.message || err) }, { status: 400 });
+    return bad(String(err.message || err));
   }
 }
 
 export async function DELETE(req) {
-  const { error, session } = await requireAdmin(req);
-  if (error) return error;
+  const gate = await requireArea(req, 'users');
+  if (gate.error) return gate.error;
+  const { access } = gate;
   try {
-    const email = String(new URL(req.url).searchParams.get('email') || '').toLowerCase();
-    if (email === session.email) {
-      return NextResponse.json({ error: 'You cannot remove your own access.' }, { status: 400 });
-    }
-    const removed = await removeUser(email);
-    if (!removed) return NextResponse.json({ error: 'No such user.' }, { status: 404 });
+    const email = norm(new URL(req.url).searchParams.get('email'));
+    const current = await findUser(email);
+    if (!current) return bad('No such user.', 404);
+    const why = roleChangeError({
+      actorEmail: access.email, actorRole: access.role, targetEmail: email, currentRole: current.role,
+    });
+    if (why) return bad(why, 403);
+    await removeUser(email);  // still refuses the bootstrap owner itself
+    forgetAccess(email);
     return NextResponse.json({ ok: true });
   } catch (err) {
-    return NextResponse.json({ error: String(err.message || err) }, { status: 400 });
+    return bad(String(err.message || err));
   }
 }

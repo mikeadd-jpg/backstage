@@ -5,6 +5,8 @@ import Builder from './Builder';
 import Mockups from './Mockups';
 import Profit from './Profit';
 import Settings from './Settings';
+import Shell, { allowedDestinations } from './Shell';
+import Users from './Users';
 
 const BRANDS = {
   elderemo:  { name: 'Elder Emo', color: 'var(--violet)', bg: 'var(--violet-bg)' },
@@ -54,7 +56,7 @@ function normalizeRisk(r) {
 }
 
 export default function Page() {
-  const [tab, setTab] = useState('inbox');
+  const [tab, setTab] = useState(null);   // set once we know the role; mirrors location.hash
   const [rows, setRows] = useState([]);
   const [risk, setRisk] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -88,16 +90,46 @@ export default function Page() {
     return fetch('/api/approvals').then((r) => r.json()).then(setApprovals)
       .catch(() => {}).finally(() => setApprovalsLoading(false));
   }
+  // Role first, then only the data this person's screens use: asking for the rest would
+  // just collect 403s. A 401 means they were removed since signing in.
   useEffect(() => {
-    loadApprovals();
-    fetch('/api/me').then((r) => r.json()).then((d) => setMe(d.user || null)).catch(() => {});
-    Promise.all([
-      loadOpen(),
-      fetch('/api/risk-orders').then((r) => r.json()).then((d) => {
-        setRisk((d.riskOrders || []).map(normalizeRisk));
-      }).catch(() => {}),
-    ]).finally(() => setLoaded(true));
+    fetch('/api/me').then((r) => {
+      if (r.status === 401) { window.location.href = '/login'; return null; }
+      return r.json();
+    }).then((d) => {
+      if (!d || !d.user) return;
+      const u = d.user;
+      setMe(u);
+      const can = (a) => u.areas.includes(a);
+      if (can('approvals')) loadApprovals();
+      Promise.all([
+        can('inbox') ? loadOpen() : null,
+        can('risk') ? fetch('/api/risk-orders').then((r) => r.json()).then((x) => {
+          setRisk((x.riskOrders || []).map(normalizeRisk));
+        }).catch(() => {}) : null,
+      ]).finally(() => setLoaded(true));
+    }).catch(() => {});
   }, []);
+
+  // The open screen lives in the URL hash, so refresh, links and the phone's back button
+  // all work. Anything the role doesn't include falls back to the first screen it does.
+  const allowed = allowedDestinations(me);
+  useEffect(() => {
+    if (!me) return;
+    const pick = () => {
+      let k = window.location.hash.slice(1);
+      if (k === 'builder') k = 'products';  // old name, kept so saved links still land
+      setTab(allowed.includes(k) ? k : allowed[0] || null);
+      setMobileDetail(false);
+    };
+    pick();
+    window.addEventListener('hashchange', pick);
+    return () => window.removeEventListener('hashchange', pick);
+  }, [me]);  // eslint-disable-line react-hooks/exhaustive-deps
+  function go(k) {
+    if (window.location.hash === '#' + k) { setTab(k); setMobileDetail(false); }
+    else window.location.hash = k;  // the hashchange listener does the rest
+  }
 
   function selectFilter(f) {
     setFilter(f);
@@ -152,19 +184,8 @@ export default function Page() {
     }).then(() => loadOpen()).catch(() => {});
   }
 
-  // Defined once and rendered twice: topbar tabs on desktop, bottom nav on mobile.
-  const TABS = [
-    { key: 'inbox', label: 'Inbox', short: 'Inbox', icon: '\u2709' },
-    { key: 'risk', label: 'At risk', short: 'At risk', icon: '\u26A0' },
-    { key: 'approvals', label: 'Approvals', short: 'Approve', icon: '\u2713' },
-    { key: 'builder', label: 'Builder', short: 'Builder', icon: '\u2726' },
-    { key: 'mockups', label: 'Mockups', short: 'Mockups', icon: '\u2751' },
-    { key: 'settings', label: 'Settings', short: 'Settings', icon: '\u2699' },
-  ];
-  // Only shown to people the server says may see it; /api/profit enforces that itself.
-  if (me && me.canViewProfit) TABS.splice(TABS.length - 1, 0, { key: 'profit', label: 'Profit', short: 'Profit', icon: '$' });
   const draftCount = approvals ? approvals.drafts.length : 0;
-  const badgeFor = (key) => (key === 'inbox' ? actionCount : key === 'risk' ? riskHigh : key === 'approvals' ? draftCount : 0);
+  const badges = { inbox: actionCount, risk: riskHigh, approvals: draftCount };
 
   // Likewise for the filters: the desktop rail and the mobile chip row are the same list.
   const FILTERS = [
@@ -184,28 +205,9 @@ export default function Page() {
   ].filter(Boolean) : [];
 
   return (
-    <div className="app">
-      <div className="topbar">
-        <div className="wordmark">Backstage</div>
-        <div className="tabs topbar-tabs" style={{ marginLeft: 8 }}>
-          {TABS.map((t) => (
-            <button key={t.key} className={'tab' + (tab === t.key ? ' active' : '')} onClick={() => setTab(t.key)}>
-              {t.label}{badgeFor(t.key) > 0 && <span className="badge">{badgeFor(t.key)}</span>}
-            </button>
-          ))}
-        </div>
-        <div className="spacer" />
-        {me && (
-          <button className="tab" title={me.email + (me.role === 'admin' ? ' (admin)' : '')}
-            onClick={() => fetch('/api/auth/logout', { method: 'POST' }).then(() => { window.location.href = '/login'; })}>
-            Sign out
-          </button>
-        )}
-        <div className="avatar" title={me ? me.email : ''}>
-          {me && me.email ? me.email[0].toUpperCase() : 'M'}
-        </div>
-      </div>
-
+    <Shell me={me} current={tab} go={go} badges={badges}>
+      {!me && <div className="risk-empty">Loading…</div>}
+      {me && !tab && <div className="risk-empty">Your role doesn't include any screens yet. Ask an admin.</div>}
       {tab === 'inbox' && (
         <div className={'shell ' + (mobileDetail ? 'show-detail' : 'show-queue')}>
           <aside className="rail">
@@ -373,22 +375,11 @@ export default function Page() {
         <Approvals data={approvals} loading={approvalsLoading} reload={loadApprovals} brands={BRANDS}
           onApproved={(id) => setApprovals((a) => ({ ...a, drafts: a.drafts.filter((d) => d.id !== id) }))} />
       )}
-      {tab === 'builder' && <Builder />}
+      {tab === 'products' && <Builder />}
       {tab === 'mockups' && <Mockups />}
-      {tab === 'profit' && me && me.canViewProfit && <Profit />}
+      {tab === 'profit' && <Profit />}
       {tab === 'settings' && <Settings />}
-
-      {/* Thumb-reach navigation. Hidden above 680px, where the topbar tabs take over. */}
-      <nav className="bottom-nav">
-        {TABS.map((t) => (
-          <button key={t.key} className={'bn-item' + (tab === t.key ? ' active' : '')}
-            onClick={() => { setTab(t.key); setMobileDetail(false); }} aria-label={t.label}>
-            <span className="bn-icon" aria-hidden="true">{t.icon}</span>
-            <span className="bn-label">{t.short}</span>
-            {badgeFor(t.key) > 0 && <span className="bn-badge">{badgeFor(t.key)}</span>}
-          </button>
-        ))}
-      </nav>
-    </div>
+      {tab === 'users' && <Users />}
+    </Shell>
   );
 }

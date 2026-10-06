@@ -3,6 +3,7 @@
 // POST /api/approvals {brand, orderId} -> confirm one draft, which submits it to Printful
 //                        for production and charges the account.
 import { NextResponse } from 'next/server';
+import { requireArea } from '../../../lib/access.js';
 import { BRANDS, brandConfig } from '../../../lib/brands.js';
 import { listDraftOrders, confirmOrder } from '../../../lib/printful.js';
 import { adminUrl } from '../../../lib/risk.js';
@@ -14,7 +15,9 @@ function printfulBrands() {
   return Object.keys(BRANDS).filter((b) => brandConfig(b).printfulStoreId);
 }
 
-export async function GET() {
+export async function GET(req) {
+  const gate = await requireArea(req, 'approvals');
+  if (gate.error) return gate.error;
   const drafts = [];
   const errors = [];
   for (const brand of printfulBrands()) {
@@ -31,6 +34,8 @@ export async function GET() {
 }
 
 export async function POST(req) {
+  const gate = await requireArea(req, 'approvals');
+  if (gate.error) return gate.error;
   try {
     const { brand, orderId } = await req.json();
     if (!printfulBrands().includes(brand) || !orderId) {

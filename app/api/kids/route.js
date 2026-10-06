@@ -6,6 +6,7 @@
 //
 // The client calls prepare once, then build once per group, showing progress as it goes.
 import { NextResponse } from 'next/server';
+import { requireArea } from '../../../lib/access.js';
 import { prepareImage, uploadImage, PLACEMENT_FULL, PLACEMENT_LEFT_CHEST } from '../../../lib/builder.js';
 import {
   KIDS_CATALOG, buildKidsGroup, generateKidsDescriptions, kidsFallbackDesc, kidsVoice,
@@ -57,7 +58,9 @@ async function prepare(body) {
 
 // GET /api/kids -> the catalog, so the builder can render its checkbox list before
 // anything is uploaded.
-export async function GET() {
+export async function GET(req) {
+  const gate = await requireArea(req, 'products');
+  if (gate.error) return gate.error;
   return NextResponse.json({
     groups: KIDS_CATALOG.map((g) => ({
       key: g.key,
@@ -69,6 +72,8 @@ export async function GET() {
 }
 
 export async function POST(req) {
+  const gate = await requireArea(req, 'products');
+  if (gate.error) return gate.error;
   try {
     const body = await req.json();
 

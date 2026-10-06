@@ -1,6 +1,6 @@
 'use client';
 // Profitability, read from the Profit Combined sheet. The server decides who sees this
-// (lib/profit.js canViewProfit); the tab only appears for those people, which is cosmetic.
+// (the profit area in lib/roles.js, enforced by app/api/profit); hiding the tab is cosmetic.
 // Numbers are the sheet's, so a mismatch is a sheet question, not a Backstage one.
 //
 // The page fetches the daily rows once and does all the slicing here with

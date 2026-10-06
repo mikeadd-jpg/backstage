@@ -3,8 +3,15 @@
 // Approval requires a signed-in Backstage user. This route is exempt from the middleware
 // gate so the OAuth handshake can reach it, which means it has to check the session
 // itself: without that, anyone who found the URL could approve a connector.
+//
+// Being signed in is not enough: the role must include the connect area (owner, admin).
+// A connection reads every inquiry and order with no per-person identity, so letting a
+// Creative approve one would hand out the customer data their role deliberately omits.
 import { checkRedirect, issueCode, SCOPE } from '../../../../lib/oauth.js';
 import { readSession, SESSION_COOKIE } from '../../../../lib/session.js';
+import { getAccess } from '../../../../lib/access.js';
+
+const NOT_ALLOWED = "Your role can't connect Claude to Backstage. Ask an admin or owner to approve the connection.";
 
 export const dynamic = 'force-dynamic';
 
@@ -91,6 +98,9 @@ export async function GET(req) {
     return Response.redirect(new URL('/api/auth/google/start?next=' + encodeURIComponent(next), req.url).toString(), 302);
   }
 
+  const access = await getAccess(req);
+  if (!access || !access.areas.includes('connect')) return fail(NOT_ALLOWED);
+
   const client = await checkRedirect(p.client_id, p.redirect_uri);
   return html(page({ params: { ...p, client_name: client.client.client_name }, error: null, user: session }));
 }
@@ -103,6 +113,8 @@ export async function POST(req) {
 
   const session = await readSession(req.cookies.get(SESSION_COOKIE)?.value);
   if (!session) return fail('Your session expired before you approved. Start the connection again.');
+  const access = await getAccess(req);
+  if (!access || !access.areas.includes('connect')) return fail(NOT_ALLOWED);
 
   const code = await issueCode({
     clientId: p.client_id,

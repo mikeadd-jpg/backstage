@@ -14,16 +14,37 @@ Google sign-in, two steps: Google proves **who you are**, and the `allowed_users
 decides **whether you get in**. The old shared `APP_PASSWORD` is gone, along with the
 cookie that stored it in plaintext.
 
-Two roles. The only thing `admin` unlocks is managing `allowed_users`; members can do
-everything else. The role is re-read from the signed cookie on every `/api/users` call
-rather than trusted from the client, so a member cannot promote themselves.
+**Roles decide which screens someone sees and which API routes answer them.** They are
+defined once in `lib/roles.js` (each role lists its *areas*: inbox, risk, approvals,
+products, mockups, profit, settings, users, connect), and both the navigation
+(`app/Shell.jsx`) and the server (`lib/access.js`) read that one file, so the two cannot
+drift. Owner (everything, the only role with profit), Admin (everything but profit),
+Support (inbox, at risk, approvals), Creative (products, mockups, no customer data), and
+Member, which is exactly what everyone had before roles and exists so nobody lost access
+the day they shipped.
+
+- **Every route behind the sign-in gate calls `requireArea()`.** Hiding a menu item is
+  clutter control, not security. A new route needs a gate or any signed-in person can
+  call it. `/api/settings` GET is open to Products too, because the builder reads its
+  store list there.
+- **The role is read from the database per request** (30s cache), never from the cookie.
+  The cookie lives 14 days, so trusting its role would let a removed or demoted person
+  keep access for up to two weeks. `middleware.js` can't check roles (Edge, no DB), which
+  is why the check lives in the routes.
+- **Only an owner makes, changes or removes an owner**, and nobody changes their own row
+  (`roleChangeError`). Profit sits behind owner, so an admin able to mint owners could
+  read profit by promoting themselves.
+- **Approving a Claude (MCP) connection needs the `connect` area** (owner, admin). The
+  connection reads every inquiry with no per-person identity, so a Creative approving one
+  would bypass their own role.
+- The role column is plain text: adding a role is an edit to `lib/roles.js`, no migration.
 
 - **`lib/session.js` must stay Edge-safe.** `middleware.js` imports it, so it uses Web
   Crypto rather than `node:crypto` and never touches Postgres. Anything needing the
   database goes in `lib/users.js`.
 - **`ADMIN_EMAIL` is the bootstrap and the lockout recovery.** The table starts empty, so
   without it nobody could sign in and nobody could add anyone. That address is always
-  treated as admin regardless of what the table says, and cannot be removed. If you ever
+  treated as owner regardless of what the table says, and cannot be removed or changed. If you ever
   lock yourself out, change that env var.
 - Sign-in reuses the **Gmail OAuth client** (`GMAIL_CLIENT_ID` / `GMAIL_CLIENT_SECRET`),
   so `/api/auth/google/callback` has to be registered on it for every origin you use.
@@ -33,6 +54,15 @@ rather than trusted from the client, so a member cannot promote themselves.
 The cron endpoints and `/api/mcp` are unaffected: they carry their own secrets and stay
 exempt. The MCP consent screen now checks the Google session instead of the password, and
 bounces through sign-in when there isn't one.
+
+## Navigation (`app/Shell.jsx`)
+
+Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups;
+Insights: Profit) at 1100px and up, an icon rail from 681 to 1099px, and on phones a title
+bar plus bottom tabs where Products and Mockups fold into one Create tab that opens a
+chooser. Settings, Users and Sign out live in the account menu, not the main nav. The open
+screen is the URL hash (`#inbox`, `#profit`), so refresh, links and the back button work;
+`#builder` still maps to Products for old links.
 
 ## Entry points
 

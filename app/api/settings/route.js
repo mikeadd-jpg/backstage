@@ -1,6 +1,7 @@
 // GET /api/settings  -> all editable config for the Settings tab.
 // POST /api/settings { kind, ... } -> save one thing.
 import { NextResponse } from 'next/server';
+import { requireArea } from '../../../lib/access.js';
 import {
   getStores, upsertStore, getAllProductConfig, upsertProductConfig,
   getAllVoices, upsertVoice, getSetting, setSetting, copyBrandConfig,
@@ -11,7 +12,9 @@ import { REPLY_STRUCTURE } from '../../../lib/brands.js';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req) {
+  const gate = await requireArea(req, ['settings', 'products']);
+  if (gate.error) return gate.error;
   try {
     const [stores, config, voices, structure] = await Promise.all([
       getStores(), getAllProductConfig(), getAllVoices(), getSetting('cs_reply_structure'),
@@ -26,6 +29,8 @@ export async function GET() {
 }
 
 export async function POST(req) {
+  const gate = await requireArea(req, 'settings');
+  if (gate.error) return gate.error;
   try {
     const b = await req.json();
     if (b.kind === 'voice') await upsertVoice(b.brandKey, b.voice);

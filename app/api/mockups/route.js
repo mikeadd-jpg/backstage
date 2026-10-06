@@ -21,6 +21,7 @@
 // Generated images are never persisted. They live in the browser between generate and
 // attach, which keeps a review step in the loop and avoids needing a blob store.
 import { NextResponse } from 'next/server';
+import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
 import { listActiveProducts, addProductImage } from '../../../lib/shopify.js';
 import {
@@ -44,7 +45,9 @@ function checkBrand(brand) {
 
 // GET /api/mockups -> which stores can be used, and their current scene direction, so
 // the tab can render before anything is picked.
-export async function GET() {
+export async function GET(req) {
+  const gate = await requireArea(req, 'mockups');
+  if (gate.error) return gate.error;
   const brands = configuredShopifyBrands();
   const scenes = {};
   const defaults = {};
@@ -77,6 +80,8 @@ export async function GET() {
 }
 
 export async function POST(req) {
+  const gate = await requireArea(req, 'mockups');
+  if (gate.error) return gate.error;
   try {
     const body = await req.json();
 
