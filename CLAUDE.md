@@ -340,6 +340,25 @@ Token expiry is the failure you will hit. `uploadAdImage` names it specifically 
 error 190, and permission trouble on 200/368/272, rather than passing through a Graph
 error that reads identically for every cause.
 
+## Approvals tab (`app/Approvals.jsx`, `/api/approvals`)
+
+Wallspoke's maps are generated per order and land in Printful as **drafts**, so a bad
+render would otherwise print and ship. The tab lists every Printful draft (any brand with
+a `*_PRINTFUL_STORE_ID`, which today is Wallspoke only) with its print file, and one button
+confirms the draft via `POST /orders/{id}/confirm`.
+
+**Confirming spends money.** It charges the Printful account and starts production, so the
+button states the cost and asks first. Like `lib/meta.js`, this is the one write here, and
+it is not exposed over MCP: approving a print is a human looking at a picture.
+
+The image shown is the file's `preview_url` on Printful's CDN (600x800), not its `url`.
+The `url` is a 15 minute signed R2 link from the map generator and is almost always expired
+by the time anyone looks. For full resolution, open the order in Printful. Files of type
+`preview` are Printful's mockups and are shown separately, not as print files.
+
+Approving removes the draft, which also settles the "Printful: draft, never submitted"
+reason in the risk scan on its next re-check.
+
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
 `POST /api/mcp` exposes Backstage to Claude as an MCP server. Tools are thin wrappers over

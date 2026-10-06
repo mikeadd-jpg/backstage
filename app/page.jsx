@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import Approvals from './Approvals';
 import Builder from './Builder';
 import Mockups from './Mockups';
 import Settings from './Settings';
@@ -65,6 +66,8 @@ export default function Page() {
   const [filter, setFilter] = useState('all'); // all | <brandKey> | needs | resolved
   const [resolvedRows, setResolvedRows] = useState([]);
   const [resolvedLoaded, setResolvedLoaded] = useState(false);
+  const [approvals, setApprovals] = useState(null); // { drafts, errors, configured }
+  const [approvalsLoading, setApprovalsLoading] = useState(false);
 
   function loadOpen() {
     return fetch('/api/inquiries').then((r) => r.json()).then((d) => {
@@ -79,7 +82,13 @@ export default function Page() {
       setResolvedLoaded(true);
     }).catch(() => {});
   }
+  function loadApprovals() {
+    setApprovalsLoading(true);
+    return fetch('/api/approvals').then((r) => r.json()).then(setApprovals)
+      .catch(() => {}).finally(() => setApprovalsLoading(false));
+  }
   useEffect(() => {
+    loadApprovals();
     fetch('/api/me').then((r) => r.json()).then((d) => setMe(d.user || null)).catch(() => {});
     Promise.all([
       loadOpen(),
@@ -146,11 +155,13 @@ export default function Page() {
   const TABS = [
     { key: 'inbox', label: 'Inbox', short: 'Inbox', icon: '\u2709' },
     { key: 'risk', label: 'At risk', short: 'At risk', icon: '\u26A0' },
+    { key: 'approvals', label: 'Approvals', short: 'Approve', icon: '\u2713' },
     { key: 'builder', label: 'Builder', short: 'Builder', icon: '\u2726' },
     { key: 'mockups', label: 'Mockups', short: 'Mockups', icon: '\u2751' },
     { key: 'settings', label: 'Settings', short: 'Settings', icon: '\u2699' },
   ];
-  const badgeFor = (key) => (key === 'inbox' ? actionCount : key === 'risk' ? riskHigh : 0);
+  const draftCount = approvals ? approvals.drafts.length : 0;
+  const badgeFor = (key) => (key === 'inbox' ? actionCount : key === 'risk' ? riskHigh : key === 'approvals' ? draftCount : 0);
 
   // Likewise for the filters: the desktop rail and the mobile chip row are the same list.
   const FILTERS = [
@@ -354,6 +365,10 @@ export default function Page() {
             );
           })}
         </div>
+      )}
+      {tab === 'approvals' && (
+        <Approvals data={approvals} loading={approvalsLoading} reload={loadApprovals} brands={BRANDS}
+          onApproved={(id) => setApprovals((a) => ({ ...a, drafts: a.drafts.filter((d) => d.id !== id) }))} />
       )}
       {tab === 'builder' && <Builder />}
       {tab === 'mockups' && <Mockups />}
