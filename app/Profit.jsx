@@ -7,7 +7,8 @@
 // lib/profitMath.js, so brand toggles and date changes are instant on a phone.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  COST_LINES, totals, dailySeries, presetPeriods, customPeriod, firstDates, addDays,
+  COST_LINES, CHANNELS, totals, dailySeries, presetPeriods, customPeriod, firstDates, addDays,
+  channelStats, channelStart,
 } from '../lib/profitMath';
 
 const BRAND_COLOR = { 'Elder Emo': 'var(--violet)', PopPunks: 'var(--pink)', Wallspoke: 'var(--blue)' };
@@ -90,6 +91,71 @@ function CostBreakdown({ cur, prior, brands, className = '' }) {
       ))}
       <div className="pf-cost-total"><span>Total costs</span><span>{usd(cur.costs, 2)}</span></div>
     </div>
+  );
+}
+
+const ratio = (n) => (n == null || isNaN(n) ? '—' : n.toFixed(2) + 'x');
+const count = (n) => (n == null || isNaN(n) ? '—' : (Math.round(n * 10) / 10).toLocaleString());
+
+/**
+ * Meta and Google, each judged twice: by the orders Shopify credits to them and by the
+ * conversions they report themselves. The gap column is platform ÷ Shopify: above 1 the
+ * platform claims more than Shopify gives it, below 1 its tracking is probably missing
+ * purchases.
+ */
+function Channels({ cur, hasChannels, startsOn, periodFrom }) {
+  if (!hasChannels) {
+    return (
+      <div className="pf-channels-empty">
+        Channel columns aren't in the Profit Combined sheet yet. They appear once the updated sheet scripts are pasted in and run.
+      </div>
+    );
+  }
+  return (
+    <>
+      {startsOn && startsOn > periodFrom && (
+        <div className="pf-note">
+          Channel history starts {shortDate(startsOn)}, so earlier days in this range count as zero orders while
+          their spend still counts. CPA reads high until backfillChannels has run in each brand sheet.
+        </div>
+      )}
+      <div className="pf-channels">
+        {CHANNELS.map((ch) => {
+          const c = channelStats(cur, ch);
+          const quiet = !c.spend && !c.shopify.orders && !c.platform.orders;
+          const gapTone = (g) => (g == null ? '' : g < 0.8 ? ' under' : g > 1.25 ? ' over' : '');
+          return (
+            <div className="pf-ch" key={ch.key}>
+              <div className="pf-ch-head">
+                <span className="pf-ch-name">{ch.label}</span>
+                <span className="pf-ch-spend">{usd(c.spend)} spend</span>
+              </div>
+              {quiet ? (
+                <div className="pf-ch-quiet">No spend or orders in this period.</div>
+              ) : (
+                <table className="pf-ch-table">
+                  <thead>
+                    <tr><th /><th>Shopify</th><th>{ch.platform}</th><th title="Platform ÷ Shopify">Gap</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>Orders</td><td>{count(c.shopify.orders)}</td><td>{count(c.platform.orders)}</td>
+                      <td className={'pf-gap' + gapTone(c.orderGap)}>{ratio(c.orderGap)}</td></tr>
+                    <tr><td>Revenue</td><td>{usd(c.shopify.revenue)}</td><td>{usd(c.platform.revenue)}</td>
+                      <td className={'pf-gap' + gapTone(c.revenueGap)}>{ratio(c.revenueGap)}</td></tr>
+                    <tr><td>CPA</td><td>{usd(c.shopify.cpa, 2)}</td><td>{usd(c.platform.cpa, 2)}</td><td /></tr>
+                    <tr><td>ROAS</td><td>{mult(c.shopify.roas)}</td><td>{mult(c.platform.roas)}</td><td /></tr>
+                  </tbody>
+                </table>
+              )}
+              <div className="pf-ch-foot">
+                {ch.platform} on {ch.window}. Shopify credits the visit that placed the order
+                {ch.key === 'google' ? '; organic search is excluded.' : '; Facebook and Instagram social clicks count too.'}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -247,7 +313,7 @@ export default function Profit() {
     // period look smaller than it was, which inflates every delta. Say so.
     const starts = firstDates(data.rows);
     const partial = period.compare ? selected.filter((b) => starts[b] && starts[b] > period.compare.from) : [];
-    return { cur, prior, days, partial, starts };
+    return { cur, prior, days, partial, starts, channelsFrom: channelStart(data.rows.filter((r) => selected.includes(r.brand))) };
   }, [data, selected, period && period.from, period && period.to, period && period.compare && period.compare.from]);
 
   function toggleBrand(b) {
@@ -363,6 +429,8 @@ export default function Profit() {
                     ? <ProfitChart days={view.days} />
                     : <div className="risk-empty">No rows for these brands in this period.</div>}
 
+                  <div className="pf-label pf-section-head">Channels</div>
+                  <Channels cur={view.cur} hasChannels={data.hasChannels} startsOn={view.channelsFrom} periodFrom={period.from} />
                   {selected.length > 1 && (
                     <BrandTable cur={view.cur} prior={view.prior} brands={selected} onOnly={(b) => setSelected([b])} />
                   )}

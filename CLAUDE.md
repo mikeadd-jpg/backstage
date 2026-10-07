@@ -64,6 +64,12 @@ chooser. Settings, Users and Sign out live in the account menu, not the main nav
 screen is the URL hash (`#inbox`, `#profit`), so refresh, links and the back button work;
 `#builder` still maps to Products for old links.
 
+`app/page.jsx` owns the data and server writes for Inbox, At risk and Approvals (it feeds
+the nav badges); `app/Inbox.jsx` and `app/AtRisk.jsx` own only filtering, search and
+display. Their filters sit in each screen's own header rather than a separate column, so
+the content gets the width. Inbox steps through the queue with arrow keys or j/k, ignored
+while typing. Shared brand and status display constants are in `app/ui.js`.
+
 ## Entry points
 
 Two crons in `vercel.json`, both exempt from the password gate because they carry
@@ -417,14 +423,27 @@ has to be pasted into its sheet (or into Google Ads) as well.
   needs no API token and no brand-script run.
 - In every brand sheet, new columns are appended after `last_updated` (K or L), because
   the dashboards address `daily_pnl` by column letter.
+- **Channel columns M..T** (same letters in PP/WS and EE): Shopify-attributed Meta and
+  Google orders and revenue, Meta purchases and value, Google conversions and value. The
+  Shopify side comes from each order's own `landing_site` / `referring_site` (utm tags,
+  fbclid, gclid), so it costs no extra API call; Meta's from the same Insights call as
+  spend with `actions`, pinned to 7-day click + 1-day view; Google's from `google_input`
+  C and D. Google means **paid clicks only**: organic search is most of Elder Emo's
+  Google traffic and would flatter ad CPA. Meta cannot be split that way (Facebook adds
+  fbclid to organic clicks too). `orderChannel_` is duplicated in both brand scripts and
+  was checked identical against 30 days of real orders.
+- **`backfillChannels()` fills M..T only.** Never use `backfillAllHistory` to get channel
+  history: it rewrites whole rows, profit included, and older EE rows carry hand-entered
+  values. It stops rather than writing zeros when Shopify returns nothing for a stretch
+  the sheet says had orders (the app lacks `read_all_orders` past 60 days).
 
 - **Auth is a service account** (`GOOGLE_SERVICE_ACCOUNT_JSON`, the whole key file as one
   value) that the sheet is shared with as Viewer. Not the Gmail OAuth client: that belongs
   to the support inbox and has only Gmail scopes.
-- **Visibility is `canViewProfit()` and nothing else.** Today it is the `ADMIN_EMAIL`
-  address only. The route re-checks it per request against the signed session and
-  answers 404 otherwise; hiding the tab in `page.jsx` is cosmetic. To widen access, change
-  that one function (e.g. to a column on `allowed_users`), not the route.
+- **Visibility is the `profit` area in `lib/roles.js`** (owners only), enforced per request
+  by `requireArea(req, 'profit', { hide: true })`, which answers 404 to everyone else.
+  Hiding the tab is cosmetic. To widen access, give another role the area; don't touch the
+  route.
 - **Never expose profit over MCP.** That connection has no per-person identity, so every
   connected Claude would see the margins.
 - Windows end **today inclusive**, today being in progress, because that is how the
@@ -446,6 +465,12 @@ has to be pasted into its sheet (or into Google Ads) as well.
   it. Old Elder Emo rows with hand-entered profit are the usual source.
 - When a selected brand's first row falls inside the comparison window (Wallspoke's
   history is short), every % change overstates growth, and the tab says so.
+- **Channels** compares, per ad channel, Shopify's credited orders and revenue with what
+  Meta and Google report, with CPA and ROAS both ways and the platform ÷ Shopify gap. A
+  gap well above 1 is a platform claiming generously; well below 1 usually means its
+  conversion tracking is missing purchases. Where the channel columns start later than
+  the selected range, spend still counts but orders don't, so the tab warns that CPA reads
+  high. `hasChannels` in the payload distinguishes "columns missing" from "zero orders".
 
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
@@ -561,12 +586,11 @@ Components are `.jsx` with `'use client'`, API routes are `route.js` with
 
 ## Known state
 
-Commit `a9c2ec5` was made from a stale copy of several files and silently reverted
-commit `a0620f4`. The resolved-history view, the working sidebar filters, and reopen
-are **not** on `main` despite the commit message claiming them: the rail filters in
-`app/page.jsx` are inert `div`s, `/api/inquiries` has no `?status=resolved`, and
-`lib/db.js` lost `reopenInquiry` / `getResolvedInquiries`. The `resolved_at` column
-still exists in the schema but nothing writes it.
+Commit `a9c2ec5` was once made from a stale copy of several files and silently reverted
+commit `a0620f4` (resolved history, working inbox filters, reopen). Those have since been
+restored: `/api/inquiries?status=resolved`, `reopenInquiry` / `getResolvedInquiries` in
+`lib/db.js`, and `resolveInquiry` stamps `resolved_at`. The episode is kept here as the
+reason for the warning below.
 
 This repo lives in iCloud Drive, so a stale working copy is a real failure mode. When a
 feature seems missing, check `git log --stat` for a commit that reverted it before

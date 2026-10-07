@@ -37,6 +37,8 @@
  *                               separated, or "all". PopPunks: "poppunks".
  *   3. Run `setup` once to create / update the tabs and headers.
  *   4. Run `applyGoogleFormulas` once so every existing row picks up google_spend.
+ *   4b. Run `testChannels`, then `backfillChannels` until it says complete, to fill the
+ *       channel columns (M..T) for past days. See the Channels section at the end.
  *   5. For full history: run `backfillAllHistory` repeatedly until done.
  *   6. Triggers → daily time-based trigger for `runDaily`.
  *
@@ -103,6 +105,9 @@ const LAST_RUN_TODAY_KEY = 'last_run_today';
 const C = {
   date: 1, revenue: 2, refunds: 3, net: 4, orders: 5, printify: 6, meta: 7,
   fees: 8, profit: 9, updated: 10, printful: 11, google: 12,
+  // Channels (see the Channels section at the end of this file).
+  shMetaOrders: 13, shMetaRev: 14, shGoogleOrders: 15, shGoogleRev: 16,
+  metaConv: 17, metaValue: 18, googleConv: 19, googleValue: 20,
 };
 
 // ---------- Entry points ----------
@@ -126,6 +131,14 @@ function setup() {
     'last_updated',      // J
     'printful_cost',     // K
     'google_spend',      // L
+    'shopify_meta_orders',    // M  Shopify-attributed: last visit came from Meta
+    'shopify_meta_revenue',   // N
+    'shopify_google_orders',  // O  Shopify-attributed: last visit was a Google ad click
+    'shopify_google_revenue', // P
+    'meta_purchases',         // Q  Meta-reported, 7-day click + 1-day view
+    'meta_purchase_value',    // R
+    'google_conversions',     // S  Google-reported "Conversions" (formula, google_input C)
+    'google_conv_value',      // T  (formula, google_input D)
   ];
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold');
   sheet.setFrozenRows(1);
@@ -978,7 +991,7 @@ function processWindow(start, end, tz) {
   const shopify = fetchShopifyByDay(start, end, tz);
   const printify = v.printify ? fetchPrintifyByDay(start, end, tz) : {};
   const printful = v.printful ? fetchPrintfulByDay(start, end, tz) : {};
-  const meta = fetchMetaByDay(start, end, tz);
+  const meta = fetchMetaDaily_(start, end, tz);
 
   const days = {};
   for (const d of allDatesBetween(start, end, tz)) {
@@ -987,7 +1000,9 @@ function processWindow(start, end, tz) {
   for (const [d, val] of Object.entries(shopify)) Object.assign(days[d] || (days[d] = blankDay(d)), val);
   for (const [d, val] of Object.entries(printify)) (days[d] || (days[d] = blankDay(d))).printify_cost = val;
   for (const [d, val] of Object.entries(printful)) (days[d] || (days[d] = blankDay(d))).printful_cost = val;
-  for (const [d, val] of Object.entries(meta)) (days[d] || (days[d] = blankDay(d))).meta_spend = val;
+  for (const [d, val] of Object.entries(meta.spend)) (days[d] || (days[d] = blankDay(d))).meta_spend = val;
+  for (const [d, val] of Object.entries(meta.purchases)) (days[d] || (days[d] = blankDay(d))).meta_purchases = val;
+  for (const [d, val] of Object.entries(meta.value)) (days[d] || (days[d] = blankDay(d))).meta_purchase_value = val;
 
   const rows = Object.values(days).sort((a, b) => a.date.localeCompare(b.date));
   writeRows(rows);
@@ -1076,10 +1091,18 @@ function fetchShopifyByDay(start, end, tz) {
         shopify_revenue: 0,
         shopify_refunds: 0,
         shopify_orders: 0,
+        meta_orders: 0, meta_revenue: 0, google_orders: 0, google_revenue: 0,
       });
       slot.shopify_revenue += gross;
       slot.shopify_refunds += refunds;
       slot.shopify_orders += 1;
+
+      // Which ad channel Shopify credits with this order (see orderChannel_).
+      const channel = orderChannel_(order);
+      if (channel) {
+        slot[channel + '_orders'] += 1;
+        slot[channel + '_revenue'] += gross - refunds;
+      }
     }
 
     url = parseNextLink(res.getAllHeaders()['Link'] || res.getAllHeaders()['link']);
@@ -1330,7 +1353,7 @@ function metaIncludes_() {
  * fix is to add an explicit timezone in the time_range, or shift the date
  * string here.
  */
-function fetchMetaByDay(start, end, tz) {
+function fetchMetaDaily_(start, end, tz) {
   const token = mustProp('META_ACCESS_TOKEN');
   const adAccountId = mustProp('META_AD_ACCOUNT_ID');
 
@@ -1346,7 +1369,9 @@ function fetchMetaByDay(start, end, tz) {
   const timeRange = JSON.stringify({ since: since, until: until });
   const base = `https://graph.facebook.com/${META_API_VERSION}/act_${adAccountId}/insights`;
   const params = [
-    'fields=spend,date_start,campaign_id,campaign_name',
+    'fields=spend,date_start,campaign_id,campaign_name,actions,action_values',
+    // Explicit, so purchases match Ads Manager's default columns whatever the account setting.
+    `action_attribution_windows=${encodeURIComponent(JSON.stringify(META_ATTRIBUTION))}`,
     'level=campaign',
     'time_increment=1',
     `time_range=${encodeURIComponent(timeRange)}`,
@@ -1361,6 +1386,8 @@ function fetchMetaByDay(start, end, tz) {
   const filterOn = includes.length > 0;
 
   const byDay = {};
+  const purchases = {};
+  const value = {};
   const droppedSeen = {};  // {campaignName: totalDroppedSpend} for logging
   let safety = 200;  // 500 rows/page * 200 pages covers long backfills
 
@@ -1374,7 +1401,9 @@ function fetchMetaByDay(start, end, tz) {
     for (const row of data.data || []) {
       const day = row.date_start;  // already yyyy-MM-dd in ad account tz
       const spend = parseFloat(row.spend || '0');
-      if (!spend) continue;
+      const bought = metaActionTotal_(row.actions);
+      const boughtValue = metaActionTotal_(row.action_values);
+      if (!spend && !bought && !boughtValue) continue;
 
       const name = (row.campaign_name || '').toLowerCase();
       const isIncluded = !filterOn || includes.some((sub) => name.indexOf(sub) !== -1);
@@ -1385,6 +1414,8 @@ function fetchMetaByDay(start, end, tz) {
       }
 
       byDay[day] = (byDay[day] || 0) + spend;
+      purchases[day] = (purchases[day] || 0) + bought;
+      value[day] = (value[day] || 0) + boughtValue;
     }
 
     url = (data.paging && data.paging.next) ? data.paging.next : null;
@@ -1400,7 +1431,12 @@ function fetchMetaByDay(start, end, tz) {
     });
   }
 
-  return byDay;
+  return { spend: byDay, purchases: purchases, value: value };
+}
+
+/** Daily Meta spend only, for callers that predate purchases (e.g. testMetaInsights). */
+function fetchMetaByDay(start, end, tz) {
+  return fetchMetaDaily_(start, end, tz).spend;
 }
 
 // ---------- Sheet writing ----------
@@ -1432,6 +1468,9 @@ function writeRows(rows) {
   const headerRow = existing[0];
   if (headerRow.indexOf('google_spend') === -1) {
     throw new Error('daily_pnl has no google_spend column yet — run setup() once, then applyGoogleFormulas().');
+  }
+  if (headerRow.indexOf('google_conv_value') === -1) {
+    throw new Error('daily_pnl has no channel columns (M..T) yet — run setup() once.');
   }
   const dateColIdx = headerRow.indexOf('date');
   const dateToRow = {};
@@ -1471,6 +1510,14 @@ function writeRows(rows) {
       now,                          // J: last_updated
       round2(r.printful_cost),      // K: printful_cost
       '',                           // L: google_spend (formula set below)
+      r.meta_orders || 0,           // M: shopify_meta_orders
+      round2(r.meta_revenue),       // N: shopify_meta_revenue
+      r.google_orders || 0,         // O: shopify_google_orders
+      round2(r.google_revenue),     // P: shopify_google_revenue
+      round2(r.meta_purchases),     // Q: meta_purchases
+      round2(r.meta_purchase_value),// R: meta_purchase_value
+      '',                           // S: google_conversions (formula set below)
+      '',                           // T: google_conv_value (formula set below)
     ];
 
     const apiMeta = round2(r.meta_spend || 0);
@@ -1497,6 +1544,7 @@ function writeRows(rows) {
     sheet.getRange(row, C.meta).setFormula(metaFormula_(row, apiMeta));
     sheet.getRange(row, C.profit).setFormula(profitFormula_(row));
     sheet.getRange(row, C.google).setFormula(googleFormula_(row));
+    sheet.getRange(row, C.googleConv, 1, 2).setFormulas([[googleColFormula_(row, 3), googleColFormula_(row, 4)]]);
   }
 }
 
@@ -1517,6 +1565,12 @@ function blankDay(date) {
     printify_cost: 0,
     printful_cost: 0,
     meta_spend: 0,
+    meta_orders: 0,
+    meta_revenue: 0,
+    google_orders: 0,
+    google_revenue: 0,
+    meta_purchases: 0,
+    meta_purchase_value: 0,
   };
 }
 
@@ -1610,4 +1664,173 @@ function testPrintful() {
   const byDay = fetchPrintfulByDay(start, end, tz);
   Object.keys(byDay).sort().forEach((d) => Logger.log('  ' + d + '  $' + byDay[d].toFixed(2)));
   if (!Object.keys(byDay).length) Logger.log('No submitted Printful orders in the last 7 days.');
+}
+
+// ---------- Channels: Shopify vs platform attribution (columns M..T) ----------
+//
+// Two views of "how many orders did Meta / Google drive", side by side:
+//   Shopify's: each order's own record of the visit that placed it (landing page utm
+//     tags and click ids, plus the referring site). Last-visit attribution.
+//   The platform's: Meta purchases (7-day click + 1-day view, Ads Manager's default) and
+//     Google Ads "Conversions" (primary actions). Platforms credit far more generously,
+//     and the gap between the two is the point of collecting both.
+// Google organic search is deliberately NOT counted as Google: only paid clicks (gclid /
+// gbraid / wbraid, or utm_source=google with a paid medium) are, so organic orders never
+// flatter Google ad CPA. Meta cannot be split the same way: Facebook stamps fbclid on
+// organic post clicks too, so "Meta" here means Meta ads plus Facebook/Instagram social.
+
+const META_PURCHASE_TYPES = ['omni_purchase', 'purchase', 'offsite_conversion.fb_pixel_purchase'];
+const META_ATTRIBUTION = ['7d_click', '1d_view'];
+const CHANNEL_CHECKPOINT_KEY = 'channel_backfill_cursor';
+
+/** 'meta', 'google' (paid only) or '' for an order, from Shopify's landing_site / referring_site. */
+function orderChannel_(order) {
+  const land = String(order.landing_site || '');
+  const ref = String(order.referring_site || '').toLowerCase();
+  const q = {};
+  const qi = land.indexOf('?');
+  if (qi !== -1) {
+    // Apps Script has no URL class, so the query string is parsed by hand.
+    land.slice(qi + 1).split('#')[0].split('&').forEach(function (kv) {
+      if (!kv) return;
+      const i = kv.indexOf('=');
+      const k = (i === -1 ? kv : kv.slice(0, i)).toLowerCase();
+      let v = i === -1 ? '' : kv.slice(i + 1);
+      try { v = decodeURIComponent(v.replace(/\+/g, ' ')); } catch (e) { /* keep raw */ }
+      if (!(k in q)) q[k] = v.toLowerCase();
+    });
+  }
+  const hostMatch = ref.match(/^[a-z][a-z0-9+.-]*:\/\/([^\/?#:]+)/);
+  const host = hostMatch ? hostMatch[1] : '';
+  const src = q.utm_source || '';
+  const med = q.utm_medium || '';
+  if ('fbclid' in q || /^(facebook|fb|ig|instagram|meta)$/.test(src) || /(^|\.)(facebook|instagram|fb)\.com$/.test(host)) return 'meta';
+  if ('gclid' in q || 'gbraid' in q || 'wbraid' in q || (src === 'google' && /cpc|paid|ppc/.test(med))) return 'google';
+  return '';
+}
+
+/** Purchases (or their value) from one Insights row's actions / action_values list. */
+function metaActionTotal_(list) {
+  if (!list || !list.length) return 0;
+  // These types overlap (omni_purchase includes the pixel's purchases), so take the first
+  // one present rather than summing them.
+  for (let t = 0; t < META_PURCHASE_TYPES.length; t++) {
+    const a = list.find(function (x) { return x.action_type === META_PURCHASE_TYPES[t]; });
+    if (!a) continue;
+    let n = 0, any = false;
+    META_ATTRIBUTION.forEach(function (w) {
+      if (a[w] != null) { n += parseFloat(a[w]) || 0; any = true; }
+    });
+    return any ? n : (parseFloat(a.value) || 0);
+  }
+  return 0;
+}
+
+/** google_input lookup for its Nth column (2 spend, 3 conversions, 4 conversion value). */
+function googleColFormula_(row, col) {
+  return `=IFERROR(VLOOKUP(A${row}, ${GOOGLE_TAB}!A:D, ${col}, FALSE), ` +
+    `IFERROR(VLOOKUP(TEXT(A${row},"yyyy-mm-dd"), ${GOOGLE_TAB}!A:D, ${col}, FALSE), 0))`;
+}
+
+/**
+ * Fill the channel columns (M..T) for every past day already in daily_pnl, and nothing
+ * else. Deliberately not backfillAllHistory: that rewrites whole rows, including profit,
+ * and older rows can carry hand-entered values that must not change.
+ *
+ * Resumable like the other backfills: run it until it logs "Channel backfill complete."
+ * It refuses to write zeros over a stretch where Shopify returns no orders but daily_pnl
+ * shows some, which is what happens past 60 days when the Shopify app lacks the
+ * read_all_orders scope.
+ */
+function backfillChannels() {
+  const ss = SpreadsheetApp.getActive();
+  const tz = ss.getSpreadsheetTimeZone();
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) throw new Error('Run setup() first.');
+  if (sheet.getRange(1, 20).getValue() !== 'google_conv_value') {
+    throw new Error('daily_pnl has no channel columns yet. Run setup() first.');
+  }
+  const props = PropertiesService.getScriptProperties();
+  const startTime = Date.now();
+
+  const last = sheet.getLastRow();
+  const dates = sheet.getRange(2, 1, last - 1, 5).getValues();  // A..E: date .. shopify_orders
+  const rowOf = {}, ordersOf = {};
+  let earliest = null;
+  dates.forEach(function (r, i) {
+    const d = r[0] instanceof Date ? Utilities.formatDate(r[0], tz, 'yyyy-MM-dd') : String(r[0] || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    rowOf[d] = i + 2;
+    ordersOf[d] = Number(r[4]) || 0;
+    if (!earliest || d < earliest) earliest = d;
+  });
+  if (!earliest) { Logger.log('daily_pnl is empty; nothing to backfill.'); return; }
+
+  const saved = props.getProperty(CHANNEL_CHECKPOINT_KEY);
+  let cursor = saved ? new Date(saved) : startOfDayInTz(new Date(Date.now() + 86400000), tz);
+  Logger.log('Channel backfill from ' + Utilities.formatDate(cursor, tz, 'yyyy-MM-dd') + ' back to ' + earliest + '.');
+
+  let chunks = 0, wrote = 0, done = false;
+  while (Date.now() - startTime < BACKFILL_MAX_RUNTIME_MS) {
+    if (Utilities.formatDate(cursor, tz, 'yyyy-MM-dd') <= earliest) { done = true; break; }
+    // Step back whole days; the +3h keeps a DST change from landing the edge at 23:00.
+    const chunkStart = startOfDayInTz(new Date(cursor.getTime() - BACKFILL_CHUNK_DAYS * 86400000 + 3 * 3600000), tz);
+    const days = allDatesBetween(chunkStart, cursor, tz);
+
+    const shop = fetchShopifyByDay(chunkStart, cursor, tz);
+    const sheetOrders = days.reduce(function (s, d) { return s + (ordersOf[d] || 0); }, 0);
+    const fetched = Object.keys(shop).reduce(function (s, d) { return s + (shop[d].shopify_orders || 0); }, 0);
+    if (sheetOrders > 0 && fetched === 0) {
+      throw new Error('Shopify returned no orders for ' + days[0] + ' to ' + days[days.length - 1] +
+        ' but daily_pnl records ' + sheetOrders + '. The Shopify app probably lacks read_all_orders, so ' +
+        'only the last 60 days are visible. Nothing was written for this stretch; earlier progress is kept.');
+    }
+    const meta = fetchMetaDaily_(chunkStart, cursor, tz);
+
+    days.forEach(function (d) {
+      const row = rowOf[d];
+      if (!row) return;
+      const s = shop[d] || {};
+      sheet.getRange(row, 13, 1, 6).setValues([[
+        s.meta_orders || 0, round2(s.meta_revenue || 0),
+        s.google_orders || 0, round2(s.google_revenue || 0),
+        round2(meta.purchases[d] || 0), round2(meta.value[d] || 0),
+      ]]);
+      sheet.getRange(row, 19, 1, 2).setFormulas([[googleColFormula_(row, 3), googleColFormula_(row, 4)]]);
+      wrote++;
+    });
+
+    chunks++;
+    cursor = chunkStart;
+    props.setProperty(CHANNEL_CHECKPOINT_KEY, cursor.toISOString());
+  }
+
+  if (done) {
+    props.deleteProperty(CHANNEL_CHECKPOINT_KEY);
+    Logger.log('Channel backfill complete. ' + wrote + ' days written in ' + chunks + ' chunks this run.');
+  } else {
+    Logger.log('Time limit approaching: ' + wrote + ' days written in ' + chunks + ' chunks. Run backfillChannels ' +
+      'again to continue from ' + Utilities.formatDate(cursor, tz, 'yyyy-MM-dd') + '.');
+  }
+}
+
+/** Start the channel backfill over from today. */
+function resetChannelBackfill() {
+  PropertiesService.getScriptProperties().deleteProperty(CHANNEL_CHECKPOINT_KEY);
+  Logger.log('Channel backfill checkpoint cleared.');
+}
+
+/** Logs the last 7 days of channel numbers without writing anything. Run before the backfill. */
+function testChannels() {
+  const tz = SpreadsheetApp.getActive().getSpreadsheetTimeZone();
+  const end = startOfDayInTz(new Date(Date.now() + 86400000), tz);
+  const start = new Date(end.getTime() - 7 * 86400000);
+  const shop = fetchShopifyByDay(start, end, tz);
+  const meta = fetchMetaDaily_(start, end, tz);
+  allDatesBetween(start, end, tz).forEach(function (d) {
+    const s = shop[d] || {};
+    Logger.log(d + '  Shopify: Meta ' + (s.meta_orders || 0) + ' orders $' + round2(s.meta_revenue || 0) +
+      ', Google ' + (s.google_orders || 0) + ' orders $' + round2(s.google_revenue || 0) +
+      '  |  Meta reports ' + round2(meta.purchases[d] || 0) + ' purchases $' + round2(meta.value[d] || 0));
+  });
 }

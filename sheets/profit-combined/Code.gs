@@ -32,6 +32,9 @@
  *            Later: gelato_cost appended too (Elder Emo only). It was always inside
  *            EE's profit but never carried here, so any cost breakdown built on
  *            combined_flat had an unexplained gap.
+ *            Later still: eight channel columns (Shopify-attributed Meta and Google orders
+ *            and revenue, Meta purchases and value, Google conversions and value), also
+ *            appended at the end for the same reason.
  *            Rebuild moved from daily (7am) to hourly, so "today" is current in the
  *            dashboard and in Backstage instead of frozen at 7am.
  */
@@ -43,7 +46,10 @@ const COMBINED_ID = '1GSm5YA2kCWW61QqxNzZ-lQqS5_ei8LjN53Dyq5zawmE';
 const SCHEMA = [
   'date', 'shopify_revenue', 'shopify_refunds', 'shopify_net', 'shopify_orders',
   'printify_cost', 'meta_spend', 'shopify_fees_est', 'profit',
-  'printful_cost', 'google_spend', 'gelato_cost'
+  'printful_cost', 'google_spend', 'gelato_cost',
+  // Channels: Shopify's attribution vs Meta's and Google's own (see the brand scripts).
+  'shopify_meta_orders', 'shopify_meta_revenue', 'shopify_google_orders', 'shopify_google_revenue',
+  'meta_purchases', 'meta_purchase_value', 'google_conversions', 'google_conv_value'
 ];
 
 // GA tab name candidates, tried in order per brand sheet

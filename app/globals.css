@@ -562,3 +562,144 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
   .pf-value { font-size: 18px; }
   .pf-tile.hero .pf-value { font-size: 21px; }
 }
+
+/* ---------------------------------------------------------------------------------
+   Inbox (app/Inbox.jsx): dense queue with its filters in the header, message beside it.
+   --------------------------------------------------------------------------------- */
+.ibx { flex: 1; display: flex; min-width: 0; min-height: 0; }
+.ibx-queue { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0;
+  background: var(--surface); border-right: 1px solid var(--line); }
+.ibx-tools { display: flex; flex-direction: column; gap: 8px; padding: 12px 12px 10px; border-bottom: 1px solid var(--line); }
+.ibx-search { padding: 8px 11px; font-size: 13.5px; }
+.ibx-views { display: flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--surface-2); }
+.ibx-view { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 6px 8px; border: none; border-radius: 6px;
+  background: none; font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.ibx-view.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(20,25,40,0.08); }
+.ibx-n { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--faint); }
+.ibx-n.warn { color: var(--red); }
+.ibx-brands { display: flex; flex-wrap: wrap; gap: 4px; }
+.ibx-tools .ibx-brands { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.ibx-tools .ibx-brands::-webkit-scrollbar { display: none; }
+.ibx-brand { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); font-family: 'Inter', sans-serif; font-size: 11.5px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.ibx-brand i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.ibx-brand span { font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--faint); }
+.ibx-brand.on { border-color: var(--text); color: var(--text); background: var(--surface-2); }
+.ibx-list { flex: 1; overflow-y: auto; }
+.ibx-row { display: block; width: 100%; padding: 9px 12px 9px 13px; border: none; border-bottom: 1px solid var(--line);
+  border-left: 3px solid transparent; background: none; font-family: 'Inter', sans-serif; text-align: left; cursor: pointer; }
+.ibx-row:hover { background: var(--hover); }
+.ibx-row.on { background: var(--surface-2); border-left-color: var(--action); }
+.ibx-row-top { display: flex; align-items: center; gap: 8px; }
+.ibx-from { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ibx-flag { font-size: 9.5px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--red); background: var(--red-bg); padding: 1px 6px; border-radius: 4px; }
+.ibx-time { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--faint); }
+.ibx-sum { display: block; margin-top: 2px; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ibx-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 11px; color: var(--faint); white-space: nowrap; overflow: hidden; }
+.ibx-brandtag { font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px; }
+.ibx-status { display: inline-flex; align-items: center; gap: 4px; }
+.ibx-status i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.ibx-order { margin-left: auto; font-family: 'Space Mono', monospace; }
+
+.ibx-detail { flex: 1; min-width: 0; overflow-y: auto; padding: 0 28px 28px; }
+/* Header stays put while the message scrolls, so Copy reply and Mark resolved are always one click away. */
+.ibx-dhead { position: sticky; top: 0; z-index: 3; background: var(--bg); display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 16px; align-items: center; padding: 18px 0 12px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.ibx-dhead .back-btn { grid-column: 1 / -1; margin-bottom: 0; }
+.ibx-dtitle { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ibx-dtitle h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.2px; }
+.ibx-dmeta { grid-column: 1; display: flex; flex-wrap: wrap; gap: 2px 14px; font-family: 'Space Mono', monospace; font-size: 11.5px; color: var(--muted); }
+.ibx-dmeta a { color: var(--blue); text-decoration: none; word-break: break-all; }
+.ibx-dactions { grid-column: 2; grid-row: 1 / span 2; display: flex; gap: 8px; }
+.ibx-dhead .back-btn ~ .ibx-dactions { grid-row: 2 / span 2; }
+.orig-body { margin-top: 12px; }
+.orig-body.clamped { max-height: 7.2em; overflow: hidden; }
+.ibx-more { border: none; background: none; padding: 6px 0 0; font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--blue); cursor: pointer; }
+/* Wide screens: order status beside the message instead of under it. */
+@media (min-width: 1500px) {
+  .ibx-dgrid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; align-items: start; }
+  .ibx-dside { position: sticky; top: 96px; }
+}
+@media (max-width: 1099px) and (min-width: 681px) { .ibx-queue { width: 320px; } .ibx-detail { padding: 0 20px 24px; } }
+@media (max-width: 680px) {
+  .ibx-queue { width: 100%; border-right: none; }
+  .ibx.show-detail .ibx-queue { display: none; }
+  .ibx.show-queue .ibx-detail { display: none; }
+  .ibx-detail { padding: 0 16px 32px; }
+  .ibx-row { padding: 12px 14px 12px 13px; }
+  /* On a phone nothing is "open" while you're looking at the list, so don't mark a row as if it were. */
+  .ibx.show-queue .ibx-row.on { background: none; border-left-color: transparent; }
+  .ibx-dhead { grid-template-columns: 1fr; padding-top: 8px; }
+  .ibx-dactions, .ibx-dhead .back-btn ~ .ibx-dactions { grid-column: 1; grid-row: auto; }
+  .ibx-dactions .btn { flex: 1; }
+  .ibx-brand { min-height: 34px; padding: 5px 11px; }
+  .ibx-view { min-height: 36px; }
+}
+
+/* ---------------------------------------------------------------------------------
+   At risk (app/AtRisk.jsx): a table on desktop, compact cards on phones.
+   --------------------------------------------------------------------------------- */
+.ord-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 14px; }
+.ord-search { flex: 1 1 260px; max-width: 380px; padding: 8px 11px; font-size: 13.5px; }
+.ord-tools .ibx-views { flex: 0 0 auto; }
+.ord-tools .ibx-view { flex: 0 0 auto; padding: 6px 12px; }
+.ord-table { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.ord-row { display: grid; grid-template-columns: 190px minmax(110px, 1fr) minmax(140px, 1.3fr) minmax(170px, 1.6fr) 48px 150px;
+  gap: 12px; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.ord-row:last-child { border-bottom: none; }
+.ord-row:not(.ord-headrow):hover { background: var(--hover); }
+.ord-headrow { padding: 8px 14px; background: var(--bg); font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--faint); }
+.ord-order { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ord-order b { font-family: 'Space Mono', monospace; font-size: 13px; }
+.ord-brand { font-size: 11px; font-weight: 600; white-space: nowrap; }
+.ord-sev { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); flex-shrink: 0; }
+.sev-high .ord-sev { background: var(--red); }
+.ord-cust { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ord-items { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ord-why { display: flex; flex-wrap: wrap; gap: 4px; }
+.ord-why .reason-pill { font-size: 10.5px; padding: 2px 8px; }
+.sev-high .reason-pill { background: var(--red-bg); color: var(--red); }
+.ord-r { text-align: right; justify-self: end; }
+.ord-age { font-family: 'Space Mono', monospace; color: var(--faint); }
+.ord-acts { display: flex; gap: 6px; }
+.ord-acts .btn, .ord-acts .link-btn { padding: 6px 10px; font-size: 12px; }
+@media (max-width: 1180px) {
+  .ord-items { display: none; }
+  .ord-row { grid-template-columns: 170px minmax(110px, 1fr) minmax(160px, 1.6fr) 44px 140px; }
+}
+@media (max-width: 680px) {
+  .ord-search { max-width: none; }
+  .ord-tools .ibx-views { flex: 1 1 100%; }
+  .ord-tools .ibx-view { flex: 1; }
+  .ord-headrow { display: none; }
+  .ord-row { grid-template-columns: 1fr auto; grid-template-areas: "order age" "cust cust" "items items" "why why" "acts acts";
+    gap: 6px 10px; padding: 12px 14px; }
+  .ord-order { grid-area: order; } .ord-age { grid-area: age; } .ord-cust { grid-area: cust; }
+  .ord-items { grid-area: items; display: block; white-space: normal; color: var(--text); }
+  .ord-why { grid-area: why; } .ord-acts { grid-area: acts; justify-self: start; }
+  .ord-acts .btn, .ord-acts .link-btn { padding: 9px 14px; font-size: 13px; }
+}
+
+/* Approvals: cards flow into a grid on wide screens. */
+.approve-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr)); gap: 14px; align-items: start; }
+.approve-list .approve-card { margin-bottom: 0; }
+
+/* Profit: Channels. One card per ad channel, Shopify's numbers beside the platform's. */
+.pf-section-head { margin: 20px 0 8px; }
+.pf-channels { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media (min-width: 900px) { .pf-channels { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.pf-ch { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.pf-ch-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.pf-ch-name { font-size: 14px; font-weight: 700; }
+.pf-ch-spend { font-family: 'Space Mono', monospace; font-size: 12.5px; color: var(--muted); }
+.pf-ch-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.pf-ch-table th { font-size: 10.5px; font-weight: 700; color: var(--faint); text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.pf-ch-table td { text-align: right; padding: 6px; border-bottom: 1px solid var(--line); font-family: 'Space Mono', monospace; white-space: nowrap; }
+.pf-ch-table tr:last-child td { border-bottom: none; }
+.pf-ch-table th:first-child, .pf-ch-table td:first-child { text-align: left; padding-left: 0; font-family: 'Inter', sans-serif; color: var(--muted); font-weight: 600; }
+.pf-gap { color: var(--faint); }
+.pf-gap.over { color: var(--amber); }
+.pf-gap.under { color: var(--red); }
+.pf-ch-quiet { font-size: 12.5px; color: var(--faint); padding: 8px 0; }
+.pf-ch-foot { font-size: 11px; color: var(--faint); margin-top: 8px; line-height: 1.4; }
+.pf-channels-empty { font-size: 12.5px; color: var(--muted); background: var(--surface); border: 1px dashed var(--line-strong); border-radius: 12px; padding: 12px 14px; }

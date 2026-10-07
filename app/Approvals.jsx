@@ -64,6 +64,9 @@ export default function Approvals({ data, loading, reload, onApproved, brands })
         <div className="risk-empty">No drafts waiting. Everything has been sent to production.</div>
       )}
 
+      {/* A grid on wide screens: each card keeps its full-size print preview, since judging
+          the print is the whole job here, but several fit side by side. */}
+      <div className="approve-list">
       {drafts.map((d) => {
         const b = brands[d.brand] || brands.unknown;
         const fileProblem = d.items.some((it) => it.files.length === 0 || it.files.some((f) => f.status !== 'ok'));
@@ -124,6 +127,7 @@ export default function Approvals({ data, loading, reload, onApproved, brands })
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
