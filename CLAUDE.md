@@ -512,6 +512,22 @@ Insights filter bar via `useInsights({ url: '/api/email', pnl: false })`.
 - Flow numbers are Klaviyo's reporting API (send date, its attribution, Placed Order as
   conversion), grouped per message and summed per flow; rates are computed from the summed
   counts, open rate over email-delivered only. One report covers at most a year.
+- **A flow's "people" is not its summed recipients**, which count a person once per email.
+  The report cannot group by flow alone (message id is mandatory), and metric aggregates
+  only count uniques per calendar bucket, so people = recipients of the flow's entry
+  emails (first send on each path, from `flowStructure`), floored by its busiest email for
+  when email 1 was off or replaced mid-range. Order rate and revenue per person divide by it.
+  Across flows people are summed, so someone in two flows counts twice; said on screen.
+- **Skips and flow entries are not in Klaviyo's API.** `Skipped Send` is only ever logged
+  without a `$flow`, and `Started Automation` has none either (checked over a year). Skips
+  live only on Klaviyo's per-message Recipient activity tab. The tab shows each email's
+  reach as % of people instead, which is skips plus exits combined.
+- Messages are ordered by walking each flow's actions from its root along `links`
+  (a split's yes path first), with the cumulative delay. Fetched with
+  `/flows?include=flow-actions`, cached 6 hours apart from the reports.
+- The previous-period report is requested only after the current one lands, so the two
+  don't compete for Klaviyo's 2-a-minute allowance; deltas appear when every selected
+  brand's prior report is in.
 - Metric aggregates also cap at a year per query and read their datetime filter as UTC;
   `timezone` only sets bucketing. Hence the chunking and `localMidnight()`.
 - **Short 429s are waited out in `kfetch`, long ones are not.** Klaviyo's per-second

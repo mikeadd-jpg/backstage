@@ -765,3 +765,9 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .em-status { display: inline-block; margin-left: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
   color: var(--faint); border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 5px; vertical-align: 1px; }
 .em-more { margin-top: 10px; }
+.em-d { display: block; font-family: 'Inter', sans-serif; }
+.em-d .pf-delta { font-size: 10.5px; }
+.em-step { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--line); color: var(--text); font-size: 10.5px; font-weight: 700; margin-right: 8px; }
+.em-when { margin-left: 8px; font-size: 10.5px; color: var(--faint); }
+.em-reach { display: block; font-family: 'Inter', sans-serif; font-size: 10.5px; color: var(--faint); }

@@ -250,43 +250,76 @@ function BrandTable({ lists, rows, selected, period, today, onOnly }) {
 // ----- flows -----
 
 const rate = (n, d) => (d ? n / d : null);
+const TOTAL_KEYS = ['people', 'recipients', 'delivered', 'opens_unique', 'clicks_unique', 'conversions', 'conversion_uniques',
+  'conversion_value', 'unsubscribe_uniques'];
 
-/** Rates from summed counts. Opens only exist for email, so open rate uses email delivered. */
+/**
+ * Rates from summed counts. A flow's order rate and revenue are per person who went
+ * through it (`people`, the recipients of its entry emails); a message's are per recipient.
+ * Opens only exist for email, so open rate uses email delivered.
+ */
 function flowRates(f) {
   const msgs = f.messages || [f];
   const emailDelivered = msgs.filter((m) => (m.channel || 'email') === 'email').reduce((n, m) => n + m.delivered, 0);
+  const base = f.people != null ? f.people : f.recipients;
   return {
     openRate: rate(f.opens_unique, emailDelivered),
     clickRate: rate(f.clicks_unique, f.delivered),
-    orderRate: rate(f.conversion_uniques, f.delivered),
+    orderRate: rate(f.conversion_uniques, base),
     unsubRate: rate(f.unsubscribe_uniques, f.delivered),
-    perRecipient: rate(f.conversion_value, f.delivered),
+    perPerson: rate(f.conversion_value, base),
   };
 }
 
+function sumFlows(flows) {
+  const t = Object.fromEntries(TOTAL_KEYS.map((k) => [k, 0]));
+  t.messages = [];
+  for (const f of flows) {
+    for (const k of TOTAL_KEYS) t[k] += f[k] || 0;
+    t.messages.push(...f.messages);
+  }
+  return t;
+}
+
+/** Flows for the selected brands, each tagged with its brand. */
+function flatten(report, selected) {
+  if (!report || !selected) return [];
+  return report.flows.filter((b) => selected.includes(b.name) && b.flows)
+    .flatMap((b) => b.flows.map((f) => ({ ...f, brand: b.name, brandKey: b.key })));
+}
+
+function delayLabel(min) {
+  if (min == null) return '';
+  if (min === 0) return 'on entry';
+  const d = Math.floor(min / 1440), h = Math.floor((min % 1440) / 60), m = min % 60;
+  return 'after ' + [d && d + 'd', h && h + 'h', !d && m && m + 'm'].filter(Boolean).join(' ');
+}
+
 const COLUMNS = [
-  { key: 'recipients', label: 'Recipients', get: (f) => f.recipients, fmt: count },
+  { key: 'people', label: 'People', title: 'People who went through the flow: recipients of its first email',
+    get: (f) => (f.people != null ? f.people : f.recipients), fmt: count },
+  { key: 'recipients', label: 'Emails sent', get: (f) => f.recipients, fmt: count },
   { key: 'openRate', label: 'Open rate', get: (f, r) => r.openRate, fmt: pct },
   { key: 'clickRate', label: 'Click rate', get: (f, r) => r.clickRate, fmt: pct },
-  { key: 'orderRate', label: 'Order rate', get: (f, r) => r.orderRate, fmt: pct },
+  { key: 'orderRate', label: 'Order rate', title: 'Share of people who placed an order credited to the flow', get: (f, r) => r.orderRate, fmt: pct, delta: true },
   { key: 'orders', label: 'Orders', get: (f) => f.conversions, fmt: count },
-  { key: 'revenue', label: 'Revenue', get: (f) => f.conversion_value, fmt: (v) => usd(v) },
-  { key: 'perRecipient', label: 'Per recipient', get: (f, r) => r.perRecipient, fmt: (v) => usd(v, 2) },
+  { key: 'revenue', label: 'Revenue', get: (f) => f.conversion_value, fmt: (v) => usd(v), delta: true },
+  { key: 'perPerson', label: 'Per person', get: (f, r) => r.perPerson, fmt: (v) => usd(v, 2) },
   { key: 'unsubRate', label: 'Unsub rate', get: (f, r) => r.unsubRate, fmt: pct },
 ];
 
-function FlowTiles({ flows }) {
-  const t = flows.reduce((a, f) => {
-    for (const k of ['recipients', 'delivered', 'opens_unique', 'clicks_unique', 'conversions', 'conversion_uniques', 'conversion_value', 'unsubscribe_uniques']) a[k] += f[k];
-    a.messages.push(...f.messages);
-    return a;
-  }, { recipients: 0, delivered: 0, opens_unique: 0, clicks_unique: 0, conversions: 0, conversion_uniques: 0, conversion_value: 0, unsubscribe_uniques: 0, messages: [] });
-  const r = flowRates(t);
+function FlowTiles({ flows, prior }) {
+  const t = sumFlows(flows), r = flowRates(t);
+  const p = prior ? sumFlows(prior) : null, pr = p ? flowRates(p) : null;
   const tiles = [
-    { label: 'Flow revenue', value: usd(t.conversion_value), sub: count(t.conversions) + ' orders', hero: true },
-    { label: 'Recipients', value: count(t.recipients), sub: usd(r.perRecipient, 2) + ' per recipient' },
-    { label: 'Open rate', value: pct(r.openRate), sub: 'Click rate ' + pct(r.clickRate) },
-    { label: 'Order rate', value: pct(r.orderRate), sub: 'Unsub rate ' + pct(r.unsubRate) },
+    { label: 'Flow revenue', value: usd(t.conversion_value), d: p && delta(t.conversion_value, p.conversion_value), good: 'up',
+      sub: count(t.conversions) + ' orders', hero: true },
+    { label: 'People through flows', value: count(t.people), d: p && delta(t.people, p.people), good: 'up',
+      sub: count(t.recipients) + ' emails sent' },
+    { label: 'Order rate', value: pct(r.orderRate), d: pr && delta(r.orderRate, pr.orderRate), good: 'up',
+      sub: usd(r.perPerson, 2) + ' per person' },
+    { label: 'Open rate', value: pct(r.openRate), d: pr && delta(r.openRate, pr.openRate), good: 'up',
+      sub: 'Click rate ' + pct(r.clickRate) + (pr ? ' (was ' + pct(pr.clickRate) + ')' : '') },
   ];
   return (
     <div className="pf-tiles">
@@ -294,6 +327,7 @@ function FlowTiles({ flows }) {
         <div className={'pf-tile' + (x.hero ? ' hero' : '')} key={x.label}>
           <div className="pf-label">{x.label}</div>
           <div className="pf-value">{x.value}</div>
+          {p && <Delta d={x.d} good={x.good} />}
           {x.sub && <div className="pf-sub">{x.sub}</div>}
         </div>
       ))}
@@ -301,11 +335,12 @@ function FlowTiles({ flows }) {
   );
 }
 
-function FlowTable({ flows, showBrand }) {
+function FlowTable({ flows, prior, showBrand }) {
   const [sort, setSort] = useState({ key: 'revenue', dir: -1 });
   const [open, setOpen] = useState(() => new Set());
   const [showQuiet, setShowQuiet] = useState(false);
   const col = COLUMNS.find((c) => c.key === sort.key);
+  const priorOf = useMemo(() => new Map((prior || []).map((f) => [f.brandKey + f.id, f])), [prior]);
   const withRates = flows.map((f) => ({ f, r: flowRates(f) }));
   const active = withRates.filter(({ f }) => f.recipients > 0);
   const rows = (showQuiet ? withRates : active)
@@ -321,7 +356,7 @@ function FlowTable({ flows, showBrand }) {
             <tr>
               <th>Flow</th>
               {COLUMNS.map((c) => (
-                <th key={c.key} aria-sort={sort.key === c.key ? (sort.dir < 0 ? 'descending' : 'ascending') : undefined}>
+                <th key={c.key} title={c.title} aria-sort={sort.key === c.key ? (sort.dir < 0 ? 'descending' : 'ascending') : undefined}>
                   <button className="em-sort" onClick={() => setSort((s) => ({ key: c.key, dir: s.key === c.key ? -s.dir : -1 }))}>
                     {c.label}{sort.key === c.key ? (sort.dir < 0 ? ' ↓' : ' ↑') : ''}
                   </button>
@@ -330,29 +365,45 @@ function FlowTable({ flows, showBrand }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ f, r }) => (
-              <Fragment key={f.brandKey + f.id}>
-                <tr className="em-flow" onClick={() => toggle(f.brandKey + f.id)} tabIndex={0} aria-expanded={open.has(f.brandKey + f.id)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') toggle(f.brandKey + f.id); }}>
-                  <td>
-                    <span className={'pf-chev' + (open.has(f.brandKey + f.id) ? ' open' : '')}>›</span>
-                    {showBrand && <i className="pf-dot" style={{ background: BRAND_COLOR[f.brand] || 'var(--muted)' }} title={f.brand} />}
-                    <span className="em-name">{f.name}</span>
-                    {f.status !== 'live' && <span className="em-status">{f.status}</span>}
-                  </td>
-                  {COLUMNS.map((c) => <td key={c.key}>{c.fmt(c.get(f, r))}</td>)}
-                </tr>
-                {open.has(f.brandKey + f.id) && f.messages.map((m) => {
-                  const mr = flowRates({ ...m, messages: [m] });
-                  return (
-                    <tr key={m.id} className="em-msg">
-                      <td><span className="em-name">{m.name}</span>{m.channel !== 'email' && <span className="em-status">{m.channel}</span>}</td>
-                      {COLUMNS.map((c) => <td key={c.key}>{c.fmt(c.get(m, mr))}</td>)}
-                    </tr>
-                  );
-                })}
-              </Fragment>
-            ))}
+            {rows.map(({ f, r }) => {
+              const id = f.brandKey + f.id;
+              const pf = priorOf.get(id), pr = pf ? flowRates(pf) : null;
+              return (
+                <Fragment key={id}>
+                  <tr className="em-flow" onClick={() => toggle(id)} tabIndex={0} aria-expanded={open.has(id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') toggle(id); }}>
+                    <td>
+                      <span className={'pf-chev' + (open.has(id) ? ' open' : '')}>›</span>
+                      {showBrand && <i className="pf-dot" style={{ background: BRAND_COLOR[f.brand] || 'var(--muted)' }} title={f.brand} />}
+                      <span className="em-name">{f.name}</span>
+                      {f.status !== 'live' && <span className="em-status">{f.status}</span>}
+                    </td>
+                    {COLUMNS.map((c) => (
+                      <td key={c.key}>
+                        {c.fmt(c.get(f, r))}
+                        {c.delta && prior && <small className="em-d"><Delta d={pf ? delta(c.get(f, r), c.get(pf, pr)) : null} good="up" /></small>}
+                      </td>
+                    ))}
+                  </tr>
+                  {open.has(id) && f.messages.map((m) => {
+                    const mr = flowRates(m);
+                    const reach = f.people ? m.recipients / f.people : null;
+                    return (
+                      <tr key={m.id} className="em-msg">
+                        <td>
+                          {m.step != null && <span className="em-step">{m.step}</span>}
+                          <span className="em-name">{m.name}</span>
+                          <span className="em-when">{m.inFlow ? delayLabel(m.delayMinutes) : 'no longer in the flow'}</span>
+                          {m.channel !== 'email' && <span className="em-status">{m.channel}</span>}
+                        </td>
+                        <td>{count(m.recipients)}{reach != null && <small className="em-reach">{pct(reach)} of people</small>}</td>
+                        {COLUMNS.slice(1).map((c) => <td key={c.key}>{c.fmt(c.get(m, mr))}</td>)}
+                      </tr>
+                    );
+                  })}
+                </Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -365,12 +416,15 @@ function FlowTable({ flows, showBrand }) {
   );
 }
 
-/** Flow reports for the period, retried after Klaviyo's wait when it rate-limits. */
-function useFlows(period) {
+/**
+ * One flow report for [from, to], retried after Klaviyo's wait when it rate-limits (2 a
+ * minute per account). Passing no dates holds it, which is how the comparison report is
+ * made to wait for the current one instead of competing with it for the same minute.
+ */
+function useFlowReport(from, to) {
   const [state, setState] = useState({ loading: false, data: null, error: '', waiting: 0 });
-  const from = period && period.from, to = period && period.to;
   useEffect(() => {
-    if (!from || !to) return undefined;
+    if (!from || !to) { setState({ loading: false, data: null, error: '', waiting: 0 }); return undefined; }
     let dead = false, timer = null, tries = 0;
     const load = () => {
       setState((s) => ({ ...s, loading: true, error: '', waiting: 0 }));
@@ -378,11 +432,10 @@ function useFlows(period) {
         if (dead) return;
         if (d.error) throw new Error(d.error);
         const limited = d.flows.filter((b) => b.rateLimited);
-        setState({ loading: false, data: d, error: '', waiting: limited.length && tries < 3 ? Math.max(...limited.map((b) => b.retryAfter || 60)) : 0 });
-        if (limited.length && tries < 3) {
-          tries += 1;
-          timer = setTimeout(load, Math.min(75, Math.max(...limited.map((b) => b.retryAfter || 60))) * 1000 + 500);
-        }
+        const wait = limited.length ? Math.min(75, Math.max(...limited.map((b) => b.retryAfter || 60))) : 0;
+        const retry = limited.length && tries < 3;
+        setState({ loading: false, data: d, error: '', waiting: retry ? wait : 0 });
+        if (retry) { tries += 1; timer = setTimeout(load, wait * 1000 + 500); }
       }).catch((e) => { if (!dead) setState({ loading: false, data: null, error: String(e.message || e), waiting: 0 }); });
     };
     load();
@@ -394,7 +447,9 @@ function useFlows(period) {
 export default function Email() {
   const ins = useInsights({ url: '/api/email', pnl: false });
   const { data, selected, setSelected, period, view } = ins;
-  const flowsState = useFlows(data && period ? period : null);
+  const flowsState = useFlowReport(data && period ? period.from : null, data && period ? period.to : null);
+  const curDone = !!(flowsState.data && !flowsState.waiting);
+  const priorState = useFlowReport(curDone && period.compare ? period.compare.from : null, curDone && period.compare ? period.compare.to : null);
 
   const notes = data ? data.lists.filter((l) => selected && selected.includes(l.name)).map((l) => {
     if (!l.configured) return l.name + ' is not connected: add ' + l.key.toUpperCase() + '_KLAVIYO_API_KEY in Vercel.';
@@ -405,12 +460,13 @@ export default function Email() {
     return null;
   }).filter(Boolean) : [];
 
-  const flows = useMemo(() => {
-    const d = flowsState.data;
-    if (!d || !selected) return [];
-    return d.flows.filter((b) => selected.includes(b.name) && b.flows)
-      .flatMap((b) => b.flows.map((f) => ({ ...f, brand: b.name, brandKey: b.key })));
-  }, [flowsState.data, selected]);
+  const flows = useMemo(() => flatten(flowsState.data, selected), [flowsState.data, selected]);
+  // Compare only once every selected brand's prior report is in, or the deltas mislead.
+  const priorFlows = useMemo(() => {
+    const d = priorState.data;
+    if (!d || !selected || d.flows.some((b) => selected.includes(b.name) && b.configured && !b.flows)) return null;
+    return flatten(d, selected);
+  }, [priorState.data, selected]);
   const flowNotes = flowsState.data && selected ? flowsState.data.flows.filter((b) => selected.includes(b.name) && b.configured).map((b) => {
     if (b.rateLimited) return b.name + ': Klaviyo allows 2 flow reports a minute. ' + (flowsState.waiting ? 'Trying again in about ' + Math.min(75, flowsState.waiting) + ' seconds.' : 'Try again shortly.');
     if (b.error) return b.name + ': ' + b.error;
@@ -446,11 +502,18 @@ export default function Email() {
           {!flowsState.data && flowsState.loading && <div className="risk-empty">Loading flow reports from Klaviyo…</div>}
           {flowsState.data && (
             <>
-              <FlowTiles flows={flows} />
-              <FlowTable flows={flows} showBrand={selected.length > 1} />
+              {period.compare && !priorFlows && (
+                <div className="pf-sub em-foot">
+                  {priorState.waiting ? 'Comparison waits on Klaviyo\'s limit of 2 reports a minute; about ' + priorState.waiting + 's.' : 'Loading the previous period to compare…'}
+                </div>
+              )}
+              <FlowTiles flows={flows} prior={priorFlows} />
+              <FlowTable flows={flows} prior={priorFlows} showBrand={selected.length > 1} />
               <div className="pf-sub em-foot">
-                Klaviyo's numbers by send date, orders on Klaviyo's attribution (Placed Order). Rates use delivered; open rate
-                uses email only. Click a flow for its messages.
+                People are the recipients of each flow's first email, so someone in two flows counts in both; emails sent counts
+                every send. Order rate and per person are per person reached. Klaviyo does not report skipped sends through its
+                API: the drop from one email to the next (shown as % of people when you open a flow) is skips plus people who
+                left the flow, for example by ordering. Numbers are Klaviyo's, by send date, with orders on its attribution.
               </div>
             </>
           )}
