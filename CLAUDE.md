@@ -18,7 +18,7 @@ cookie that stored it in plaintext.
 defined once in `lib/roles.js` (each role lists its *areas*: inbox, risk, approvals,
 products, mockups, profit, settings, users, connect), and both the navigation
 (`app/Shell.jsx`) and the server (`lib/access.js`) read that one file, so the two cannot
-drift. Owner (everything, the only role with profit), Admin (everything but profit),
+drift. Owner (everything, the only role with profit and attribution), Admin (everything but those),
 Support (inbox, at risk, approvals), Creative (products, mockups, no customer data), and
 Member, which is exactly what everyone had before roles and exists so nobody lost access
 the day they shipped.
@@ -58,9 +58,11 @@ bounces through sign-in when there isn't one.
 ## Navigation (`app/Shell.jsx`)
 
 Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups;
-Insights: Profit) at 1100px and up, an icon rail from 681 to 1099px, and on phones a title
-bar plus bottom tabs where Products and Mockups fold into one Create tab that opens a
-chooser. Settings, Users and Sign out live in the account menu, not the main nav. The open
+Insights: Profit, Attribution) at 1100px and up, an icon rail from 681 to 1099px, and on
+phones a title bar plus at most five bottom tabs: Create and Insights each fold into one
+tab with a chooser when the person has more than one screen in the group and other tabs
+beside it (a Creative keeps Products and Mockups as separate tabs, since a lone tab would
+hide the bar). Settings, Users and Sign out live in the account menu, not the main nav. The open
 screen is the URL hash (`#inbox`, `#profit`), so refresh, links and the back button work;
 `#builder` still maps to Products for old links.
 
@@ -423,16 +425,21 @@ has to be pasted into its sheet (or into Google Ads) as well.
   needs no API token and no brand-script run.
 - In every brand sheet, new columns are appended after `last_updated` (K or L), because
   the dashboards address `daily_pnl` by column letter.
-- **Channel columns M..T** (same letters in PP/WS and EE): Shopify-attributed Meta and
-  Google orders and revenue, Meta purchases and value, Google conversions and value. The
-  Shopify side comes from each order's own `landing_site` / `referring_site` (utm tags,
-  fbclid, gclid), so it costs no extra API call; Meta's from the same Insights call as
-  spend with `actions`, pinned to 7-day click + 1-day view; Google's from `google_input`
-  C and D. Google means **paid clicks only**: organic search is most of Elder Emo's
-  Google traffic and would flatter ad CPA. Meta cannot be split that way (Facebook adds
-  fbclid to organic clicks too). `orderChannel_` is duplicated in both brand scripts and
-  was checked identical against 30 days of real orders.
-- **`backfillChannels()` fills M..T only.** Never use `backfillAllHistory` to get channel
+- **Channel and source columns M..AD** (same letters in PP/WS and EE). `orderSource_`
+  credits every order to exactly one of seven sources from its own `landing_site` /
+  `referring_site`, so they **sum to orders and net revenue exactly** (checked to the cent
+  on 60 days of all three stores). M..P are Meta ads and Google Ads, U..AD organic social,
+  organic search, email/SMS, referral and direct; Q..T are what Meta (7-day click + 1-day
+  view, same Insights call as spend) and Google (`google_input` C, D) report themselves.
+  Rules worth keeping: **Meta and Google mean ads only** (Meta: a Meta utm_source with a
+  paid or empty medium; Google: gclid/gbraid/wbraid or a paid medium), untagged
+  Facebook/Instagram and a bare fbclid are organic social, Google `product_sync` is free
+  Shopping listings and counts as organic search, and a referrer that is the store's own
+  site is Direct. Own-site detection asks Shopify for the primary domain (`shop.json`),
+  because `SHOPIFY_STORE` is the myshopify handle (e.g. `9e2273-43`), not the brand;
+  `OWN_DOMAINS` adds extras. The classifier is duplicated in both brand scripts and was
+  checked identical.
+- **`backfillChannels()` fills M..AD only.** Never use `backfillAllHistory` to get channel
   history: it rewrites whole rows, profit included, and older EE rows carry hand-entered
   values. It stops rather than writing zeros when Shopify returns nothing for a stretch
   the sheet says had orders (the app lacks `read_all_orders` past 60 days).
@@ -465,12 +472,18 @@ has to be pasted into its sheet (or into Google Ads) as well.
   it. Old Elder Emo rows with hand-entered profit are the usual source.
 - When a selected brand's first row falls inside the comparison window (Wallspoke's
   history is short), every % change overstates growth, and the tab says so.
-- **Channels** compares, per ad channel, Shopify's credited orders and revenue with what
-  Meta and Google report, with CPA and ROAS both ways and the platform ÷ Shopify gap. A
-  gap well above 1 is a platform claiming generously; well below 1 usually means its
-  conversion tracking is missing purchases. Where the channel columns start later than
-  the selected range, spend still counts but orders don't, so the tab warns that CPA reads
-  high. `hasChannels` in the payload distinguishes "columns missing" from "zero orders".
+- **Attribution is its own tab** (`app/Attribution.jsx`, area `attribution`, owners
+  only) reading the same `/api/profit` rows. Profit and Attribution share one fetch, one
+  filter bar and remembered filters through `app/insights.jsx`; put anything both need
+  there rather than copying it. Views: mix tiles (paid, organic, ad ROAS), the revenue mix
+  bar, revenue by source over time (bucketed by day, week or month with range length),
+  the source table, Shopify vs platform cards for Meta and Google, and a brand by source
+  grid. Source colours are a fixed categorical palette keyed by source, never by rank.
+- In the platform cards a gap (platform ÷ Shopify) well above 1 is a platform claiming
+  generously; well below 1 usually means its conversion tracking is missing purchases.
+  Where source history starts later than the selected range, spend still counts but
+  orders don't, and the tab says so. `hasChannels` / `hasSources` in the payload
+  distinguish "columns missing" from "zero orders".
 
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 

@@ -703,3 +703,45 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .pf-ch-quiet { font-size: 12.5px; color: var(--faint); padding: 8px 0; }
 .pf-ch-foot { font-size: 11px; color: var(--faint); margin-top: 8px; line-height: 1.4; }
 .pf-channels-empty { font-size: 12.5px; color: var(--muted); background: var(--surface); border: 1px dashed var(--line-strong); border-radius: 12px; padding: 12px 14px; }
+
+/* ---------------------------------------------------------------------------------
+   Attribution (app/Attribution.jsx). Source colours are inline from COLOR there.
+   --------------------------------------------------------------------------------- */
+.at-tiles { margin-bottom: 18px; }
+@media (min-width: 1560px) { .at-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.at-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.at-card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.at-total { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; }
+/* 2px surface gap between segments so adjacent hues never touch. */
+.at-bar { display: flex; height: 18px; border-radius: 5px; overflow: hidden; gap: 2px; background: var(--surface); }
+.at-bar span { display: block; min-width: 2px; }
+.at-legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 18px; margin-top: 12px; }
+.at-leg { display: flex; align-items: center; gap: 8px; font-size: 12.5px; min-width: 0; }
+.at-leg i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.at-leg-name { flex: 1; min-width: 0; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.at-leg b { font-family: 'Space Mono', monospace; font-size: 12px; }
+.at-leg-rev { font-family: 'Space Mono', monospace; font-size: 11.5px; color: var(--faint); min-width: 64px; text-align: right; }
+.at-leg.none { opacity: 0.45; }
+.at-chart-unit { position: absolute; top: 8px; right: 12px; font-size: 10.5px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.6px; }
+.at-tip { min-width: 190px; }
+.at-tip-row { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.at-tip-row i { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.at-tip-row b { margin-left: auto; padding-left: 10px; font-family: 'Space Mono', monospace; font-weight: 400; color: var(--text); }
+.at-sources td:first-child { font-weight: 600; white-space: nowrap; font-family: 'Inter', sans-serif; }
+.at-sources td .pf-delta { font-family: 'Inter', sans-serif; font-size: 11px; }
+.pf-ch-name .pf-dot { margin-right: 7px; }
+.at-side-head { margin-top: 0; }
+.at-side .pf-channels { grid-template-columns: 1fr; }
+.at-grid td, .at-grid th { white-space: nowrap; }
+.at-grid td small { display: block; font-size: 10.5px; color: var(--muted); }
+.at-grid tbody tr { cursor: pointer; }
+.at-grid tbody tr:hover td:first-child, .at-grid tbody tr:focus td:first-child { background: var(--hover); }
+.at-grid td:first-child { font-family: 'Inter', sans-serif; font-weight: 600; }
+.at-body { display: block; }
+.at-side { margin-top: 18px; }
+@media (min-width: 1280px) {
+  .at-body { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
+  .at-side { margin-top: 0; position: sticky; top: 0; }
+}
+@media (max-width: 1279px) { .at-side .pf-channels { grid-template-columns: 1fr; } }
+@media (min-width: 900px) and (max-width: 1279px) { .at-side .pf-channels { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

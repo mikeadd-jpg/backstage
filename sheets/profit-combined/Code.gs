@@ -49,7 +49,11 @@ const SCHEMA = [
   'printful_cost', 'google_spend', 'gelato_cost',
   // Channels: Shopify's attribution vs Meta's and Google's own (see the brand scripts).
   'shopify_meta_orders', 'shopify_meta_revenue', 'shopify_google_orders', 'shopify_google_revenue',
-  'meta_purchases', 'meta_purchase_value', 'google_conversions', 'google_conv_value'
+  'meta_purchases', 'meta_purchase_value', 'google_conversions', 'google_conv_value',
+  // The other five Shopify-attributed sources; with Meta and Google they sum to net revenue.
+  'shopify_social_orders', 'shopify_social_revenue', 'shopify_search_orders', 'shopify_search_revenue',
+  'shopify_email_orders', 'shopify_email_revenue', 'shopify_referral_orders', 'shopify_referral_revenue',
+  'shopify_direct_orders', 'shopify_direct_revenue'
 ];
 
 // GA tab name candidates, tried in order per brand sheet

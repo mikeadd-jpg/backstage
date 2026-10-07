@@ -131,7 +131,7 @@ const DEPTH_MTD = 40;
 const DEPTH_YTD = 380;
 
 // daily_pnl width: A..K is the original layout, L (google_spend) was appended.
-const PNL_WIDTH = 20;  // A..L, then the channel columns M..T
+const PNL_WIDTH = 30;  // A..L, then channels M..T, then the other sources U..AD
 
 /**
  * Runs `fn` while holding the script lock, and skips the run entirely if
@@ -315,6 +315,16 @@ function setupUnlocked_() {
     'meta_purchase_value',    // R
     'google_conversions',     // S  Google-reported "Conversions" (formula, google_input C)
     'google_conv_value',      // T  (formula, google_input D)
+    'shopify_social_orders',  // U  Shopify-attributed sources, continued (see orderSource_)
+    'shopify_social_revenue', // V
+    'shopify_search_orders',  // W
+    'shopify_search_revenue', // X
+    'shopify_email_orders',   // Y
+    'shopify_email_revenue',  // Z
+    'shopify_referral_orders',  // AA
+    'shopify_referral_revenue', // AB
+    'shopify_direct_orders',  // AC
+    'shopify_direct_revenue', // AD
   ];
   // trimDataTabGrids keeps only one spare column past the data, so make sure the
   // grid actually has room for column L before writing the header into it.
@@ -2068,17 +2078,19 @@ function fetchShopifyByDay(start, end, tz) {
         shopify_refunds: 0,
         shopify_orders: 0,
         meta_orders: 0, meta_revenue: 0, google_orders: 0, google_revenue: 0,
+        social_orders: 0, social_revenue: 0, search_orders: 0, search_revenue: 0,
+        email_orders: 0, email_revenue: 0, referral_orders: 0, referral_revenue: 0,
+        direct_orders: 0, direct_revenue: 0,
       });
       slot.shopify_revenue += gross;
       slot.shopify_refunds += refunds;
       slot.shopify_orders += 1;
 
-      // Which ad channel Shopify credits with this order (see orderChannel_).
-      const channel = orderChannel_(order);
-      if (channel) {
-        slot[channel + '_orders'] += 1;
-        slot[channel + '_revenue'] += gross - refunds;
-      }
+      // Which source Shopify credits with this order (see orderSource_). Every order
+      // lands in exactly one, so the sources sum to the day's orders and net revenue.
+      const source = orderSource_(order);
+      slot[source + '_orders'] += 1;
+      slot[source + '_revenue'] += gross - refunds;
     }
 
     url = parseNextLink(res.getAllHeaders()['Link'] || res.getAllHeaders()['link']);
@@ -2462,8 +2474,8 @@ function writeRows(rows) {
   if (headerRow.indexOf('google_spend') === -1) {
     throw new Error('daily_pnl has no google_spend column yet — run setup() once, then applyGoogleFormulas().');
   }
-  if (headerRow.indexOf('google_conv_value') === -1) {
-    throw new Error('daily_pnl has no channel columns (M..T) yet — run setup() once.');
+  if (headerRow.indexOf('shopify_direct_revenue') === -1) {
+    throw new Error('daily_pnl has no channel and source columns (M..AD) yet — run setup() once.');
   }
   const dateColIdx = headerRow.indexOf('date');
   const dateToRow = {};
@@ -2515,6 +2527,7 @@ function writeRows(rows) {
       round2(r.meta_purchase_value),// R: meta_purchase_value
       googleColFormula_(rowNum, 3), // S: google_conversions (google_input C)
       googleColFormula_(rowNum, 4), // T: google_conv_value (google_input D)
+      ...sourceValues_(r),          // U..AD: the other five sources, orders then revenue
     ];
   }
 
@@ -2572,6 +2585,9 @@ function blankDay(date) {
     google_revenue: 0,
     meta_purchases: 0,
     meta_purchase_value: 0,
+    social_orders: 0, social_revenue: 0, search_orders: 0, search_revenue: 0,
+    email_orders: 0, email_revenue: 0, referral_orders: 0, referral_revenue: 0,
+    direct_orders: 0, direct_revenue: 0,
   };
 }
 
@@ -3329,17 +3345,33 @@ function testMetaInsights() {
 //   The platform's: Meta purchases (7-day click + 1-day view, Ads Manager's default) and
 //     Google Ads "Conversions" (primary actions). Platforms credit far more generously,
 //     and the gap between the two is the point of collecting both.
-// Google organic search is deliberately NOT counted as Google: only paid clicks (gclid /
-// gbraid / wbraid, or utm_source=google with a paid medium) are, so organic orders never
-// flatter Google ad CPA. Meta cannot be split the same way: Facebook stamps fbclid on
-// organic post clicks too, so "Meta" here means Meta ads plus Facebook/Instagram social.
+// Meta and Google here mean ADS only. Organic search and organic social are their own
+// sources (columns U..AD, see orderSource_), so neither flatters ad CPA.
 
 const META_PURCHASE_TYPES = ['omni_purchase', 'purchase', 'offsite_conversion.fb_pixel_purchase'];
 const META_ATTRIBUTION = ['7d_click', '1d_view'];
 const CHANNEL_CHECKPOINT_KEY = 'channel_backfill_cursor';
 
-/** 'meta', 'google' (paid only) or '' for an order, from Shopify's landing_site / referring_site. */
-function orderChannel_(order) {
+/**
+ * Where an order came from, judged by Shopify's own record of the visit that placed it:
+ * the landing page (utm tags, click ids) and the referring site. Last-visit attribution.
+ * Returns one of SOURCE_KEYS. The seven are exhaustive, so they sum to the day's orders
+ * and net revenue exactly.
+ *
+ *   meta      Meta ads: a Meta utm_source with a paid (or no) utm_medium. Elder Emo's ads
+ *             carry paid_social / paid; PopPunks' carry utm_source=facebook alone.
+ *   google    Google Ads: gclid / gbraid / wbraid, or utm_source=google with a paid medium.
+ *   social    Organic social: Facebook / Instagram visits that aren't tagged as ads (link in
+ *             bio, posts, utm_medium=social), including a bare fbclid, which Facebook adds
+ *             to organic clicks too.
+ *   search    Organic search, including Google's free Shopping listings (product_sync).
+ *   email     Email and SMS by utm_medium or a known sender in utm_source.
+ *   referral  Any other referring site or utm source (ChatGPT, Babylist, Reddit, ...).
+ *   direct    No referrer and no tags, or a referrer that is this store's own site.
+ */
+const SOURCE_KEYS = ['meta', 'google', 'social', 'search', 'email', 'referral', 'direct'];
+
+function orderSource_(order) {
   const land = String(order.landing_site || '');
   const ref = String(order.referring_site || '').toLowerCase();
   const q = {};
@@ -3356,12 +3388,72 @@ function orderChannel_(order) {
     });
   }
   const hostMatch = ref.match(/^[a-z][a-z0-9+.-]*:\/\/([^\/?#:]+)/);
-  const host = hostMatch ? hostMatch[1] : '';
+  let host = hostMatch ? hostMatch[1] : '';
+  if (host && isOwnHost_(host)) host = '';  // moving around your own site is not a referral
   const src = q.utm_source || '';
   const med = q.utm_medium || '';
-  if ('fbclid' in q || /^(facebook|fb|ig|instagram|meta)$/.test(src) || /(^|\.)(facebook|instagram|fb)\.com$/.test(host)) return 'meta';
+
+  if (/^(email|e-mail|sms|newsletter|mms)$/.test(med) || /^(klaviyo|attentive|postscript|omnisend|mailchimp|shopify_email|email|sms)$/.test(src)) return 'email';
   if ('gclid' in q || 'gbraid' in q || 'wbraid' in q || (src === 'google' && /cpc|paid|ppc/.test(med))) return 'google';
-  return '';
+  const metaSrc = /^(facebook|fb|ig|instagram|meta|face)$/.test(src) || src.indexOf('site_source_name') !== -1;
+  if (metaSrc) return (!med || /paid|cpc|ppc|^ads?$/.test(med)) ? 'meta' : 'social';
+  if ('fbclid' in q || /(^|\.)(facebook|instagram|fb)\.com$/.test(host)) return 'social';
+  if (/(^|\.)(google|bing|duckduckgo|yahoo|ecosia|baidu|yandex)\.[a-z.]+$/.test(host) || /(^|\.)search\.brave\.com$/.test(host) ||
+      /^(google|bing|duckduckgo|yahoo)$/.test(src)) return 'search';
+  if (src || host) return 'referral';
+  return 'direct';
+}
+
+/**
+ * Whether a referring host is this store's own site, which makes the visit Direct rather
+ * than a referral. SHOPIFY_STORE is the myshopify handle (e.g. "9e2273-43"), not the brand,
+ * so the store's real primary domain is asked of Shopify once per run (shop.json) and its
+ * brand label used: "elderemo.com" gives "elderemo", which also matches elderemo.co.uk;
+ * "shop.poppunks.com" gives "poppunks". OWN_DOMAINS (optional, comma separated) adds more.
+ */
+let OWN_SITE_MEMO_ = null;
+function ownSite_() {
+  if (OWN_SITE_MEMO_) return OWN_SITE_MEMO_;
+  const cache = CacheService.getScriptCache();
+  const hit = cache.get('own_site_v1');
+  if (hit) return (OWN_SITE_MEMO_ = JSON.parse(hit));
+  const props = PropertiesService.getScriptProperties();
+  const store = String(props.getProperty('SHOPIFY_STORE') || '').toLowerCase();
+  const site = { names: [], hosts: [store + '.myshopify.com'] };
+  try {
+    const res = UrlFetchApp.fetch(`https://${store}.myshopify.com/admin/api/${SHOPIFY_API_VERSION}/shop.json`, {
+      headers: { 'X-Shopify-Access-Token': getShopifyAccessToken() }, muteHttpExceptions: true,
+    });
+    if (res.getResponseCode() === 200) {
+      const shop = JSON.parse(res.getContentText()).shop || {};
+      [shop.domain, shop.myshopify_domain].filter(Boolean).forEach(function (d) {
+        d = String(d).toLowerCase();
+        site.hosts.push(d);
+        const label = d.split('.').filter(function (l) { return !/^(www|shop|store|m)$/.test(l); })[0];
+        if (label && label.indexOf('myshopify') === -1 && !/^[a-z0-9]{6}-[a-z0-9]{2}$/.test(label)) site.names.push(label);
+      });
+    } else {
+      Logger.log('Could not read shop.json (' + res.getResponseCode() + '); own-site referrals may count as Referral.');
+    }
+  } catch (e) {
+    Logger.log('Could not read shop.json: ' + e.message + '; own-site referrals may count as Referral.');
+  }
+  String(props.getProperty('OWN_DOMAINS') || '').toLowerCase().split(',')
+    .map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (d) { site.hosts.push(d); });
+  cache.put('own_site_v1', JSON.stringify(site), 21600);
+  return (OWN_SITE_MEMO_ = site);
+}
+
+function isOwnHost_(host) {
+  const site = ownSite_();
+  if (site.hosts.some(function (d) { return host === d || host.endsWith('.' + d); })) return true;
+  return host.split('.').some(function (label) { return site.names.indexOf(label) !== -1; });
+}
+
+/** 'meta', 'google' or '' — kept for anything that only cares about the two ad channels. */
+function orderChannel_(order) {
+  const s = orderSource_(order);
+  return s === 'meta' || s === 'google' ? s : '';
 }
 
 /** Purchases (or their value) from one Insights row's actions / action_values list. */
@@ -3402,8 +3494,8 @@ function backfillChannels() {
   const tz = ss.getSpreadsheetTimeZone();
   const sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) throw new Error('Run setup() first.');
-  if (sheet.getRange(1, 20).getValue() !== 'google_conv_value') {
-    throw new Error('daily_pnl has no channel columns yet. Run setup() first.');
+  if (sheet.getRange(1, 30).getValue() !== 'shopify_direct_revenue') {
+    throw new Error('daily_pnl has no channel and source columns (M..AD) yet. Run setup() first.');
   }
   const props = PropertiesService.getScriptProperties();
   const startTime = Date.now();
@@ -3452,6 +3544,7 @@ function backfillChannels() {
         round2(meta.purchases[d] || 0), round2(meta.value[d] || 0),
       ]]);
       sheet.getRange(row, 19, 1, 2).setFormulas([[googleColFormula_(row, 3), googleColFormula_(row, 4)]]);
+      sheet.getRange(row, 21, 1, 10).setValues([sourceValues_(s)]);
       wrote++;
     });
 
@@ -3469,6 +3562,15 @@ function backfillChannels() {
   }
 }
 
+/** U..AD for one day's tallies: social, search, email, referral, direct; orders then revenue. */
+function sourceValues_(r) {
+  const out = [];
+  ['social', 'search', 'email', 'referral', 'direct'].forEach(function (k) {
+    out.push(r[k + '_orders'] || 0, round2(r[k + '_revenue'] || 0));
+  });
+  return out;
+}
+
 /** Start the channel backfill over from today. */
 function resetChannelBackfill() {
   PropertiesService.getScriptProperties().deleteProperty(CHANNEL_CHECKPOINT_KEY);
@@ -3484,8 +3586,9 @@ function testChannels() {
   const meta = fetchMetaDaily_(start, end, tz);
   allDatesBetween(start, end, tz).forEach(function (d) {
     const s = shop[d] || {};
-    Logger.log(d + '  Shopify: Meta ' + (s.meta_orders || 0) + ' orders $' + round2(s.meta_revenue || 0) +
-      ', Google ' + (s.google_orders || 0) + ' orders $' + round2(s.google_revenue || 0) +
+    const parts = SOURCE_KEYS.map(function (k) { return k + ' ' + (s[k + '_orders'] || 0); }).join(', ');
+    const sum = SOURCE_KEYS.reduce(function (n, k) { return n + (s[k + '_orders'] || 0); }, 0);
+    Logger.log(d + '  ' + (s.shopify_orders || 0) + ' orders = ' + parts + (sum === (s.shopify_orders || 0) ? '' : '  (MISMATCH ' + sum + ')') +
       '  |  Meta reports ' + round2(meta.purchases[d] || 0) + ' purchases $' + round2(meta.value[d] || 0));
   });
 }

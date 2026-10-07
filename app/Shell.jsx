@@ -16,6 +16,8 @@ const PATHS = {
   products: ['M15 4l6 2v5h-3v8a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-8H3V6l6-2a3 3 0 0 0 6 0'],
   mockups: ['M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z', 'm4 16 4-4a2 2 0 0 1 3 0l5 5', 'm14 14 1-1a2 2 0 0 1 3 0l2 2', 'M15 8h.01'],
   profit: ['M4 20h16', 'M7 16v-4', 'M12 16V8', 'M17 16v-6'],
+  attribution: ['M10 3.2A9 9 0 1 0 20.8 14H10z', 'M14 3.3A9 9 0 0 1 20.7 10H14z'],
+  insights: ['M4 20h16', 'M7 16v-4', 'M12 16V8', 'M17 16v-6'],
   create: ['M12 5v14', 'M5 12h14'],
   settings: ['M4 6h8', 'M16 6h4', 'M14 4v4', 'M4 12h4', 'M12 12h8', 'M10 10v4', 'M4 18h11', 'M19 18h1', 'M17 16v4'],
   users: ['M5 7a4 4 0 1 0 8 0 4 4 0 1 0-8 0', 'M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2', 'M16 3.1a4 4 0 0 1 0 7.8', 'M21 21v-2a4 4 0 0 0-3-3.9'],
@@ -38,7 +40,8 @@ export const DESTINATIONS = {
   approvals: { area: 'approvals', label: 'Approvals', icon: 'approvals', group: 'Work' },
   products:  { area: 'products',  label: 'Products',  icon: 'products',  group: 'Create', blurb: 'Printify drafts from a design' },
   mockups:   { area: 'mockups',   label: 'Mockups',   icon: 'mockups',   group: 'Create', blurb: 'Lifestyle shots for a live product' },
-  profit:    { area: 'profit',    label: 'Profit',    icon: 'profit',    group: 'Insights' },
+  profit:    { area: 'profit',    label: 'Profit',    icon: 'profit',    group: 'Insights', blurb: 'Revenue, costs and margin' },
+  attribution: { area: 'attribution', label: 'Attribution', icon: 'attribution', group: 'Insights', blurb: 'Where revenue comes from' },
   // Account-menu destinations: reachable, but not worth a permanent slot.
   settings:  { area: 'settings',  label: 'Settings',  icon: 'settings',  group: 'Account' },
   users:     { area: 'users',     label: 'Users',     icon: 'users',     group: 'Account' },
@@ -90,8 +93,8 @@ function AccountMenu({ me, allowed, go, onClose, placement }) {
   );
 }
 
-/** Bottom sheet on phones: choose what to create. */
-function CreateSheet({ allowed, go, onClose }) {
+/** Bottom sheet on phones: choose between the screens a folded tab stands for. */
+function ChooserSheet({ title, keys, go, onClose }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -99,10 +102,10 @@ function CreateSheet({ allowed, go, onClose }) {
   }, [onClose]);
   return (
     <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-label="Create" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet" role="dialog" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-grip" aria-hidden="true" />
-        <div className="sheet-title">Create</div>
-        {['products', 'mockups'].filter((k) => allowed.includes(k)).map((k) => (
+        <div className="sheet-title">{title}</div>
+        {keys.map((k) => (
           <button key={k} className="sheet-option" onClick={() => { go(k); onClose(); }}>
             <span className="sheet-icon"><Icon name={DESTINATIONS[k].icon} size={20} /></span>
             <span><b>{DESTINATIONS[k].label}</b><small>{DESTINATIONS[k].blurb}</small></span>
@@ -116,22 +119,24 @@ function CreateSheet({ allowed, go, onClose }) {
 
 export default function Shell({ me, current, go, badges = {}, children }) {
   const [menu, setMenu] = useState(null);       // null | 'side' | 'top'
-  const [creating, setCreating] = useState(false);
+  const [chooser, setChooser] = useState(null);  // null | 'create' | 'insights'
   const allowed = allowedDestinations(me);
   const createKeys = ['products', 'mockups'].filter((k) => allowed.includes(k));
 
-  // Bottom tabs on phones: Work screens, one Create entry, then Profit. Products and
-  // Mockups fold into a single Create tab only when there are other tabs beside it: for
-  // a Creative, Create would be the only tab, and a lone tab hides the bar entirely,
-  // leaving no way to move between the two. They get both as tabs instead.
+  // Bottom tabs on phones, five at most: Work screens, then Create and Insights. A group
+  // with several screens folds into one tab that opens a chooser, but only when there are
+  // other tabs beside it: a Creative's only tab would otherwise be Create, and a lone tab
+  // hides the bar, leaving no way between Products and Mockups.
+  const insightKeys = ['profit', 'attribution'].filter((k) => allowed.includes(k));
   const workTabs = ['inbox', 'risk', 'approvals'].filter((k) => allowed.includes(k)).map((k) => ({ key: k, ...DESTINATIONS[k] }));
-  const profitTab = allowed.includes('profit') ? [{ key: 'profit', ...DESTINATIONS.profit }] : [];
-  const foldCreate = createKeys.length > 1 && workTabs.length + profitTab.length > 0;
+  const groupTabs = (keys, fold) => (keys.length > 1 && fold ? [fold] : keys.map((k) => ({ key: k, ...DESTINATIONS[k] })));
+  const others = (n) => workTabs.length + n > 0;
   const tabs = [
     ...workTabs,
-    ...(foldCreate ? [{ key: 'create', label: 'Create', icon: 'create' }] : createKeys.map((k) => ({ key: k, ...DESTINATIONS[k] }))),
-    ...profitTab,
+    ...groupTabs(createKeys, others(insightKeys.length) ? { key: 'create', label: 'Create', icon: 'create' } : null),
+    ...groupTabs(insightKeys, others(createKeys.length) ? { key: 'insights', label: 'Insights', icon: 'insights' } : null),
   ];
+  const FOLDS = { create: { title: 'Create', keys: createKeys }, insights: { title: 'Insights', keys: insightKeys } };
   const title = (DESTINATIONS[current] || {}).label || 'Backstage';
 
   return (
@@ -192,11 +197,11 @@ export default function Shell({ me, current, go, badges = {}, children }) {
         {tabs.length > 1 && (
           <nav className="bottom-nav" aria-label="Main">
             {tabs.map((t) => {
-              const on = t.key === 'create' ? createKeys.includes(current) : current === t.key;
-              const n = t.key === 'create' ? 0 : badges[t.key] || 0;
+              const on = FOLDS[t.key] ? FOLDS[t.key].keys.includes(current) : current === t.key;
+              const n = FOLDS[t.key] ? 0 : badges[t.key] || 0;
               return (
                 <button key={t.key} className={'bn-item' + (on ? ' active' : '')} aria-current={on ? 'page' : undefined}
-                  onClick={() => (t.key === 'create' ? setCreating(true) : go(t.key))}>
+                  onClick={() => (FOLDS[t.key] ? setChooser(t.key) : go(t.key))}>
                   <Icon name={t.icon} size={21} />
                   <span className="bn-label">{t.label}</span>
                   {n > 0 && <span className="bn-badge">{n}</span>}
@@ -207,7 +212,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
         )}
       </div>
 
-      {creating && <CreateSheet allowed={allowed} go={go} onClose={() => setCreating(false)} />}
+      {chooser && <ChooserSheet title={FOLDS[chooser].title} keys={FOLDS[chooser].keys} go={go} onClose={() => setChooser(null)} />}
     </div>
   );
 }

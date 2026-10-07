@@ -11,7 +11,8 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function GET(req) {
-  const gate = await requireArea(req, 'profit', { hide: true });
+  // Both Insights tabs read these rows (Profit and Attribution).
+  const gate = await requireArea(req, ['profit', 'attribution'], { hide: true });
   if (gate.error) return gate.error;
   try {
     return NextResponse.json(profitPayload(await readProfitRows()), {
