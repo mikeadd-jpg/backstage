@@ -514,6 +514,11 @@ Insights filter bar via `useInsights({ url: '/api/email', pnl: false })`.
   counts, open rate over email-delivered only. One report covers at most a year.
 - Metric aggregates also cap at a year per query and read their datetime filter as UTC;
   `timezone` only sets bucketing. Hence the chunking and `localMidnight()`.
+- **Short 429s are waited out in `kfetch`, long ones are not.** Klaviyo's per-second
+  burst limits (1/s on accounts and segment counts) answer with a Retry-After of a second
+  or two, and the first version surfaced those as "rate limit" errors on every brand. Waits
+  up to 10s are retried in place; anything longer is a per-minute or daily limit and
+  falls back to the stale cache. `cached()` also shares one in-flight load per key.
 
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
