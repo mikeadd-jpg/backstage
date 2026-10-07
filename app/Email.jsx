@@ -281,11 +281,11 @@ function sumFlows(flows) {
   return t;
 }
 
-/** Flows for the selected brands, each tagged with its brand. */
-function flatten(report, selected) {
+/** One report's items (`flows` or `campaigns`) for the selected brands, tagged with their brand. */
+function flatten(report, selected, field = 'flows') {
   if (!report || !selected) return [];
-  return report.flows.filter((b) => selected.includes(b.name) && b.flows)
-    .flatMap((b) => b.flows.map((f) => ({ ...f, brand: b.name, brandKey: b.key })));
+  return report.brands.filter((b) => selected.includes(b.name) && b[field])
+    .flatMap((b) => b[field].map((f) => ({ ...f, brand: b.name, brandKey: b.key })));
 }
 
 function delayLabel(min) {
@@ -416,22 +416,152 @@ function FlowTable({ flows, prior, showBrand }) {
   );
 }
 
+// ----- campaigns -----
+
+/** Campaign rates, all over delivered, which is how Klaviyo states them for campaigns. */
+function campaignRates(c) {
+  return {
+    openRate: c.channel === 'sms' ? null : rate(c.opens_unique, c.delivered),
+    clickRate: rate(c.clicks_unique, c.delivered),
+    orderRate: rate(c.conversion_uniques, c.delivered),
+    unsubRate: rate(c.unsubscribe_uniques, c.delivered),
+    perRecipient: rate(c.conversion_value, c.delivered),
+  };
+}
+
+function sumCampaigns(list) {
+  const t = { count: list.length, recipients: 0, delivered: 0, emailDelivered: 0, opens_unique: 0, clicks_unique: 0,
+    conversions: 0, conversion_uniques: 0, conversion_value: 0, unsubscribe_uniques: 0 };
+  for (const c of list) {
+    for (const k of ['recipients', 'delivered', 'opens_unique', 'clicks_unique', 'conversions', 'conversion_uniques', 'conversion_value', 'unsubscribe_uniques']) t[k] += c[k] || 0;
+    if (c.channel !== 'sms') t.emailDelivered += c.delivered || 0;
+  }
+  t.openRate = rate(t.opens_unique, t.emailDelivered);
+  t.clickRate = rate(t.clicks_unique, t.delivered);
+  t.orderRate = rate(t.conversion_uniques, t.delivered);
+  t.unsubRate = rate(t.unsubscribe_uniques, t.delivered);
+  t.perRecipient = rate(t.conversion_value, t.delivered);
+  return t;
+}
+
+function CampaignTiles({ campaigns, prior }) {
+  const t = sumCampaigns(campaigns), p = prior ? sumCampaigns(prior) : null;
+  const tiles = [
+    { label: 'Campaign revenue', value: usd(t.conversion_value), d: p && delta(t.conversion_value, p.conversion_value), good: 'up',
+      sub: count(t.conversions) + ' orders', hero: true },
+    { label: 'Campaigns sent', value: count(t.count), d: p && delta(t.count, p.count), good: 'neutral',
+      sub: count(t.recipients) + ' recipients' },
+    { label: 'Order rate', value: pct(t.orderRate), d: p && delta(t.orderRate, p.orderRate), good: 'up',
+      sub: usd(t.perRecipient, 3) + ' per recipient' },
+    { label: 'Open rate', value: pct(t.openRate), d: p && delta(t.openRate, p.openRate), good: 'up',
+      sub: 'Click ' + pct(t.clickRate) + ' · unsub ' + pct(t.unsubRate) },
+  ];
+  return (
+    <div className="pf-tiles">
+      {tiles.map((x) => (
+        <div className={'pf-tile' + (x.hero ? ' hero' : '')} key={x.label}>
+          <div className="pf-label">{x.label}</div>
+          <div className="pf-value">{x.value}</div>
+          {p && <Delta d={x.d} good={x.good} />}
+          {x.sub && <div className="pf-sub">{x.sub}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const sentLabel = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—');
+
+const CAMPAIGN_COLUMNS = [
+  { key: 'sent', label: 'Sent', get: (c) => (c.sendTime ? Date.parse(c.sendTime) : null), fmt: (v, c) => sentLabel(c.sendTime) },
+  { key: 'recipients', label: 'Recipients', get: (c) => c.recipients, fmt: count },
+  { key: 'openRate', label: 'Open rate', get: (c, r) => r.openRate, fmt: pct },
+  { key: 'clickRate', label: 'Click rate', get: (c, r) => r.clickRate, fmt: pct },
+  { key: 'orderRate', label: 'Order rate', get: (c, r) => r.orderRate, fmt: pct },
+  { key: 'orders', label: 'Orders', get: (c) => c.conversions, fmt: count },
+  { key: 'revenue', label: 'Revenue', get: (c) => c.conversion_value, fmt: (v) => usd(v) },
+  { key: 'perRecipient', label: 'Per recipient', get: (c, r) => r.perRecipient, fmt: (v) => usd(v, 3) },
+  { key: 'unsubRate', label: 'Unsub rate', get: (c, r) => r.unsubRate, fmt: pct },
+];
+
+function CampaignTable({ campaigns, showBrand }) {
+  const [sort, setSort] = useState({ key: 'sent', dir: -1 });
+  const col = CAMPAIGN_COLUMNS.find((c) => c.key === sort.key);
+  const rows = campaigns.map((c) => ({ c, r: campaignRates(c) }))
+    .sort((a, b) => ((col.get(a.c, a.r) ?? -Infinity) - (col.get(b.c, b.r) ?? -Infinity)) * sort.dir);
+  if (!campaigns.length) return <div className="risk-empty">No campaigns were sent in this period.</div>;
+  return (
+    <div className="pf-table-wrap flush">
+      <table className="pf-table em-flows em-camps">
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            {CAMPAIGN_COLUMNS.map((c) => (
+              <th key={c.key} aria-sort={sort.key === c.key ? (sort.dir < 0 ? 'descending' : 'ascending') : undefined}>
+                <button className="em-sort" onClick={() => setSort((s) => ({ key: c.key, dir: s.key === c.key ? -s.dir : -1 }))}>
+                  {c.label}{sort.key === c.key ? (sort.dir < 0 ? ' ↓' : ' ↑') : ''}
+                </button>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(({ c, r }) => (
+            <tr key={c.brandKey + c.id}>
+              <td title={c.name}>
+                {showBrand && <i className="pf-dot" style={{ background: BRAND_COLOR[c.brand] || 'var(--muted)' }} title={c.brand} />}
+                <span className="em-name">{c.name}</span>
+                {c.channel !== 'email' && <span className="em-status">{c.channel}</span>}
+                {(c.included.length > 0 || c.excluded.length > 0) && (
+                  <small className="em-aud">
+                    {c.included.join(', ')}{c.excluded.length ? ' · excl. ' + c.excluded.join(', ') : ''}
+                  </small>
+                )}
+              </td>
+              {CAMPAIGN_COLUMNS.map((x) => <td key={x.key}>{x.fmt(x.get(c, r), c)}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Rate-limit, error, clamp and staleness notes for one report, per selected brand. */
+function reportNotes(state, selected, what) {
+  if (!state.data || !selected) return [];
+  return state.data.brands.filter((b) => selected.includes(b.name) && b.configured).map((b) => {
+    if (b.rateLimited) return b.name + ': Klaviyo allows 2 ' + what + ' reports a minute. ' + (state.waiting ? 'Trying again in about ' + state.waiting + ' seconds.' : 'Try again shortly.');
+    if (b.error) return b.name + ': ' + b.error;
+    if (b.clamped) return b.name + ': Klaviyo reports at most a year, so ' + what + 's cover ' + shortDate(b.from) + ' onward.';
+    if (b.stale) return b.name + ': Klaviyo refused a fresh report, so these ' + what + ' numbers are from ' + new Date(b.fetchedAt).toLocaleString() + '.';
+    return null;
+  }).filter(Boolean);
+}
+
+/** Every selected brand's prior report is in, so a comparison will not mislead. */
+function priorReady(state, selected, field) {
+  const d = state.data;
+  return !!(d && selected && !d.brands.some((b) => selected.includes(b.name) && b.configured && !b[field]));
+}
+
 /**
- * One flow report for [from, to], retried after Klaviyo's wait when it rate-limits (2 a
- * minute per account). Passing no dates holds it, which is how the comparison report is
- * made to wait for the current one instead of competing with it for the same minute.
+ * One report (flows or campaigns) for [from, to], retried after Klaviyo's wait when it
+ * rate-limits (2 a minute per account, per report type). Passing no dates holds it, which
+ * is how a comparison report is made to wait for the current one instead of competing
+ * with it for the same minute.
  */
-function useFlowReport(from, to) {
+function useReport(kind, from, to) {
   const [state, setState] = useState({ loading: false, data: null, error: '', waiting: 0 });
   useEffect(() => {
     if (!from || !to) { setState({ loading: false, data: null, error: '', waiting: 0 }); return undefined; }
     let dead = false, timer = null, tries = 0;
     const load = () => {
       setState((s) => ({ ...s, loading: true, error: '', waiting: 0 }));
-      fetch(`/api/email?flows=1&from=${from}&to=${to}`).then((r) => r.json()).then((d) => {
+      fetch(`/api/email?${kind}=1&from=${from}&to=${to}`).then((r) => r.json()).then((d) => {
         if (dead) return;
         if (d.error) throw new Error(d.error);
-        const limited = d.flows.filter((b) => b.rateLimited);
+        const limited = d.brands.filter((b) => b.rateLimited);
         const wait = limited.length ? Math.min(75, Math.max(...limited.map((b) => b.retryAfter || 60))) : 0;
         const retry = limited.length && tries < 3;
         setState({ loading: false, data: d, error: '', waiting: retry ? wait : 0 });
@@ -440,16 +570,16 @@ function useFlowReport(from, to) {
     };
     load();
     return () => { dead = true; clearTimeout(timer); };
-  }, [from, to]);
+  }, [kind, from, to]);
   return state;
 }
 
 export default function Email() {
   const ins = useInsights({ url: '/api/email', pnl: false });
   const { data, selected, setSelected, period, view } = ins;
-  const flowsState = useFlowReport(data && period ? period.from : null, data && period ? period.to : null);
+  const flowsState = useReport('flows', data && period ? period.from : null, data && period ? period.to : null);
   const curDone = !!(flowsState.data && !flowsState.waiting);
-  const priorState = useFlowReport(curDone && period.compare ? period.compare.from : null, curDone && period.compare ? period.compare.to : null);
+  const priorState = useReport('flows', curDone && period.compare ? period.compare.from : null, curDone && period.compare ? period.compare.to : null);
 
   const notes = data ? data.lists.filter((l) => selected && selected.includes(l.name)).map((l) => {
     if (!l.configured) return l.name + ' is not connected: add ' + l.key.toUpperCase() + '_KLAVIYO_API_KEY in Vercel.';
@@ -462,18 +592,18 @@ export default function Email() {
 
   const flows = useMemo(() => flatten(flowsState.data, selected), [flowsState.data, selected]);
   // Compare only once every selected brand's prior report is in, or the deltas mislead.
-  const priorFlows = useMemo(() => {
-    const d = priorState.data;
-    if (!d || !selected || d.flows.some((b) => selected.includes(b.name) && b.configured && !b.flows)) return null;
-    return flatten(d, selected);
-  }, [priorState.data, selected]);
-  const flowNotes = flowsState.data && selected ? flowsState.data.flows.filter((b) => selected.includes(b.name) && b.configured).map((b) => {
-    if (b.rateLimited) return b.name + ': Klaviyo allows 2 flow reports a minute. ' + (flowsState.waiting ? 'Trying again in about ' + Math.min(75, flowsState.waiting) + ' seconds.' : 'Try again shortly.');
-    if (b.error) return b.name + ': ' + b.error;
-    if (b.clamped) return b.name + ': Klaviyo reports at most a year, so flows cover ' + shortDate(b.from) + ' onward.';
-    if (b.stale) return b.name + ': Klaviyo refused a fresh report, so these flow numbers are from ' + new Date(b.fetchedAt).toLocaleString() + '.';
-    return null;
-  }).filter(Boolean) : [];
+  const priorFlows = useMemo(() => (priorReady(priorState, selected, 'flows') ? flatten(priorState.data, selected) : null),
+    [priorState.data, selected]);
+
+  // Campaigns have their own report allowance at Klaviyo, so they load beside flows.
+  const campState = useReport('campaigns', data && period ? period.from : null, data && period ? period.to : null);
+  const campDone = !!(campState.data && !campState.waiting);
+  const campPriorState = useReport('campaigns', campDone && period.compare ? period.compare.from : null, campDone && period.compare ? period.compare.to : null);
+  const campaigns = useMemo(() => flatten(campState.data, selected, 'campaigns'), [campState.data, selected]);
+  const priorCampaigns = useMemo(() => (priorReady(campPriorState, selected, 'campaigns') ? flatten(campPriorState.data, selected, 'campaigns') : null),
+    [campPriorState.data, selected]);
+  const flowNotes = reportNotes(flowsState, selected, 'flow');
+  const campNotes = reportNotes(campState, selected, 'campaign');
 
   return (
     <div className="pane pf-pane">
@@ -514,6 +644,26 @@ export default function Email() {
                 every send. Order rate and per person are per person reached. Klaviyo does not report skipped sends through its
                 API: the drop from one email to the next (shown as % of people when you open a flow) is skips plus people who
                 left the flow, for example by ordering. Numbers are Klaviyo's, by send date, with orders on its attribution.
+              </div>
+            </>
+          )}
+
+          <div className="pf-label pf-section-head em-flows-head">Campaigns</div>
+          {campNotes.map((n) => <div className="pf-note" key={n}>{n}</div>)}
+          {campState.error && <div className="approve-error">{campState.error}</div>}
+          {!campState.data && campState.loading && <div className="risk-empty">Loading campaign reports from Klaviyo…</div>}
+          {campState.data && (
+            <>
+              {period.compare && !priorCampaigns && (
+                <div className="pf-sub em-foot">
+                  {campPriorState.waiting ? 'Comparison waits on Klaviyo\'s limit of 2 reports a minute; about ' + campPriorState.waiting + 's.' : 'Loading the previous period to compare…'}
+                </div>
+              )}
+              <CampaignTiles campaigns={campaigns} prior={priorCampaigns} />
+              <CampaignTable campaigns={campaigns} showBrand={selected.length > 1} />
+              <div className="pf-sub em-foot">
+                Campaigns sent in this period, with Klaviyo's numbers and orders on its attribution (Placed Order). Rates are over
+                delivered, as Klaviyo states them; the comparison is with campaigns sent in the previous period.
               </div>
             </>
           )}

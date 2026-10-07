@@ -488,7 +488,7 @@ has to be pasted into its sheet (or into Google Ads) as well.
 
 ## Email tab (`lib/klaviyo.js`, `/api/email`, `app/Email.jsx`)
 
-List growth and flow performance, read-only, from **three separate Klaviyo accounts**, one
+List growth, flow and campaign performance, read-only, from **three separate Klaviyo accounts**, one
 per brand, each with its own private key in `<BRAND>_KLAVIYO_API_KEY` (read scopes for
 accounts, segments, metrics and flows). Owners only, through the `email` area. Shares the
 Insights filter bar via `useInsights({ url: '/api/email', pnl: false })`.
@@ -528,6 +528,12 @@ Insights filter bar via `useInsights({ url: '/api/email', pnl: false })`.
 - The previous-period report is requested only after the current one lands, so the two
   don't compete for Klaviyo's 2-a-minute allowance; deltas appear when every selected
   brand's prior report is in.
+- **Campaigns** (`brandCampaigns`, `/api/email?campaigns=1`) mirror flows: one
+  `campaign-values-reports` call per range (its own 2-a-minute allowance, so it loads
+  beside flows), cached, compared with campaigns sent in the previous period. The report
+  returns ids only; names, send times and audiences come from `/campaigns` filtered by
+  `any(id, …)` per channel (a channel filter is mandatory there), and audience ids are
+  named from lists and segments. Campaign rates are over delivered, as Klaviyo states them.
 - Metric aggregates also cap at a year per query and read their datetime filter as UTC;
   `timezone` only sets bucketing. Hence the chunking and `localMidnight()`.
 - **Short 429s are waited out in `kfetch`, long ones are not.** Klaviyo's per-second

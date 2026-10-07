@@ -1,6 +1,7 @@
 // GET /api/email -> subscriber counts and daily subscribe / unsubscribe history per brand,
 //   plus every recorded daily count, for the Email tab to slice on the device.
 // GET /api/email?flows=1&from=YYYY-MM-DD&to=YYYY-MM-DD -> flow performance for that range.
+// GET /api/email?campaigns=1&from=...&to=...            -> campaign performance, by send date.
 //
 // The two are separate requests because flows are the expensive half: Klaviyo allows its
 // flow report 2 calls a minute per account, so changing the period should cost only that,
@@ -8,7 +9,7 @@
 // Owner-only through the email area (lib/roles.js), and 404 to everyone else.
 import { NextResponse } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
-import { klaviyoBrands, brandList, brandFlows, localToday } from '../../../lib/klaviyo.js';
+import { klaviyoBrands, brandList, brandFlows, brandCampaigns, localToday } from '../../../lib/klaviyo.js';
 import { getListSnapshots } from '../../../lib/db.js';
 
 export const dynamic = 'force-dynamic';
@@ -25,12 +26,12 @@ export async function GET(req) {
   const brands = klaviyoBrands();
 
   try {
-    if (q.get('flows')) {
+    if (q.get('flows') || q.get('campaigns')) {
       const from = q.get('from'), to = q.get('to');
       if (!ISO.test(from || '') || !ISO.test(to || '') || from > to) return json({ error: 'from and to must be dates, from first' }, 400);
       // Each brand is its own Klaviyo account with its own limits, so they run side by side.
-      const flows = await Promise.all(brands.map((b) => brandFlows(b.key, from, to)));
-      return json({ from, to, flows });
+      const load = q.get('campaigns') ? brandCampaigns : brandFlows;
+      return json({ from, to, brands: await Promise.all(brands.map((b) => load(b.key, from, to))) });
     }
 
     const [lists, snapshots] = await Promise.all([
