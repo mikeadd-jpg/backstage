@@ -139,3 +139,23 @@ CREATE TABLE IF NOT EXISTS allowed_users (
   last_seen  TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ===== Email tab (lib/klaviyo.js) =====
+-- Klaviyo's flow report allows 2 requests a minute and 225 a day per account, so every
+-- Klaviyo answer is cached here rather than in memory, where a cold function would
+-- forget it and spend the limit again. Keys are built in lib/klaviyo.js.
+CREATE TABLE IF NOT EXISTS klaviyo_cache (
+  key        TEXT PRIMARY KEY,
+  data       JSONB NOT NULL,
+  fetched_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Subscriber count per brand per day. Klaviyo only answers "how many now", so the total
+-- over time exists only if we write it down; the daily cron and every tab load do.
+CREATE TABLE IF NOT EXISTS email_list_snapshots (
+  brand       TEXT NOT NULL,          -- brand key: elderemo | poppunks | wallspoke
+  day         DATE NOT NULL,          -- in the Klaviyo account's timezone
+  subscribers INTEGER NOT NULL,
+  segment_id  TEXT,                   -- which segment was counted, in case it changes
+  PRIMARY KEY (brand, day)
+);

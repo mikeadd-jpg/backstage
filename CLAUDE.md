@@ -16,9 +16,9 @@ cookie that stored it in plaintext.
 
 **Roles decide which screens someone sees and which API routes answer them.** They are
 defined once in `lib/roles.js` (each role lists its *areas*: inbox, risk, approvals,
-products, mockups, profit, settings, users, connect), and both the navigation
+products, mockups, profit, attribution, email, settings, users, connect), and both the navigation
 (`app/Shell.jsx`) and the server (`lib/access.js`) read that one file, so the two cannot
-drift. Owner (everything, the only role with profit and attribution), Admin (everything but those),
+drift. Owner (everything, the only role with profit, attribution and email), Admin (everything but those),
 Support (inbox, at risk, approvals), Creative (products, mockups, no customer data), and
 Member, which is exactly what everyone had before roles and exists so nobody lost access
 the day they shipped.
@@ -58,7 +58,7 @@ bounces through sign-in when there isn't one.
 ## Navigation (`app/Shell.jsx`)
 
 Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups;
-Insights: Profit, Attribution) at 1100px and up, an icon rail from 681 to 1099px, and on
+Insights: Profit, Attribution, Email) at 1100px and up, an icon rail from 681 to 1099px, and on
 phones a title bar plus at most five bottom tabs: Create and Insights each fold into one
 tab with a chooser when the person has more than one screen in the group and other tabs
 beside it (a Creative keeps Products and Mockups as separate tabs, since a lone tab would
@@ -74,13 +74,14 @@ while typing. Shared brand and status display constants are in `app/ui.js`.
 
 ## Entry points
 
-Two crons in `vercel.json`, both exempt from the password gate because they carry
+Three crons in `vercel.json`, all exempt from the sign-in gate because they carry
 their own auth:
 
 | Route | Schedule | Auth |
 | --- | --- | --- |
 | `/api/ingest` | every 20 min | GET: `x-vercel-cron` header or `Authorization: Bearer $CRON_SECRET`. POST: `x-ingest-key: $INGEST_SECRET` |
 | `/api/scan` | every 4 hours | same |
+| `/api/email-snapshot` | daily 04:30 UTC | same |
 
 Both accept either GET form on purpose: Vercel only sends the Bearer token when a
 `CRON_SECRET` env var exists, so checking it alone would 401 every scheduled run.
@@ -485,6 +486,35 @@ has to be pasted into its sheet (or into Google Ads) as well.
   orders don't, and the tab says so. `hasChannels` / `hasSources` in the payload
   distinguish "columns missing" from "zero orders".
 
+## Email tab (`lib/klaviyo.js`, `/api/email`, `app/Email.jsx`)
+
+List growth and flow performance, read-only, from **three separate Klaviyo accounts**, one
+per brand, each with its own private key in `<BRAND>_KLAVIYO_API_KEY` (read scopes for
+accounts, segments, metrics and flows). Owners only, through the `email` area. Shares the
+Insights filter bar via `useInsights({ url: '/api/email', pnl: false })`.
+
+- **"Subscribers" is a segment count, found by its definition, not its name.** The
+  segment whose only condition is email marketing consent: `subscription: subscribed` is
+  preferred, and the common "can receive email marketing" (`subscription: any`, which
+  also counts never-subscribed profiles) is the fallback. The tab names which it used.
+  `<BRAND>_KLAVIYO_SEGMENT_ID` overrides the search.
+- **Klaviyo keeps no history of that count.** Growth is drawn from the `Subscribed to
+  Email Marketing` / `Unsubscribed from Email Marketing` events; the total over time
+  exists only in `email_list_snapshots`, written by the daily `/api/email-snapshot` cron
+  and on every tab load. Bounces and suppressions shrink the list without an unsubscribe
+  event, so the events will not reconcile exactly with the total. The total wins.
+- **The flow report allows 2 calls a minute and 225 a day per account.** Every Klaviyo
+  answer goes through `klaviyo_cache` in Postgres (not memory, which a cold function
+  forgets): flows for a range touching today live an hour, past ranges a week. A refused
+  call serves the stale copy if one exists; otherwise the route returns `rateLimited` in
+  band and the tab retries after Klaviyo's `Retry-After`. Flows are a separate request
+  from list data so changing the period costs only flow calls.
+- Flow numbers are Klaviyo's reporting API (send date, its attribution, Placed Order as
+  conversion), grouped per message and summed per flow; rates are computed from the summed
+  counts, open rate over email-delivered only. One report covers at most a year.
+- Metric aggregates also cap at a year per query and read their datetime filter as UTC;
+  `timezone` only sets bucketing. Hence the chunking and `localMidnight()`.
+
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
 `POST /api/mcp` exposes Backstage to Claude as an MCP server. Tools are thin wrappers over
@@ -548,6 +578,7 @@ Four places, easy to half-do:
 2. Env: `<BRAND>_SHOPIFY_DOMAIN`, `<BRAND>_SHOPIFY_CLIENT_ID`,
    `<BRAND>_SHOPIFY_CLIENT_SECRET`, plus `<BRAND>_PRINTIFY_SHOP_ID` or
    `<BRAND>_PRINTFUL_STORE_ID`. `configuredShopifyBrands()` keys off the first three.
+   `<BRAND>_KLAVIYO_API_KEY` for the Email tab.
 3. `BRANDS` and `RAIL_BRANDS` in `app/page.jsx`, plus color vars in `app/globals.css`.
 4. `CS_BRANDS` and `BRAND_NAMES` in `app/Settings.jsx`.
 

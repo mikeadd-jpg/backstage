@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Approvals from './Approvals';
 import Attribution from './Attribution';
+import Email from './Email';
 import AtRisk from './AtRisk';
 import Inbox from './Inbox';
 import { BRANDS } from './ui';
@@ -154,6 +155,7 @@ export default function Page() {
       {tab === 'mockups' && <Mockups />}
       {tab === 'profit' && <Profit />}
       {tab === 'attribution' && <Attribution />}
+      {tab === 'email' && <Email />}
       {tab === 'settings' && <Settings />}
       {tab === 'users' && <Users />}
     </Shell>

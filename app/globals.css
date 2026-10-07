@@ -745,3 +745,23 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 }
 @media (max-width: 1279px) { .at-side .pf-channels { grid-template-columns: 1fr; } }
 @media (min-width: 900px) and (max-width: 1279px) { .at-side .pf-channels { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ===== Email (app/Email.jsx). Builds on the pf- and at- Insights styles. ===== */
+.em-key { display: inline-flex; align-items: center; gap: 5px; margin-right: 12px; }
+.em-key i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.em-seg { font-family: 'Inter', sans-serif !important; white-space: normal !important; text-align: left !important; min-width: 150px; }
+.em-seg small { display: block; font-size: 10.5px; color: var(--faint); margin-top: 2px; }
+.em-foot { margin-top: 8px; line-height: 1.45; }
+.em-flows-head { margin-top: 26px; }
+.em-sort { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
+.em-sort:hover { color: var(--text); }
+.em-flows td:first-child { font-family: 'Inter', sans-serif; max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
+.em-flow { cursor: pointer; }
+.em-flow:hover, .em-flow:focus-visible { background: var(--hover); outline: none; }
+.em-flow .pf-chev { margin: 0 6px 0 0; }
+.em-flow .em-name { font-weight: 600; }
+.em-msg td { background: var(--surface-2); font-size: 11.5px; }
+.em-msg td:first-child { padding-left: 34px; color: var(--muted); }
+.em-status { display: inline-block; margin-left: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--faint); border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 5px; vertical-align: 1px; }
+.em-more { margin-top: 10px; }

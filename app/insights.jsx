@@ -1,10 +1,11 @@
 'use client';
-// Shared by the Insights tabs (Profit, Attribution): one data fetch, one set of brand and
-// period filters, one filter bar, and the number formatting both use. The filters are
-// remembered per device and shared, so switching tabs keeps the same brands and dates.
+// Shared by the Insights tabs (Profit, Attribution, Email): one data fetch per source, one
+// set of brand and period filters, one filter bar, and the number formatting they use. The
+// filters are remembered per device and shared, so switching tabs keeps the same brands
+// and dates.
 //
-// The rows come from /api/profit (owner-only; see lib/roles.js) and all slicing happens
-// here on the device through lib/profitMath.js.
+// Profit and Attribution read /api/profit (owner-only; see lib/roles.js) and slice it here
+// through lib/profitMath.js. Email reads /api/email and does its own sums (pnl: false).
 import { useEffect, useMemo, useState } from 'react';
 import { totals, dailySeries, presetPeriods, customPeriod, firstDates, addDays } from '../lib/profitMath';
 
@@ -40,16 +41,17 @@ export function Delta({ d, good }) {
   );
 }
 
-// One request serves both tabs while it is fresh.
-let cached = null;   // { at, promise }
-function fetchRows() {
-  if (cached && Date.now() - cached.at < CACHE_MS) return cached.promise;
-  const promise = fetch('/api/profit').then((r) => r.json()).then((d) => {
+// One request per source serves every tab reading it while it is fresh.
+const cached = new Map();   // url -> { at, promise }
+function fetchRows(url) {
+  const hit = cached.get(url);
+  if (hit && Date.now() - hit.at < CACHE_MS) return hit.promise;
+  const promise = fetch(url).then((r) => r.json()).then((d) => {
     if (d.error) throw new Error(d.error);
     return d;
   });
-  cached = { at: Date.now(), promise };
-  promise.catch(() => { cached = null; });
+  cached.set(url, { at: Date.now(), promise });
+  promise.catch(() => { cached.delete(url); });
   return promise;
 }
 
@@ -60,8 +62,12 @@ function savePrefs(p) {
   try { window.localStorage.setItem(PREF_KEY, JSON.stringify(p)); } catch { /* per-device nicety only */ }
 }
 
-/** Data plus the shared brand and period selection, and the totals both tabs build on. */
-export function useInsights() {
+/**
+ * Data plus the shared brand and period selection. With pnl (the default) it also builds
+ * the P&L totals Profit and Attribution share; the payload must carry brands, today and
+ * rows of { brand, date }.
+ */
+export function useInsights({ url = '/api/profit', pnl = true } = {}) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);   // brand names; null until data arrives
@@ -69,7 +75,7 @@ export function useInsights() {
   const [custom, setCustom] = useState({ from: '', to: '' });
 
   useEffect(() => {
-    fetchRows().then((d) => {
+    fetchRows(url).then((d) => {
       const prefs = loadPrefs();
       // Keep only remembered brands that still exist; fall back to all of them.
       const kept = (prefs.brands || []).filter((b) => d.brands.includes(b));
@@ -78,7 +84,7 @@ export function useInsights() {
       setCustom(prefs.custom && prefs.custom.from ? prefs.custom : { from: addDays(d.today, -13), to: d.today });
       setData(d);
     }).catch((e) => setError(String(e.message || e)));
-  }, []);
+  }, [url]);
 
   useEffect(() => {
     if (selected) savePrefs({ brands: selected, periodKey, custom });
@@ -92,13 +98,14 @@ export function useInsights() {
 
   const view = useMemo(() => {
     if (!data || !selected || !period) return null;
-    const cur = totals(data.rows, selected, period.from, period.to);
-    const prior = period.compare ? totals(data.rows, selected, period.compare.from, period.compare.to) : null;
-    const days = dailySeries(data.rows, selected, period.from, period.to);
     // A brand whose data starts after the comparison window begins makes the prior
     // period look smaller than it was, which inflates every delta. Said on screen.
     const starts = firstDates(data.rows);
     const partial = period.compare ? selected.filter((b) => starts[b] && starts[b] > period.compare.from) : [];
+    if (!pnl) return { partial, starts };
+    const cur = totals(data.rows, selected, period.from, period.to);
+    const prior = period.compare ? totals(data.rows, selected, period.compare.from, period.compare.to) : null;
+    const days = dailySeries(data.rows, selected, period.from, period.to);
     return { cur, prior, days, partial, starts };
   }, [data, selected, period && period.from, period && period.to, period && period.compare && period.compare.from]);  // period is rebuilt each render; its dates are the real inputs
 
