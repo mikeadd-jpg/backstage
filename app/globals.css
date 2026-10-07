@@ -773,3 +773,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .em-reach { display: block; font-family: 'Inter', sans-serif; font-size: 10.5px; color: var(--faint); }
 .em-aud { display: block; font-size: 10.5px; color: var(--faint); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; }
 .em-camps td:first-child { max-width: 360px; }
+
+/* ===== Traffic (app/Traffic.jsx). Builds on the pf-, at- and em- styles. ===== */
+.tr-funnel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.tr-step { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.tr-step-bar { height: 6px; background: var(--surface-2); border-radius: 3px; margin: 8px 0; overflow: hidden; }
+.tr-step-bar span { display: block; height: 100%; background: var(--blue); border-radius: 3px; }
+.tr-step-nums { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--muted); }
+.tr-step-nums b { font-family: 'Space Mono', monospace; font-size: 17px; color: var(--text); }
+.tr-step-of { color: var(--faint); }
+.tr-leak { color: var(--red); border-color: var(--red); }
+.tr-landing td:first-child { max-width: 420px; }
+@media (max-width: 680px) { .tr-funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

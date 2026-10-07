@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Approvals from './Approvals';
 import Attribution from './Attribution';
 import Email from './Email';
+import Traffic from './Traffic';
 import AtRisk from './AtRisk';
 import Inbox from './Inbox';
 import { BRANDS } from './ui';
@@ -156,6 +157,7 @@ export default function Page() {
       {tab === 'profit' && <Profit />}
       {tab === 'attribution' && <Attribution />}
       {tab === 'email' && <Email />}
+      {tab === 'traffic' && <Traffic />}
       {tab === 'settings' && <Settings />}
       {tab === 'users' && <Users />}
     </Shell>

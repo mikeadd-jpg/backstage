@@ -18,6 +18,7 @@ const PATHS = {
   profit: ['M4 20h16', 'M7 16v-4', 'M12 16V8', 'M17 16v-6'],
   attribution: ['M10 3.2A9 9 0 1 0 20.8 14H10z', 'M14 3.3A9 9 0 0 1 20.7 10H14z'],
   email: ['M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z', 'm3.5 7 8.5 6 8.5-6'],
+  traffic: ['M3 12h4l3-8 4 16 3-8h4'],
   insights: ['M4 20h16', 'M7 16v-4', 'M12 16V8', 'M17 16v-6'],
   create: ['M12 5v14', 'M5 12h14'],
   settings: ['M4 6h8', 'M16 6h4', 'M14 4v4', 'M4 12h4', 'M12 12h8', 'M10 10v4', 'M4 18h11', 'M19 18h1', 'M17 16v4'],
@@ -43,7 +44,8 @@ export const DESTINATIONS = {
   mockups:   { area: 'mockups',   label: 'Mockups',   icon: 'mockups',   group: 'Create', blurb: 'Lifestyle shots for a live product' },
   profit:    { area: 'profit',    label: 'Profit',    icon: 'profit',    group: 'Insights', blurb: 'Revenue, costs and margin' },
   attribution: { area: 'attribution', label: 'Attribution', icon: 'attribution', group: 'Insights', blurb: 'Where revenue comes from' },
-  email:     { area: 'email',     label: 'Email',     icon: 'email',     group: 'Insights', blurb: 'List growth and flow performance' },
+  email:     { area: 'email',     label: 'Email',     icon: 'email',     group: 'Insights', blurb: 'List growth, flows and campaigns' },
+  traffic:   { area: 'traffic',   label: 'Traffic',   icon: 'traffic',   group: 'Insights', blurb: 'Sessions and how well they convert' },
   // Account-menu destinations: reachable, but not worth a permanent slot.
   settings:  { area: 'settings',  label: 'Settings',  icon: 'settings',  group: 'Account' },
   users:     { area: 'users',     label: 'Users',     icon: 'users',     group: 'Account' },
@@ -129,7 +131,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
   // with several screens folds into one tab that opens a chooser, but only when there are
   // other tabs beside it: a Creative's only tab would otherwise be Create, and a lone tab
   // hides the bar, leaving no way between Products and Mockups.
-  const insightKeys = ['profit', 'attribution', 'email'].filter((k) => allowed.includes(k));
+  const insightKeys = ['profit', 'attribution', 'email', 'traffic'].filter((k) => allowed.includes(k));
   const workTabs = ['inbox', 'risk', 'approvals'].filter((k) => allowed.includes(k)).map((k) => ({ key: k, ...DESTINATIONS[k] }));
   const groupTabs = (keys, fold) => (keys.length > 1 && fold ? [fold] : keys.map((k) => ({ key: k, ...DESTINATIONS[k] })));
   const others = (n) => workTabs.length + n > 0;

@@ -159,3 +159,12 @@ CREATE TABLE IF NOT EXISTS email_list_snapshots (
   segment_id  TEXT,                   -- which segment was counted, in case it changes
   PRIMARY KEY (brand, day)
 );
+
+-- ===== Traffic tab (lib/traffic.js) =====
+-- ShopifyQL answers per brand and date range, cached so period switching and reloads do
+-- not re-run six analytics queries per brand. Same shape as klaviyo_cache.
+CREATE TABLE IF NOT EXISTS insights_cache (
+  key        TEXT PRIMARY KEY,
+  data       JSONB NOT NULL,
+  fetched_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

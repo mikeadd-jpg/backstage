@@ -18,7 +18,7 @@ cookie that stored it in plaintext.
 defined once in `lib/roles.js` (each role lists its *areas*: inbox, risk, approvals,
 products, mockups, profit, attribution, email, settings, users, connect), and both the navigation
 (`app/Shell.jsx`) and the server (`lib/access.js`) read that one file, so the two cannot
-drift. Owner (everything, the only role with profit, attribution and email), Admin (everything but those),
+drift. Owner (everything, the only role with profit, attribution, email and traffic), Admin (everything but those),
 Support (inbox, at risk, approvals), Creative (products, mockups, no customer data), and
 Member, which is exactly what everyone had before roles and exists so nobody lost access
 the day they shipped.
@@ -58,7 +58,7 @@ bounces through sign-in when there isn't one.
 ## Navigation (`app/Shell.jsx`)
 
 Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups;
-Insights: Profit, Attribution, Email) at 1100px and up, an icon rail from 681 to 1099px, and on
+Insights: Profit, Attribution, Email, Traffic) at 1100px and up, an icon rail from 681 to 1099px, and on
 phones a title bar plus at most five bottom tabs: Create and Insights each fold into one
 tab with a chooser when the person has more than one screen in the group and other tabs
 beside it (a Creative keeps Products and Mockups as separate tabs, since a lone tab would
@@ -541,6 +541,31 @@ Insights filter bar via `useInsights({ url: '/api/email', pnl: false })`.
   or two, and the first version surfaced those as "rate limit" errors on every brand. Waits
   up to 10s are retried in place; anything longer is a per-minute or daily limit and
   falls back to the stale cache. `cached()` also shares one in-flight load per key.
+
+## Traffic tab (`lib/traffic.js`, `lib/trafficMath.js`, `/api/traffic`, `app/Traffic.jsx`)
+
+Sessions and traffic quality from each brand's **Shopify Analytics via ShopifyQL**
+(`shopifyql()` in `lib/shopify.js`, the Admin API's `shopifyqlQuery`), so numbers match
+Shopify's own Sessions and Conversion reports. Owners only, through the `traffic` area.
+
+- **Scopes:** each brand's app needs `read_reports` **and** Level 2 protected customer
+  data access, then a redeploy for a fresh token. `shopifyql` names that fix on a denial.
+- **Channels are Shopify's `referring_channel` x `traffic_type` pairs**, grouped by
+  `groupOf()` (paid social, organic search, email, AI assistants...). The tab opens any
+  group to its raw pairs, because the grouping is a judgement. Two calls worth knowing:
+  Meta's unfilled `{{site_source_name}}` macro is paid social, and Shopify's `unknown`
+  traffic type (in-app browsers, bots) is never treated as paid.
+- **Revenue per session is real, not modelled:** the `sales` dataset groups by the same
+  channel pair, so net sales and orders join the sessions exactly. `sales` cannot group
+  by landing page or device, so those two tables show funnel and conversion only. Orders
+  with an empty channel came from no storefront session (drafts, Shop app) and sit in a
+  "Not from a store session" row, outside revenue per session.
+- **Rates are rebuilt from counts.** Shopify returns bounce rate, pages per session and
+  average duration per row; the server multiplies them by sessions so that summing across
+  channels, brands and days stays correct. Never average Shopify's rates directly.
+- Six ShopifyQL queries per brand per range, run sequentially (a burst trips Shopify's
+  cost throttle), cached in `insights_cache` for an hour (a week for past ranges). The
+  comparison period asks for `lite=1`: channels and totals only.
 
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
