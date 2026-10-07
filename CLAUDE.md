@@ -207,6 +207,12 @@ Vendor lists are paged back to a date cutoff, not read as one page. Elder Emo do
 Printify orders a month, so a single page of 50 only saw the last few days and an older
 hold was never flagged. Shopify's order list is paged the same way (it was capped at 250).
 
+**Printful `pending` is not a problem.** It is the status an order gets the moment it is
+approved: paid and queued. It used to be in `listProblemOrders`' pattern, which flagged
+every freshly approved Wallspoke map as high risk on day 0. Only draft (after the manual
+grace), on hold, failed, cancelled and error count; a pending order that sits too long is
+caught by the generic "in production N days" rule at `RISK_DAYS.production`.
+
 A shipment counts as delivered if Shopify says so **or** Printify has seen its tracking
 number delivered, since Shopify's DHL eCommerce feed sometimes stops updating. A Printful
 `draft` was never submitted, so it is flagged after the same grace period as a manual item.
