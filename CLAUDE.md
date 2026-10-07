@@ -426,8 +426,8 @@ a `*_PRINTFUL_STORE_ID`, which today is Wallspoke only) with its print file, and
 confirms the draft via `POST /orders/{id}/confirm`.
 
 **Confirming spends money.** It charges the Printful account and starts production, so the
-button states the cost and asks first. Like `lib/meta.js`, this is the one write here, and
-it is not exposed over MCP: approving a print is a human looking at a picture.
+button states the cost and asks first. Like `lib/meta.js`, confirm and decline are the only
+writes here, and neither is exposed over MCP: approving a print is a human looking at a picture.
 
 The image shown is the file's `preview_url` on Printful's CDN (600x800), not its `url`.
 The `url` is a 15 minute signed R2 link from the map generator and is almost always expired
@@ -436,6 +436,15 @@ by the time anyone looks. For full resolution, open the order in Printful. Files
 
 Approving removes the draft, which also settles the "Printful: draft, never submitted"
 reason in the risk scan on its next re-check.
+
+**Declining** cancels the draft in Printful (`DELETE /orders/{id}`), so it is never
+produced or charged. It does not touch Shopify: declining a draft whose Shopify order is
+still open leaves that order unfulfilled, and the risk scan will flag Printful's
+`canceled` status on its next run, which is the reminder to refund or regenerate. Each
+draft carries its Shopify order's state (looked up by Printful's `external_id`); a draft
+whose order was **cancelled in Shopify** is flagged, sorted first, and offers only
+Decline, because a cancelled order's draft otherwise sits in the queue forever looking
+like it needs a yes.
 
 ## Profit tab (`lib/profit.js`, `/api/profit`, `app/Profit.jsx`)
 
