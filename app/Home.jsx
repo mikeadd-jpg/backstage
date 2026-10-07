@@ -1,40 +1,43 @@
 'use client';
-// Home: the five things most worth your attention right now, ranked by the rules in
-// lib/focus.js across every screen this person's role can open. Live items (customers
-// waiting, risky orders, prints to approve) arrive first; the 7-day profit, ads, email and
-// traffic checks follow and slot into the ranking when they land.
+// Home. Two halves:
+//   Needs you now - live items from lib/focus.js (customers waiting, risky orders, prints
+//                   to approve). Fast, rule-based, always current.
+//   Briefing      - Claude's read of the business from a digest of profit, ads, traffic
+//                   and email (lib/briefing.js): the good, the bad, and what to do. Written
+//                   once a day per role, cached, and regenerable.
+// Roles with no Insights areas see only the first half.
 import { useEffect, useState } from 'react';
 
-const TOP = 5;
-const TONE_LABEL = { urgent: 'Now', act: 'This week', watch: 'Watch', good: 'Opportunity' };
+const IMPACT_LABEL = { high: 'High impact', medium: 'Medium impact', low: 'Low impact' };
+const TAB_LABEL = { profit: 'Profit', attribution: 'Attribution', email: 'Email', traffic: 'Traffic', inbox: 'Inbox', risk: 'At risk', approvals: 'Approvals' };
 
 function greeting() {
   const h = new Date().getHours();
   return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
 }
 
-function usePart(part) {
-  const [state, setState] = useState({ loading: true, data: null, error: '' });
+function useJson(url, enabled = true) {
+  const [state, setState] = useState({ loading: enabled, data: null, error: '' });
+  const [nonce, setNonce] = useState(0);
+  const [target, setTarget] = useState(url);
   useEffect(() => {
+    if (!enabled) { setState({ loading: false, data: null, error: '' }); return undefined; }
     let dead = false;
-    fetch('/api/focus?part=' + part).then((r) => r.json()).then((d) => {
+    setState((s) => ({ ...s, loading: true, error: '' }));
+    fetch(target).then((r) => r.json()).then((d) => {
       if (dead) return;
       if (d.error) throw new Error(d.error);
       setState({ loading: false, data: d, error: '' });
-    }).catch((e) => { if (!dead) setState({ loading: false, data: null, error: String(e.message || e) }); });
+    }).catch((e) => { if (!dead) setState((s) => ({ ...s, loading: false, error: String(e.message || e) })); });
     return () => { dead = true; };
-  }, [part]);
-  return state;
+  }, [target, nonce, enabled]);
+  return [state, (u) => { setTarget(u); setNonce((n) => n + 1); }];
 }
 
-function Item({ item, n, go }) {
+function NowItem({ item, go }) {
   return (
     <li className={'hm-item tone-' + item.tone}>
-      {n != null && <span className="hm-n">{n}</span>}
       <div className="hm-body">
-        <div className="hm-top">
-          <span className="hm-tone">{TONE_LABEL[item.tone] || ''}</span>
-        </div>
         <div className="hm-title">{item.title}</div>
         <div className="hm-detail">{item.detail}</div>
       </div>
@@ -43,66 +46,100 @@ function Item({ item, n, go }) {
   );
 }
 
-export default function Home({ me, go }) {
-  const ops = usePart('ops');
-  const insights = usePart('insights');
-  const [showMore, setShowMore] = useState(false);
-  const wantsInsights = me && me.areas.some((a) => ['profit', 'attribution', 'email', 'traffic'].includes(a));
+function Point({ p, kind, go }) {
+  return (
+    <li className={'br-point ' + kind}>
+      <div className="br-point-title">{p.title}</div>
+      <div className="hm-detail">{p.detail}</div>
+      {p.tab && <button className="br-link" onClick={() => go(p.tab)}>See {TAB_LABEL[p.tab]} →</button>}
+    </li>
+  );
+}
 
-  const items = [...((ops.data && ops.data.items) || []), ...((insights.data && insights.data.items) || [])]
-    .sort((a, b) => b.score - a.score);
-  const top = items.slice(0, TOP);
-  const rest = items.slice(TOP);
-  const skipped = [...((ops.data && ops.data.skipped) || []), ...((insights.data && insights.data.skipped) || [])];
-  const stillLoading = ops.loading || (wantsInsights && insights.loading);
+function Briefing({ b, go, regenerate, busy }) {
+  const written = b.writtenAt ? new Date(b.writtenAt) : null;
+  const canRegen = !written || Date.now() - written.getTime() > 15 * 60 * 1000;
+  return (
+    <section className="br">
+      <div className="br-headline">{b.headline}</div>
+
+      <div className="br-cols">
+        <div>
+          <div className="pf-label pf-section-head br-good-head">Going well</div>
+          <ul className="br-points">{b.good.map((p, i) => <Point key={i} p={p} kind="good" go={go} />)}</ul>
+        </div>
+        <div>
+          <div className="pf-label pf-section-head br-bad-head">Needs work</div>
+          <ul className="br-points">{b.bad.map((p, i) => <Point key={i} p={p} kind="bad" go={go} />)}</ul>
+        </div>
+      </div>
+
+      <div className="pf-label pf-section-head">What to do</div>
+      <ol className="hm-list br-actions">
+        {b.actions.map((a, i) => (
+          <li className={'hm-item impact-' + a.impact} key={i}>
+            <span className="hm-n">{i + 1}</span>
+            <div className="hm-body">
+              <span className="hm-tone">{IMPACT_LABEL[a.impact]}</span>
+              <div className="hm-title">{a.title}</div>
+              <div className="hm-detail">{a.why}</div>
+            </div>
+            {a.tab && <button className="hm-go" onClick={() => go(a.tab)}>{TAB_LABEL[a.tab]} →</button>}
+          </li>
+        ))}
+      </ol>
+
+      <div className="pf-sub em-foot hm-foot">
+        Written by Claude{written ? ' at ' + written.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''} from
+        your numbers only: last 7 and 30 days (today so far) against the periods before. Check anything surprising on the
+        tab it links to.
+        {b.unavailable && b.unavailable.length > 0 && <> Not available this time: {b.unavailable.join('; ')}.</>}
+        {' '}
+        <button className="br-link inline" disabled={busy || !canRegen} onClick={regenerate}
+          title={canRegen ? 'Write it again from fresh data' : 'Can be rewritten 15 minutes after the last one'}>
+          {busy ? 'Rewriting…' : 'Rewrite from fresh data'}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+export default function Home({ me, go }) {
+  const wantsBriefing = !!(me && me.areas.some((a) => ['profit', 'attribution', 'email', 'traffic'].includes(a)));
+  const [ops] = useJson('/api/focus?part=ops');
+  const [brief, reload] = useJson('/api/briefing', wantsBriefing);
   const name = me && me.name ? me.name.split(' ')[0] : '';
-  const w = insights.data && insights.data.window;
+  const now = (ops.data && ops.data.items) || [];
+  const b = brief.data && brief.data.briefing;
 
   return (
     <div className="pane hm-pane">
       <div className="pane-head">{greeting()}{name ? ', ' + name : ''}</div>
-      <div className="pane-sub">
-        {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}. The {TOP} things most worth your
-        attention, ranked across everything you can see.
-      </div>
+      <div className="pane-sub">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
 
       {ops.error && <div className="approve-error">{ops.error}</div>}
-      {wantsInsights && insights.error && <div className="approve-error">Insights: {insights.error}</div>}
-
-      {top.length > 0 && (
-        <ol className="hm-list">
-          {top.map((it, i) => <Item key={it.id} item={it} n={i + 1} go={go} />)}
-        </ol>
-      )}
-      {!stillLoading && !top.length && (
-        <div className="hm-clear">
-          <b>Nothing needs you right now.</b>
-          <span>No one waiting, nothing at risk, and no week-on-week drop worth flagging.</span>
-        </div>
-      )}
-      {stillLoading && (
-        <div className="hm-loading">
-          {ops.loading ? 'Checking the inbox, orders and approvals…' : 'Checking profit, ads, email and traffic against last week…'}
-          <span className="hm-loading-sub">The full ranking settles once every source has answered; the order can still change.</span>
-        </div>
-      )}
-
-      {rest.length > 0 && !stillLoading && (
+      {now.length > 0 && (
         <>
-          <button className="pf-chip small em-more" onClick={() => setShowMore((v) => !v)}>
-            {showMore ? 'Hide' : 'Also worth a look:'} {rest.length} more
-          </button>
-          {showMore && <ul className="hm-list hm-more">{rest.map((it) => <Item key={it.id} item={it} go={go} />)}</ul>}
+          <div className="pf-label pf-section-head">Needs you now</div>
+          <ul className="hm-list hm-now">{[...now].sort((x, y) => y.score - x.score).map((it) => <NowItem key={it.id} item={it} go={go} />)}</ul>
         </>
       )}
+      {!ops.loading && !now.length && !wantsBriefing && (
+        <div className="hm-clear"><b>Nothing needs you right now.</b><span>No one waiting, nothing at risk, nothing to approve.</span></div>
+      )}
 
-      {!stillLoading && (
-        <div className="pf-sub em-foot hm-foot">
-          {w ? `Week-on-week checks compare ${w.cur.from} to ${w.cur.to} (today so far) with the 7 days before. ` : ''}
-          Ranked by fixed rules: money being lost first, then people waiting and things that broke, then real declines,
-          then watch items and opportunities.
-          {skipped.length > 0 && <> Not checked this time: {skipped.join('; ')}.</>}
-        </div>
+      {wantsBriefing && (
+        <>
+          <div className="pf-label pf-section-head">Today's briefing</div>
+          {brief.error && <div className="approve-error">The briefing could not be written: {brief.error}</div>}
+          {!b && brief.loading && (
+            <div className="hm-loading">
+              Reading profit, ads, traffic and email, then writing today's briefing…
+              <span className="hm-loading-sub">The first one each day takes up to a minute or two. After that it opens instantly.</span>
+            </div>
+          )}
+          {b && <Briefing b={b} go={go} busy={brief.loading} regenerate={() => reload('/api/briefing?force=1&t=' + Date.now())} />}
+        </>
       )}
     </div>
   );

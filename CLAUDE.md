@@ -74,6 +74,25 @@ worth attention, ranked across every screen their role can open.
   Email tab so the two share the cache; a busy Klaviyo is listed as "not checked", never
   as good news.
 
+### The daily briefing (`lib/briefing.js`, `/api/briefing`)
+
+Below "Needs you now" (the live ops items above), Home shows a briefing Claude writes:
+a headline, what is going well, what needs work, and 3 to 5 concrete actions.
+
+- **The digest is the whole trick.** `buildDigest` assembles already-summed numbers
+  (profit and P&L by brand for 7/30 days vs the periods before, attribution and ad
+  channels, traffic by channel and brand, landing pages, devices, email list motion,
+  flows, campaigns, the rule flags, ops counts) and the prompt forbids any figure that is
+  not in it. **No customer names, emails or message bodies go in**, only counts.
+- Filtered by the person's areas like everything on Home; roles with no Insights area get
+  no briefing.
+- Cached per area set per day in `insights_cache`; "rewrite" is allowed every 15 minutes.
+  Model is `BRIEFING_MODEL` (default `claude-opus-5-5`), about 40 seconds per briefing.
+- **Output comes back through a tool (`BRIEFING_TOOL`)**, because JSON in prose broke on
+  the first stray quote. The current models refuse `tool_choice` forcing, so the tool is
+  offered and asked for, and a plain JSON reply is still accepted. `stripDashes` runs on
+  every string, as for reply drafts.
+
 ## Navigation (`app/Shell.jsx`)
 
 Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups;
