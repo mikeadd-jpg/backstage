@@ -10,6 +10,8 @@ import { ROLES } from '../lib/roles';
 
 // Line icons, 24px grid, drawn with currentColor so they follow the text colour.
 const PATHS = {
+  home: ['M3 11 12 4l9 7', 'M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9'],
+  work: ['M4 8h16v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z', 'M9 8V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3'],
   inbox: ['M4 13h4l1.5 3h5L16 13h4', 'M4 13V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z'],
   risk: ['M12 9v4', 'M12 17h.01', 'M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'],
   approvals: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18', 'm8.5 12.5 2.5 2.5 5-5'],
@@ -37,9 +39,11 @@ export function Icon({ name, size = 18 }) {
 
 // Every destination, grouped the way the work divides. `area` must match lib/roles.js.
 export const DESTINATIONS = {
-  inbox:     { area: 'inbox',     label: 'Inbox',     icon: 'inbox',     group: 'Work' },
-  risk:      { area: 'risk',      label: 'At risk',   icon: 'risk',      group: 'Work' },
-  approvals: { area: 'approvals', label: 'Approvals', icon: 'approvals', group: 'Work' },
+  // First, so it is where people land; anyone without it starts on their first screen.
+  home:      { area: 'home',      label: 'Home',      icon: 'home',      group: 'Start' },
+  inbox:     { area: 'inbox',     label: 'Inbox',     icon: 'inbox',     group: 'Work', blurb: 'Customer emails and drafted replies' },
+  risk:      { area: 'risk',      label: 'At risk',   icon: 'risk',      group: 'Work', blurb: 'Orders that may not arrive' },
+  approvals: { area: 'approvals', label: 'Approvals', icon: 'approvals', group: 'Work', blurb: 'Print files waiting for a yes' },
   products:  { area: 'products',  label: 'Products',  icon: 'products',  group: 'Create', blurb: 'Printify drafts from a design' },
   mockups:   { area: 'mockups',   label: 'Mockups',   icon: 'mockups',   group: 'Create', blurb: 'Lifestyle shots for a live product' },
   profit:    { area: 'profit',    label: 'Profit',    icon: 'profit',    group: 'Insights', blurb: 'Revenue, costs and margin' },
@@ -50,7 +54,8 @@ export const DESTINATIONS = {
   settings:  { area: 'settings',  label: 'Settings',  icon: 'settings',  group: 'Account' },
   users:     { area: 'users',     label: 'Users',     icon: 'users',     group: 'Account' },
 };
-const GROUPS = ['Work', 'Create', 'Insights'];
+const GROUPS = ['Start', 'Work', 'Create', 'Insights'];
+const UNLABELLED = ['Start'];
 
 /** Destinations this person may open, in menu order. */
 export function allowedDestinations(me) {
@@ -98,7 +103,7 @@ function AccountMenu({ me, allowed, go, onClose, placement }) {
 }
 
 /** Bottom sheet on phones: choose between the screens a folded tab stands for. */
-function ChooserSheet({ title, keys, go, onClose }) {
+function ChooserSheet({ title, keys, go, onClose, badges = {} }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -113,6 +118,7 @@ function ChooserSheet({ title, keys, go, onClose }) {
           <button key={k} className="sheet-option" onClick={() => { go(k); onClose(); }}>
             <span className="sheet-icon"><Icon name={DESTINATIONS[k].icon} size={20} /></span>
             <span><b>{DESTINATIONS[k].label}</b><small>{DESTINATIONS[k].blurb}</small></span>
+            {badges[k] > 0 && <span className="bn-badge sheet-badge">{badges[k]}</span>}
             <Icon name="chevron" size={16} />
           </button>
         ))}
@@ -123,7 +129,7 @@ function ChooserSheet({ title, keys, go, onClose }) {
 
 export default function Shell({ me, current, go, badges = {}, children }) {
   const [menu, setMenu] = useState(null);       // null | 'side' | 'top'
-  const [chooser, setChooser] = useState(null);  // null | 'create' | 'insights'
+  const [chooser, setChooser] = useState(null);  // null | 'work' | 'create' | 'insights'
   const allowed = allowedDestinations(me);
   const createKeys = ['products', 'mockups'].filter((k) => allowed.includes(k));
 
@@ -132,15 +138,20 @@ export default function Shell({ me, current, go, badges = {}, children }) {
   // other tabs beside it: a Creative's only tab would otherwise be Create, and a lone tab
   // hides the bar, leaving no way between Products and Mockups.
   const insightKeys = ['profit', 'attribution', 'email', 'traffic'].filter((k) => allowed.includes(k));
-  const workTabs = ['inbox', 'risk', 'approvals'].filter((k) => allowed.includes(k)).map((k) => ({ key: k, ...DESTINATIONS[k] }));
+  const homeTab = allowed.includes('home') ? [{ key: 'home', ...DESTINATIONS.home }] : [];
+  const workKeys = ['inbox', 'risk', 'approvals'].filter((k) => allowed.includes(k));
   const groupTabs = (keys, fold) => (keys.length > 1 && fold ? [fold] : keys.map((k) => ({ key: k, ...DESTINATIONS[k] })));
-  const others = (n) => workTabs.length + n > 0;
-  const tabs = [
-    ...workTabs,
+  const others = (n) => homeTab.length + workKeys.length + n > 0;
+  const tail = [
     ...groupTabs(createKeys, others(insightKeys.length) ? { key: 'create', label: 'Create', icon: 'create' } : null),
     ...groupTabs(insightKeys, others(createKeys.length) ? { key: 'insights', label: 'Insights', icon: 'insights' } : null),
   ];
-  const FOLDS = { create: { title: 'Create', keys: createKeys }, insights: { title: 'Insights', keys: insightKeys } };
+  // Home plus three Work screens plus Create and Insights is six; past five, Work folds
+  // too. Home already lists whatever in Work needs attention, and the fold keeps a badge.
+  const workFolds = homeTab.length + workKeys.length + tail.length > 5 && workKeys.length > 1;
+  const workTabs = workFolds ? [{ key: 'work', label: 'Work', icon: 'work' }] : workKeys.map((k) => ({ key: k, ...DESTINATIONS[k] }));
+  const tabs = [...homeTab, ...workTabs, ...tail];
+  const FOLDS = { work: { title: 'Work', keys: workKeys }, create: { title: 'Create', keys: createKeys }, insights: { title: 'Insights', keys: insightKeys } };
   const title = (DESTINATIONS[current] || {}).label || 'Backstage';
 
   return (
@@ -156,7 +167,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
             if (!items.length) return null;
             return (
               <div className="side-group" key={g}>
-                <div className="side-label">{g}</div>
+                {!UNLABELLED.includes(g) && <div className="side-label">{g}</div>}
                 {items.map((k) => (
                   <button key={k} className={'side-item' + (current === k ? ' on' : '')}
                     aria-current={current === k ? 'page' : undefined} title={DESTINATIONS[k].label}
@@ -202,7 +213,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
           <nav className="bottom-nav" aria-label="Main">
             {tabs.map((t) => {
               const on = FOLDS[t.key] ? FOLDS[t.key].keys.includes(current) : current === t.key;
-              const n = FOLDS[t.key] ? 0 : badges[t.key] || 0;
+              const n = FOLDS[t.key] ? FOLDS[t.key].keys.reduce((sum, k) => sum + (badges[k] || 0), 0) : badges[t.key] || 0;
               return (
                 <button key={t.key} className={'bn-item' + (on ? ' active' : '')} aria-current={on ? 'page' : undefined}
                   onClick={() => (FOLDS[t.key] ? setChooser(t.key) : go(t.key))}>
@@ -216,7 +227,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
         )}
       </div>
 
-      {chooser && <ChooserSheet title={FOLDS[chooser].title} keys={FOLDS[chooser].keys} go={go} onClose={() => setChooser(null)} />}
+      {chooser && <ChooserSheet title={FOLDS[chooser].title} keys={FOLDS[chooser].keys} go={go} badges={badges} onClose={() => setChooser(null)} />}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Approvals from './Approvals';
 import Attribution from './Attribution';
 import Email from './Email';
+import Home from './Home';
 import Traffic from './Traffic';
 import AtRisk from './AtRisk';
 import Inbox from './Inbox';
@@ -143,6 +144,7 @@ export default function Page() {
     <Shell me={me} current={tab} go={go} badges={badges}>
       {!me && <div className="risk-empty">Loading…</div>}
       {me && !tab && <div className="risk-empty">Your role doesn't include any screens yet. Ask an admin.</div>}
+      {tab === 'home' && <Home me={me} go={go} />}
       {tab === 'inbox' && (
         <Inbox rows={rows} resolvedRows={resolvedRows} resolvedLoaded={resolvedLoaded} loadResolved={loadResolved}
           loaded={loaded} onResolve={resolveInquiry} onReopen={reopenInquiry} />

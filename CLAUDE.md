@@ -55,12 +55,32 @@ The cron endpoints and `/api/mcp` are unaffected: they carry their own secrets a
 exempt. The MCP consent screen now checks the Google session instead of the password, and
 bounces through sign-in when there isn't one.
 
+## Home (`lib/focus.js`, `/api/focus`, `app/Home.jsx`)
+
+Where everyone with the `home` area lands (all roles but Creative): the five things most
+worth attention, ranked across every screen their role can open.
+
+- **Ranked by fixed rules in `lib/focus.js`, not a model,** so the same data always gives
+  the same list and each item can say why it is there. Scores: 85+ money being lost now,
+  60-85 someone waiting or something broke, 35-60 a real decline, under 35 a watch item or
+  an opportunity. Change a rule there; there is no other copy.
+- **Two requests.** `part=ops` (inbox needing action, high-risk orders, Printful drafts)
+  is live and fast. `part=insights` compares the Insights "7 days" window (today
+  included) with the 7 before across profit, attribution, email and traffic, cached 30
+  minutes per area set, and is only cached when every source answered.
+- **Signals are filtered by the person's areas**, so Home never shows a number their role
+  hides. A Support user's Home is inbox, risk and approvals only.
+- Email checks cost Klaviyo flow reports (2 a minute) and use the same 7-day windows as the
+  Email tab so the two share the cache; a busy Klaviyo is listed as "not checked", never
+  as good news.
+
 ## Navigation (`app/Shell.jsx`)
 
-Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups;
+Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups;
 Insights: Profit, Attribution, Email, Traffic) at 1100px and up, an icon rail from 681 to 1099px, and on
 phones a title bar plus at most five bottom tabs: Create and Insights each fold into one
-tab with a chooser when the person has more than one screen in the group and other tabs
+tab with a chooser (and Work too, when Home would otherwise make six, carrying the summed
+badge) when the person has more than one screen in the group and other tabs
 beside it (a Creative keeps Products and Mockups as separate tabs, since a lone tab would
 hide the bar). Settings, Users and Sign out live in the account menu, not the main nav. The open
 screen is the URL hash (`#inbox`, `#profit`), so refresh, links and the back button work;
