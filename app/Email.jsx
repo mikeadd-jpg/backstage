@@ -16,8 +16,8 @@ const UP = '#1baf7a';
 const DOWN = '#d64545';
 
 const KIND_LABEL = {
-  subscribed: 'Subscribed to email',
-  emailable: 'Can receive email (includes never subscribed)',
+  emailable: 'All emailable profiles',
+  subscribed: 'Subscribed only, not all emailable',
   custom: 'Custom segment',
 };
 
@@ -399,7 +399,8 @@ export default function Email() {
   const notes = data ? data.lists.filter((l) => selected && selected.includes(l.name)).map((l) => {
     if (!l.configured) return l.name + ' is not connected: add ' + l.key.toUpperCase() + '_KLAVIYO_API_KEY in Vercel.';
     if (l.error) return l.name + ': ' + l.error;
-    if (!l.segment) return l.name + ' has no segment of email subscribers in Klaviyo, so there is no total. Create one with the single condition "Can receive email marketing", or set ' + l.key.toUpperCase() + '_KLAVIYO_SEGMENT_ID.';
+    if (!l.segment) return l.name + ' has no "All Emailable Profiles" segment in Klaviyo, so there is no total. Create one with the single condition "Can receive email marketing", or set ' + l.key.toUpperCase() + '_KLAVIYO_SEGMENT_ID.';
+    if (l.segment.kind !== 'emailable') return l.name + ' is counting "' + l.segment.name + '", which is not all emailable profiles. Create an "All Emailable Profiles" segment (single condition "Can receive email marketing") and it will be used instead.';
     if (l.missingMetrics && l.missingMetrics.length) return l.name + ' has no "' + l.missingMetrics.join('" or "') + '" events yet, so its growth reads as zero.';
     return null;
   }).filter(Boolean) : [];

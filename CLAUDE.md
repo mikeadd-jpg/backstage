@@ -493,11 +493,11 @@ per brand, each with its own private key in `<BRAND>_KLAVIYO_API_KEY` (read scop
 accounts, segments, metrics and flows). Owners only, through the `email` area. Shares the
 Insights filter bar via `useInsights({ url: '/api/email', pnl: false })`.
 
-- **"Subscribers" is a segment count, found by its definition, not its name.** The
-  segment whose only condition is email marketing consent: `subscription: subscribed` is
-  preferred, and the common "can receive email marketing" (`subscription: any`, which
-  also counts never-subscribed profiles) is the fallback. The tab names which it used.
-  `<BRAND>_KLAVIYO_SEGMENT_ID` overrides the search.
+- **"Subscribers" means all emailable profiles, in every brand, by the owner's choice.**
+  It is a segment count, found by definition rather than name: the segment whose only
+  condition is "can receive email marketing" with `subscription: any` (Klaviyo's usual
+  "All Emailable Profiles", which includes never-subscribed profiles). A subscribed-only
+  segment is a fallback the tab flags as wrong. `<BRAND>_KLAVIYO_SEGMENT_ID` overrides.
 - **Klaviyo keeps no history of that count.** Growth is drawn from the `Subscribed to
   Email Marketing` / `Unsubscribed from Email Marketing` events; the total over time
   exists only in `email_list_snapshots`, written by the daily `/api/email-snapshot` cron
