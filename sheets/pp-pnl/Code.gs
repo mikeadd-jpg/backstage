@@ -112,9 +112,36 @@ const C = {
   sources: 21,
 };
 
+/**
+ * Runs `fn` holding the script lock, or skips the run if another execution holds it.
+ *
+ * Every entry point writes to the same spreadsheet, and the hourly runToday rebuilds the
+ * "today" tab by deleting and re-inserting it. A run that overlaps that (a backfill, a
+ * manual setup) can see the tab vanish mid-read, which Sheets reports as
+ * "Sheet <id> not found". Skipping rather than queueing loses nothing: every entry point
+ * re-pulls a trailing window or resumes from a checkpoint, so the next run catches up.
+ * Same pattern as the EE script.
+ */
+function withLock_(label, fn) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log(label + ': another run holds the lock, so this one was skipped. Nothing is lost; run it again shortly.');
+    return null;
+  }
+  try {
+    return fn();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 // ---------- Entry points ----------
 
 function setup() {
+  return withLock_('setup', setupUnlocked_);
+}
+
+function setupUnlocked_() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
@@ -191,6 +218,10 @@ function setup() {
  * Safe to re-run.
  */
 function applyGoogleFormulas() {
+  return withLock_('applyGoogleFormulas', applyGoogleFormulasUnlocked_);
+}
+
+function applyGoogleFormulasUnlocked_() {
   const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
   if (!sheet) throw new Error('Run setup() first.');
   const last = sheet.getLastRow();
@@ -252,6 +283,28 @@ function buildDashboard() {
 
 // ----- shared helpers -----
 
+/**
+ * A clean dashboard tab named `name` at `position`, reusing the existing tab (cleared)
+ * instead of deleting and re-inserting it. Deleting a tab that someone has open in the
+ * browser leaves that browser pointing at a sheet id that no longer exists, and every
+ * script run from it then fails with "Sheet <id> not found" until the page is reloaded.
+ * Reuse also needs no new grid, so it cannot hit Google's 10M-cell ceiling. Ported from
+ * the EE script, which made the same change for the same reasons.
+ */
+function resetDashboardSheet_(ss, name, position) {
+  const existing = ss.getSheetByName(name);
+  if (!existing) return ss.insertSheet(name, position);
+  // clear() leaves charts behind, so remove them or they pile up on every rebuild.
+  existing.getCharts().forEach(function (c) { existing.removeChart(c); });
+  // Builders hide helper columns; unhide so each rebuild starts from a known state.
+  if (existing.getMaxColumns() > 0) existing.showColumns(1, existing.getMaxColumns());
+  if (existing.getMaxRows() > 0) existing.showRows(1, existing.getMaxRows());
+  existing.clear();
+  ss.setActiveSheet(existing);
+  ss.moveActiveSheet(position + 1);  // moveActiveSheet is 1-based
+  return existing;
+}
+
 /** Which production vendors this brand uses, from which tokens are configured. */
 function vendors_() {
   const p = PropertiesService.getScriptProperties();
@@ -279,9 +332,7 @@ function lk_(col, dayExpr) {
  * against where yesterday stood at the same hour.
  */
 function buildYesterdaySnapshot_(ss, data) {
-  let sh = ss.getSheetByName('yesterday');
-  if (sh) ss.deleteSheet(sh);
-  sh = ss.insertSheet('yesterday', 0);  // index 0 = leftmost tab, first thing you see
+  const sh = resetDashboardSheet_(ss, 'yesterday', 0);  // index 0 = leftmost tab, first thing you see
   sh.setHiddenGridlines(true);
   sh.setColumnWidths(1, 4, 150);
 
@@ -388,11 +439,9 @@ function buildYesterdaySnapshot_(ss, data) {
  * today's MER-so-far is compared to yesterday's full-day MER directly.
  */
 function buildTodaySnapshot_(ss, data) {
-  let sh = ss.getSheetByName('today');
-  if (sh) ss.deleteSheet(sh);
   // Position 0 = leftmost. buildDashboard builds this LAST so it wins the
   // leftmost slot ahead of "yesterday" and the dashboard tabs.
-  sh = ss.insertSheet('today', 0);
+  const sh = resetDashboardSheet_(ss, 'today', 0);
   sh.setHiddenGridlines(true);
   sh.setColumnWidths(1, 4, 150);
 
@@ -551,9 +600,7 @@ function stampLastUpdated_(sh, cellA1, propKey, tz) {
  * of CUMULATIVE revenue so you can see which scenario you're tracking toward.
  */
 function buildYTDForecast_(ss, data) {
-  let sh = ss.getSheetByName('dashboard_ytd');
-  if (sh) ss.deleteSheet(sh);
-  sh = ss.insertSheet('dashboard_ytd', 0);  // position 0; see buildDashboard for ordering
+  const sh = resetDashboardSheet_(ss, 'dashboard_ytd', 0);  // position 0; see buildDashboard for ordering
   sh.setHiddenGridlines(true);
   sh.setColumnWidths(1, 9, 120);
   sh.setColumnWidth(1, 150);
@@ -729,9 +776,7 @@ function writeHelperFilter_(sheet, helperColLetter, lowerExpr, upperExpr) {
 
 /** Builds a KPI + chart tab for one window. Shared by the 7d, 30d and MTD tabs. */
 function buildWindowTab_(ss, name, title, subtitle, curLower, curUpper, priorLower, priorUpper, chartLabel) {
-  let sh = ss.getSheetByName(name);
-  if (sh) ss.deleteSheet(sh);
-  sh = ss.insertSheet(name, 0);  // position 0; see buildDashboard for ordering
+  const sh = resetDashboardSheet_(ss, name, 0);  // position 0; see buildDashboard for ordering
   sh.setHiddenGridlines(true);
   sh.setColumnWidths(1, 8, 130);
 
@@ -853,6 +898,10 @@ function insertScopedCharts_(sheet, label) {
 }
 
 function runDaily() {
+  return withLock_('runDaily', runDailyUnlocked_);
+}
+
+function runDailyUnlocked_() {
   const tz = SpreadsheetApp.getActive().getSpreadsheetTimeZone();
   const today = new Date();
   const start = new Date(today.getTime() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
@@ -888,6 +937,10 @@ function runDaily() {
  * partials are self-healing.
  */
 function runToday() {
+  return withLock_('runToday', runTodayUnlocked_);
+}
+
+function runTodayUnlocked_() {
   const ss = SpreadsheetApp.getActive();
   const tz = ss.getSpreadsheetTimeZone();
   const now = new Date();
@@ -926,6 +979,10 @@ function startOfDayInTz(date, tz) {
  * Just run it again to resume.
  */
 function backfillAllHistory() {
+  return withLock_('backfillAllHistory', backfillAllHistoryUnlocked_);
+}
+
+function backfillAllHistoryUnlocked_() {
   const tz = SpreadsheetApp.getActive().getSpreadsheetTimeZone();
   const props = PropertiesService.getScriptProperties();
   const startTime = Date.now();
@@ -1841,6 +1898,10 @@ function googleColFormula_(row, col) {
  * read_all_orders scope.
  */
 function backfillChannels() {
+  return withLock_('backfillChannels', backfillChannelsUnlocked_);
+}
+
+function backfillChannelsUnlocked_() {
   const ss = SpreadsheetApp.getActive();
   const tz = ss.getSpreadsheetTimeZone();
   const sheet = ss.getSheetByName(SHEET_NAME);
