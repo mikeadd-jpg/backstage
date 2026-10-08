@@ -358,6 +358,18 @@ scopes, so changing them in the Dev Dashboard does nothing until a redeploy issu
 fresh token. `shopifyGraphql` detects the denial and says so rather than passing through
 "Access denied for products field".
 
+**Rotate scene** (`suggestScene`, action `suggest-scene`) has Claude (`DRAFT_MODEL`) write
+a fresh scene in the brand voice, looking at the product image, with every scene already
+shown this session passed as "already used" so it moves on rather than circling back. It
+describes only the surroundings, never the artwork, so it cannot argue with `HARD_RULES`.
+It saves nothing; "Save as default" is still the only way a scene becomes the default.
+
+**Main image** is `productReorderMedia` moving the new media to position 0. A shot already
+added as a secondary image is moved (`make-main`), not uploaded twice. Once a lifestyle
+shot is the featured image, the featured image is no longer the flat mockup, so
+`listActiveProducts` picks the first image whose alt text lacks "lifestyle" as the
+generation source. Our uploads put "lifestyle" in the alt for exactly this; keep it.
+
 Scene direction per brand lives in `app_settings` under `mockup_scene_<brand>`, so it is
 editable from the tab with no schema change. `DEFAULT_SCENES` is only the fallback, and
 the scenes are written to match the `brand_voices` rows. Note Wallspoke sells wall art,

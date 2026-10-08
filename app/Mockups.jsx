@@ -34,6 +34,8 @@ export default function Mockups() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [savedNote, setSavedNote] = useState('');
+  const [rotating, setRotating] = useState(false);
+  const [seenScenes, setSeenScenes] = useState({});      // brand -> scenes shown this session
   const [shots, setShots] = useState([]);          // newest first, this session only
 
   useEffect(() => {
@@ -94,6 +96,28 @@ export default function Mockups() {
     else setSavedNote('Saved as the default for this store.');
   }
 
+  // Claude writes a new scene for the picked product. Everything already shown for this
+  // store this session goes along as "already used", so pressing it again moves on rather
+  // than circling back. Nothing is saved until "Save as default".
+  async function rotateScene() {
+    setError(''); setSavedNote(''); setRotating(true);
+    const previous = seenScenes[brand] || [];
+    try {
+      const res = await fetch('/api/mockups', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'suggest-scene', brand, product: picked, current: scene, previous }),
+      });
+      const d = await res.json();
+      if (!res.ok) { setError(d.error || 'Could not write a new scene.'); return; }
+      setSeenScenes((m) => ({ ...m, [brand]: [scene, ...previous].filter(Boolean).slice(0, 8) }));
+      setScene(d.scene);
+    } catch {
+      setError('Could not write a new scene.');
+    } finally {
+      setRotating(false);
+    }
+  }
+
   // One request per image. A batch is a client-side loop, not a server-side one, so a
   // slow or failed shot cannot take the others with it and results appear as they land.
   async function generateOne(index, product) {
@@ -147,10 +171,43 @@ export default function Mockups() {
     setBusy(false);
   }
 
-  function mark(key, dest, state, message) {
+  function mark(key, dest, state, message, extra) {
     setShots((s) => s.map((sh) => (sh.key === key
-      ? { ...sh, dest: { ...sh.dest, [dest]: { state, message: message || '' } } }
+      ? { ...sh, dest: { ...sh.dest, [dest]: { ...sh.dest[dest], ...extra, state, message: message || '' } } }
       : sh)));
+  }
+
+  async function post(payload) {
+    const res = await fetch('/api/mockups', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return { ok: res.ok, d: await res.json() };
+  }
+
+  // Main image. If this shot is already on the product as a secondary image, it is moved
+  // to the front rather than uploaded twice. Otherwise it is uploaded and moved in one go,
+  // and a failed move still records the upload so a retry only has to move it.
+  async function sendMain(shot) {
+    mark(shot.key, 'main', 'sending');
+    const mediaId = destState(shot, 'shopify').mediaId;
+    try {
+      if (mediaId) {
+        const { ok, d } = await post({ action: 'make-main', brand: shot.brand, productId: shot.product.id, mediaId });
+        if (!ok) return mark(shot.key, 'main', 'failed', d.error || 'Failed.');
+        return mark(shot.key, 'main', 'done', 'now the main image');
+      }
+      const { ok, d } = await post({
+        action: 'attach', brand: shot.brand, productId: shot.product.id, b64: shot.b64,
+        alt: shot.product.title + ' lifestyle', main: true,
+      });
+      if (!ok) return mark(shot.key, 'main', 'failed', d.error || 'Failed.');
+      mark(shot.key, 'shopify', 'done', '', { mediaId: d.id });
+      if (d.mainError) return mark(shot.key, 'main', 'failed', 'Added to the product, but not moved to the front: ' + d.mainError);
+      mark(shot.key, 'main', 'done', 'now the main image');
+    } catch {
+      mark(shot.key, 'main', 'failed', 'Request failed.');
+    }
   }
 
   // One destination at a time. Shopify and Meta are independent, so a failure in one
@@ -173,7 +230,7 @@ export default function Mockups() {
       });
       const d = await res.json();
       if (!res.ok) { mark(shot.key, dest, 'failed', d.error || 'Failed.'); return false; }
-      mark(shot.key, dest, 'done', d.hash ? 'image hash ' + d.hash : '');
+      mark(shot.key, dest, 'done', d.hash ? 'image hash ' + d.hash : '', dest === 'shopify' ? { mediaId: d.id } : undefined);
       return true;
     } catch {
       mark(shot.key, dest, 'failed', 'Request failed.');
@@ -204,7 +261,7 @@ export default function Mockups() {
     <div className="pane">
       <div className="pane-head">Lifestyle Mockups</div>
       <p className="pane-sub">
-        Pick a live product, put it in a scene, then attach the result to that product in Shopify.
+        Pick a live product, put it in a scene (Rotate scene writes a fresh one), then attach the result to that product in Shopify, as an extra image or as the main one.
         Images are held in this tab only: leaving the page throws away anything you have not attached.
       </p>
 
@@ -265,6 +322,10 @@ export default function Mockups() {
           <textarea className="textarea" rows={5} value={scene} onChange={(e) => setScene(e.target.value)} />
         </label>
         <div className="reply-actions" style={{ marginBottom: 14 }}>
+          <button
+            className="btn btn-ghost" type="button" onClick={rotateScene} disabled={!brand || rotating}
+            title={picked ? 'Write a new scene suited to ' + picked.title : 'Write a new scene for this store (pick a product for one suited to it)'}
+          >{rotating ? 'Writing...' : '\u21bb Rotate scene'}</button>
           <button className="btn btn-ghost" type="button" onClick={saveScene} disabled={!brand}>Save as default</button>
           <button className="btn btn-ghost" type="button" onClick={() => setScene(defaults[brand] || '')} disabled={isDefault}>Reset</button>
           {savedNote && <span className="confidence">{savedNote}</span>}
@@ -367,11 +428,22 @@ export default function Mockups() {
             <button
               className={'btn btn-ghost' + (doneDest(shot, 'shopify') ? ' copied' : '')}
               onClick={() => send(shot, 'shopify')}
-              disabled={busyDest(shot, 'shopify') || doneDest(shot, 'shopify')}
+              disabled={busyDest(shot, 'shopify') || busyDest(shot, 'main') || doneDest(shot, 'shopify')}
             >
               {busyDest(shot, 'shopify') ? 'Sending...'
                 : doneDest(shot, 'shopify') ? 'On the product'
-                : 'Send to Shopify'}
+                : 'Add to Shopify'}
+            </button>
+
+            <button
+              className={'btn btn-ghost' + (doneDest(shot, 'main') ? ' copied' : '')}
+              onClick={() => sendMain(shot)}
+              disabled={busyDest(shot, 'main') || busyDest(shot, 'shopify') || doneDest(shot, 'main')}
+              title="Replaces the product's main image. The old one stays on the product as a secondary image."
+            >
+              {busyDest(shot, 'main') ? 'Sending...'
+                : doneDest(shot, 'main') ? 'Main image'
+                : 'Add to Shopify main image'}
             </button>
 
             <button
@@ -390,16 +462,16 @@ export default function Mockups() {
             <button
               className="btn btn-primary"
               onClick={() => sendEverywhere(shot)}
-              disabled={busyDest(shot, 'shopify') || busyDest(shot, 'meta')
+              disabled={busyDest(shot, 'shopify') || busyDest(shot, 'main') || busyDest(shot, 'meta')
                 || (doneDest(shot, 'shopify') && (!metaReady(shot.brand) || doneDest(shot, 'meta')))}
             >Send everywhere</button>
           </div>
 
           <div className="mk-dests">
-            {['shopify', 'meta'].map((dest) => {
+            {['shopify', 'main', 'meta'].map((dest) => {
               const st = destState(shot, dest);
               if (!st.state || st.state === 'sending') return null;
-              const label = dest === 'shopify' ? 'Shopify' : 'Meta';
+              const label = { shopify: 'Shopify', main: 'Shopify main image', meta: 'Meta' }[dest];
               return (
                 <div className="mk-dest" key={dest}>
                   <span className="mini-dot" style={{

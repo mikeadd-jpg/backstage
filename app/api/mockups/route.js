@@ -10,7 +10,10 @@
 // with it, results appear as they land, and no single request grows toward the limit.
 // The client sends variationIndex; the variation text itself is resolved here so the
 // list stays in one place and the response can echo back what was actually used.
-//   { action: 'attach', brand, productId, b64 }  push an approved image onto the product
+//   { action: 'attach', brand, productId, b64, main } push an approved image onto the
+//                                                product; main moves it to the front
+//   { action: 'make-main', brand, productId, mediaId } front an image already attached
+//   { action: 'suggest-scene', brand, product, current, previous } Claude writes a new scene
 //   { action: 'attach-meta', brand, b64 }        push it into the Meta ad image library
 //   { action: 'save-scene', brand, scene }       store that brand's scene direction
 //
@@ -23,9 +26,9 @@
 import { NextResponse } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
-import { listActiveProducts, addProductImage } from '../../../lib/shopify.js';
+import { listActiveProducts, addProductImage, setProductMainImage } from '../../../lib/shopify.js';
 import {
-  generateMockup, sceneFor, defaultScene, saveScene, variationsFor, SIZES,
+  generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, SIZES,
 } from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
 
@@ -112,8 +115,30 @@ export async function POST(req) {
       const brand = checkBrand(body.brand);
       if (!body.productId) throw new Error('No product to attach to.');
       if (!body.b64) throw new Error('No image to attach.');
-      const media = await addProductImage(brand, body.productId, body.b64, body.alt);
+      const media = await addProductImage(brand, body.productId, body.b64, body.alt, { main: Boolean(body.main) });
       return NextResponse.json(media);
+    }
+
+    // For a shot that is already on the product as a secondary image: move it rather
+    // than upload it a second time.
+    if (body.action === 'make-main') {
+      const brand = checkBrand(body.brand);
+      if (!body.productId || !body.mediaId) throw new Error('No product image to move.');
+      await setProductMainImage(brand, body.productId, body.mediaId);
+      return NextResponse.json({ id: body.mediaId, main: true });
+    }
+
+    if (body.action === 'suggest-scene') {
+      const brand = checkBrand(body.brand);
+      const p = body.product || {};
+      const scene = await suggestScene({
+        brand,
+        // Only the fields the prompt uses, so the client cannot steer it with anything else.
+        product: { title: p.title, productType: p.productType, image: p.image },
+        current: body.current,
+        previous: Array.isArray(body.previous) ? body.previous : [],
+      });
+      return NextResponse.json({ scene });
     }
 
     if (body.action === 'attach-meta') {
