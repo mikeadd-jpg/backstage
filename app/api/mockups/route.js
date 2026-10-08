@@ -15,9 +15,10 @@
 //   { action: 'make-main', brand, productId, mediaId } front an image already attached
 //   { action: 'suggest-scene', brand, product, current, previous } Claude writes a new scene
 //   { action: 'attach-meta', brand, b64 }        push it into the Meta ad image library
+//   { action: 'attach-canva', brand, b64 }       upload it to the brand's Canva folder
 //   { action: 'save-scene', brand, scene }       store that brand's scene direction
 //
-// "Send everywhere" is the client calling attach and attach-meta in turn rather than a
+// "Send everywhere" is the client calling attach, attach-meta and attach-canva in turn rather than a
 // combined action, so a half-success reports which half, and each destination keeps its
 // own error.
 //
@@ -31,6 +32,7 @@ import {
   generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, SIZES,
 } from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
+import { uploadToCanva, canvaStatus } from '../../../lib/canva.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -77,6 +79,7 @@ export async function GET(req) {
     maxBatch: MAX_BATCH,
     meta,
     metaToken: Boolean(process.env.META_ACCESS_TOKEN),
+    canva: await canvaStatus().catch(() => ({ configured: false, connected: false })),
     sizes: Object.keys(SIZES),
     ready: Boolean(process.env.OPENAI_API_KEY),
   });
@@ -150,6 +153,14 @@ export async function POST(req) {
       const name = brand + '-' + (body.name || 'lifestyle.png');
       const image = await uploadAdImage(brand, body.b64, name);
       return NextResponse.json(image);
+    }
+
+    if (body.action === 'attach-canva') {
+      const brand = checkBrand(body.brand);
+      if (!body.b64) throw new Error('No image to send.');
+      // Brand-prefixed for the same reason as Meta: one Canva account holds all three.
+      const name = brand + '-' + (body.name || 'lifestyle.png');
+      return NextResponse.json(await uploadToCanva(brand, body.b64, name));
     }
 
     if (body.action === 'save-scene') {

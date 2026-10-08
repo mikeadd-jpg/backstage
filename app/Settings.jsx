@@ -1,6 +1,6 @@
 'use client';
-// Brand voice, reply structure, stores and product pricing. Who can sign in moved to its
-// own Users screen (app/Users.jsx), opened from the account menu.
+// Brand voice, reply structure, stores, product pricing and the Canva connection. Who
+// can sign in moved to its own Users screen (app/Users.jsx), opened from the account menu.
 import { useEffect, useState } from 'react';
 
 const CS_BRANDS = ['elderemo', 'poppunks', 'wallspoke'];
@@ -14,8 +14,34 @@ export default function Settings() {
   const [newStore, setNewStore] = useState({ name: '', brandKey: '', printifyShopId: '', isDefault: false, copyFrom: '' });
   const [storeMsg, setStoreMsg] = useState('');
   const [saved, setSaved] = useState('');
+  const [canva, setCanva] = useState(null);
+  const [canvaMsg, setCanvaMsg] = useState('');
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadCanva(); }, []);
+
+  // The Canva callback lands back here with ?canva=connected or ?canva_error=...; show it
+  // once, then drop the query so a refresh does not repeat it.
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get('canva') === 'connected') setCanvaMsg('Canva connected.');
+    else if (sp.get('canva_error')) setCanvaMsg(sp.get('canva_error'));
+    if (sp.has('canva') || sp.has('canva_error')) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+    }
+  }, []);
+
+  async function loadCanva() {
+    const d = await fetch('/api/canva').then((r) => r.json()).catch(() => null);
+    if (d && !d.error) setCanva(d);
+  }
+  async function disconnectCanva() {
+    if (!window.confirm('Disconnect Canva? Send to Canva stops working until someone connects it again. Nothing already in Canva is touched.')) return;
+    const d = await fetch('/api/canva', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'disconnect' }),
+    }).then((r) => r.json()).catch(() => ({ error: 'Request failed' }));
+    if (d.error) setCanvaMsg(d.error);
+    else { setCanva(d); setCanvaMsg('Canva disconnected.'); }
+  }
 
   async function load() {
     const d = await fetch('/api/settings').then((r) => r.json());
@@ -100,6 +126,38 @@ export default function Settings() {
             })}
           </div>
         ))}
+      </div>
+
+      {/* Canva */}
+      <div className="card">
+        <div className="card-label">Canva</div>
+        <p className="pane-sub" style={{ marginTop: 0 }}>
+          Send to Canva on the Mockups tab uploads an approved shot into a folder per brand
+          (Backstage · Elder Emo mockups and so on) in the connected Canva account, ready to
+          build a reel from. It only uploads: it never creates, edits or posts a design.
+        </p>
+        {!canva ? <p className="pane-sub">Loading...</p>
+          : !canva.configured ? (
+            <div className="ledger-note">
+              CANVA_CLIENT_ID and CANVA_CLIENT_SECRET are not set. Create an integration in
+              Canva's Developer Portal, add {window.location.origin}/api/canva/callback as a
+              redirect URL, and set both on the server.
+            </div>
+          ) : canva.connected ? (
+            <div className="build-row">
+              <span className="li-name">
+                Connected
+                <span className="li-sub" style={{ display: 'inline' }}>
+                  {' '}by {canva.by || 'someone'}{canva.at ? ' on ' + new Date(canva.at).toLocaleDateString() : ''}
+                </span>
+              </span>
+              <a className="btn btn-ghost" href="/api/canva/connect">Reconnect</a>
+              <button className="btn btn-ghost" onClick={disconnectCanva}>Disconnect</button>
+            </div>
+          ) : (
+            <a className="btn btn-primary" style={{ alignSelf: 'flex-start' }} href="/api/canva/connect">Connect Canva</a>
+          )}
+        {canvaMsg && <div className="ledger-note" style={{ marginTop: 8 }}>{canvaMsg}</div>}
       </div>
 
       {/* Stores */}

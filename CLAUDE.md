@@ -436,6 +436,33 @@ Token expiry is the failure you will hit. `uploadAdImage` names it specifically 
 error 190, and permission trouble on 200/368/272, rather than passing through a Graph
 error that reads identically for every cause.
 
+## Sending a mockup to Canva (`lib/canva.js`, `/api/canva/*`)
+
+A fourth destination beside Shopify, Meta and "send everywhere": the approved shot is
+uploaded to the connected Canva account and moved into a per-brand folder
+(`Backstage · <Brand> mockups`) to build a reel from. **Upload only**, the same line as
+`lib/meta.js`: no design is created, edited or published. Filling a reel template
+automatically would need Canva Autofill, which is Enterprise only; the account is on Free
+or Pro, so that was ruled out on purpose.
+
+- **Canva has no API keys, only user OAuth** (authorization code + PKCE). Someone with the
+  `settings` area connects once from Settings, and every upload lands in *their* Canva
+  account. The PKCE verifier waits in `app_settings.canva_pkce` (never in `state`), bound
+  to the person who started it, and is burned on callback.
+- **The tokens have to be usable, so they are encrypted, not hashed** (AES-GCM, key
+  derived from `SESSION_SECRET`) in `app_settings.canva_auth`. Rotating `SESSION_SECRET`
+  therefore disconnects Canva too, and the errors say to reconnect.
+- **Refresh tokens are single-use and rotate.** Two functions refreshing at once would
+  burn the token and disconnect the account, so the refresh runs under
+  `withSettingLock` (a Postgres advisory lock) and re-reads the row inside it. Keep that
+  if you touch `accessToken()`. Folder creation uses the same lock so concurrent sends
+  cannot make duplicate brand folders.
+- Upload is `POST /asset-uploads` (raw bytes, base64 name capped at 50 chars), polled to
+  completion, then `POST /folders/move`. A folder deleted in Canva is recreated once; any
+  other move failure leaves the image in Uploads and is reported, not thrown.
+- Asset names are brand-prefixed in the route, as with Meta, since one account holds all
+  three brands.
+
 ## Approvals tab (`app/Approvals.jsx`, `/api/approvals`)
 
 Wallspoke's maps are generated per order and land in Printful as **drafts**, so a bad

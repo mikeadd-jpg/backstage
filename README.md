@@ -46,6 +46,12 @@ card your team can read and copy.
   `<BRAND>_META_AD_ACCOUNT_ID` per brand (the numeric id; a pasted `act_123` is tolerated).
   Used only to upload an approved mockup into that account's ad image library. Optional:
   `META_API_VERSION`, pinned to `v26.0` by default.
+- Canva: `CANVA_CLIENT_ID` and `CANVA_CLIENT_SECRET` from an integration created in Canva's
+  Developer Portal (your Canva account needs two-factor sign-in on first). Tick the scopes
+  `asset:read`, `asset:write`, `folder:read`, `folder:write`, and add
+  `<origin>/api/canva/callback` as a redirect URL for every origin you use. Then connect
+  once from Settings. On a Free or Pro plan, choose the integration type that can stay in
+  draft for your own account, since private integrations need Enterprise.
 - Product scopes: the Mockups tab reads products over Shopify's GraphQL Admin API, so
   each brand's app needs `read_products`, plus `write_products` to attach a generated
   image back to a product. Those are on top of the order scopes the pipeline needs. The

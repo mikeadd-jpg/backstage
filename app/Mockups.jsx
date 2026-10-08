@@ -14,6 +14,7 @@ export default function Mockups() {
   const [defaults, setDefaults] = useState({});
   const [metaAccounts, setMetaAccounts] = useState({});   // brand -> ad account id, or null
   const [metaToken, setMetaToken] = useState(true);       // META_ACCESS_TOKEN present at all
+  const [canva, setCanva] = useState({ configured: true, connected: false });
   const [sizes, setSizes] = useState(['portrait', 'square', 'landscape']);
   const [ready, setReady] = useState(true);
 
@@ -48,6 +49,7 @@ export default function Mockups() {
       if (d.maxBatch) setMaxBatch(d.maxBatch);
       setMetaAccounts(d.meta || {});
       setMetaToken(d.metaToken !== false);
+      if (d.canva) setCanva(d.canva);
       setSizes(d.sizes || sizes);
       setReady(d.ready !== false);
       if (bs.length) setBrand(bs[0].key);
@@ -210,8 +212,8 @@ export default function Mockups() {
     }
   }
 
-  // One destination at a time. Shopify and Meta are independent, so a failure in one
-  // never stops the other and each keeps its own error.
+  // One destination at a time. Shopify, Meta and Canva are independent, so a failure in
+  // one never stops the others and each keeps its own error.
   async function send(shot, dest) {
     mark(shot.key, dest, 'sending');
     const payload = dest === 'shopify'
@@ -220,7 +222,7 @@ export default function Mockups() {
           alt: shot.product.title + ' lifestyle',
         }
       : {
-          action: 'attach-meta', brand: shot.brand, b64: shot.b64,
+          action: dest === 'canva' ? 'attach-canva' : 'attach-meta', brand: shot.brand, b64: shot.b64,
           name: shot.product.handle + '-lifestyle.png',
         };
     try {
@@ -230,7 +232,13 @@ export default function Mockups() {
       });
       const d = await res.json();
       if (!res.ok) { mark(shot.key, dest, 'failed', d.error || 'Failed.'); return false; }
-      mark(shot.key, dest, 'done', d.hash ? 'image hash ' + d.hash : '', dest === 'shopify' ? { mediaId: d.id } : undefined);
+      const message = d.hash ? 'image hash ' + d.hash
+        : dest === 'canva' ? (d.moveError || 'in the brand folder')
+        : '';
+      const extra = dest === 'shopify' ? { mediaId: d.id }
+        : dest === 'canva' ? { folderUrl: d.folderUrl }
+        : undefined;
+      mark(shot.key, dest, 'done', message, extra);
       return true;
     } catch {
       mark(shot.key, dest, 'failed', 'Request failed.');
@@ -241,6 +249,7 @@ export default function Mockups() {
   async function sendEverywhere(shot) {
     await send(shot, 'shopify');
     if (metaReady(shot.brand)) await send(shot, 'meta');
+    if (canva.connected) await send(shot, 'canva');
   }
 
   // Both halves have to be present. Kept as one helper so the button, the "everywhere"
@@ -252,6 +261,9 @@ export default function Mockups() {
     if (!metaAccounts[b]) return 'no ad account configured for this store';
     return null;
   }
+  const canvaBlockedReason = !canva.configured
+    ? 'CANVA_CLIENT_ID and CANVA_CLIENT_SECRET are not set'
+    : 'not connected yet. Connect it in Settings';
 
   const destState = (shot, dest) => (shot.dest || {})[dest] || {};
   const busyDest = (shot, dest) => destState(shot, dest).state === 'sending';
@@ -460,24 +472,40 @@ export default function Mockups() {
             </button>
 
             <button
+              className={'btn btn-ghost' + (doneDest(shot, 'canva') ? ' copied' : '')}
+              onClick={() => send(shot, 'canva')}
+              disabled={!canva.connected || busyDest(shot, 'canva') || doneDest(shot, 'canva')}
+              title={canva.connected
+                ? 'Uploads to the brand folder in ' + (canva.by || 'the connected') + "'s Canva"
+                : 'Canva: ' + canvaBlockedReason}
+            >
+              {busyDest(shot, 'canva') ? 'Sending...'
+                : doneDest(shot, 'canva') ? 'In Canva'
+                : 'Send to Canva'}
+            </button>
+
+            <button
               className="btn btn-primary"
               onClick={() => sendEverywhere(shot)}
-              disabled={busyDest(shot, 'shopify') || busyDest(shot, 'main') || busyDest(shot, 'meta')
-                || (doneDest(shot, 'shopify') && (!metaReady(shot.brand) || doneDest(shot, 'meta')))}
+              disabled={busyDest(shot, 'shopify') || busyDest(shot, 'main') || busyDest(shot, 'meta') || busyDest(shot, 'canva')
+                || (doneDest(shot, 'shopify')
+                  && (!metaReady(shot.brand) || doneDest(shot, 'meta'))
+                  && (!canva.connected || doneDest(shot, 'canva')))}
             >Send everywhere</button>
           </div>
 
           <div className="mk-dests">
-            {['shopify', 'main', 'meta'].map((dest) => {
+            {['shopify', 'main', 'meta', 'canva'].map((dest) => {
               const st = destState(shot, dest);
               if (!st.state || st.state === 'sending') return null;
-              const label = { shopify: 'Shopify', main: 'Shopify main image', meta: 'Meta' }[dest];
+              const label = { shopify: 'Shopify', main: 'Shopify main image', meta: 'Meta', canva: 'Canva' }[dest];
               return (
                 <div className="mk-dest" key={dest}>
                   <span className="mini-dot" style={{
                     background: st.state === 'done' ? 'var(--green)' : 'var(--red)',
                   }} />
                   <span>{label}: {st.state === 'done' ? (st.message || 'sent') : st.message}</span>
+                  {st.folderUrl && <a href={st.folderUrl} target="_blank" rel="noreferrer">Open folder</a>}
                 </div>
               );
             })}
@@ -485,6 +513,12 @@ export default function Mockups() {
               <div className="mk-dest">
                 <span className="mini-dot" style={{ background: 'var(--faint)' }} />
                 <span>Meta: {metaBlockedReason(shot.brand)}</span>
+              </div>
+            )}
+            {!canva.connected && (
+              <div className="mk-dest">
+                <span className="mini-dot" style={{ background: 'var(--faint)' }} />
+                <span>Canva: {canvaBlockedReason}</span>
               </div>
             )}
           </div>
