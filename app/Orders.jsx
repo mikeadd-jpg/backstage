@@ -72,6 +72,39 @@ const COLUMNS = [
   { key: 'utm_term', label: 'utm_term', get: (o, v) => v && v.utm.term },
 ];
 
+/** One order as a card, for phones: only the fields that have something in them. */
+function OrderCard({ o, v, showBrand }) {
+  const fields = v ? [
+    ['Source / medium', [v.utm.source, v.utm.medium].filter(Boolean).join(' / ')],
+    ['Campaign', v.utm.campaign],
+    ['Content', v.utm.content],
+    ['Term', v.utm.term],
+    ['Click ids', v.clickIds.join(', ')],
+    ['Landing', v.landing && pathOf(v.landing)],
+    ['Referrer', v.referrer && hostOf(v.referrer)],
+  ].filter(([, x]) => x) : [];
+  return (
+    <div className={'od-card' + (o.cancelled ? ' od-cancelled' : '')}>
+      <div className="od-card-top">
+        {showBrand && <i className="pf-dot" style={{ background: BRAND_COLOR[o.brand] || 'var(--muted)' }} title={o.brand} />}
+        {o.adminUrl ? <a href={o.adminUrl} target="_blank" rel="noreferrer">{o.name}</a> : <b>{o.name}</b>}
+        {o.cancelled && <span className="em-status">cancelled</span>}
+        <span className="od-card-total">{usd(o.total, 2)}</span>
+      </div>
+      <div className="od-card-sub">{placed(o.createdAt)} · {salesChannel(o)}</div>
+      <div className="od-card-src">
+        <span><i className="pf-dot" style={{ background: COLOR[o.sheetSource] || 'var(--muted)' }} />{SOURCE_LABEL[o.sheetSource] || o.sheetSource}</span>
+        <span className="od-card-shop">{v ? shopifySource(v) || 'no source' : 'no visit'}</span>
+      </div>
+      {fields.length > 0 ? (
+        <dl className="od-card-fields">
+          {fields.map(([k, x]) => <div key={k}><dt>{k}</dt><dd>{x}</dd></div>)}
+        </dl>
+      ) : <div className="od-card-none">No UTMs</div>}
+    </div>
+  );
+}
+
 function csv(rows, visitKey) {
   const head = ['brand', 'order', 'placed', 'total', 'currency', 'sales_channel', 'source_name', 'shopify_source',
     'shopify_source_type', 'attribution_bucket', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
@@ -159,7 +192,7 @@ export default function Orders() {
                 </div>
               </div>
 
-              <div className="pf-chips od-buckets" role="group" aria-label="Attribution bucket">
+              <div className="pf-chips scroll od-buckets" role="group" aria-label="Attribution bucket">
                 <button className={'pf-chip small' + (!bucket ? ' on' : '')} aria-pressed={!bucket} onClick={() => setBucket(null)}>
                   All {all.length}
                 </button>
@@ -182,7 +215,11 @@ export default function Orders() {
               {rows.length === 0 ? (
                 <div className="risk-empty">{all.length ? 'No orders match.' : 'No orders in this period.'}</div>
               ) : (
-                <div className="pf-table-wrap">
+                <>
+                <div className="od-cards">
+                  {rows.map((o) => <OrderCard key={o.brand + o.id} o={o} v={o[visitKey]} showBrand={selected.length > 1} />)}
+                </div>
+                <div className="pf-table-wrap od-table-wrap">
                   <table className="pf-table od-table">
                     <thead>
                       <tr>
@@ -217,6 +254,7 @@ export default function Orders() {
                     </tbody>
                   </table>
                 </div>
+                </>
               )}
               <div className="pf-sub em-foot">
                 Shopify source is Shopify's own record of the visit that led to the order, as on the order page in the admin;

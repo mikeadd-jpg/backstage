@@ -896,7 +896,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 
 /* Orders: recent orders with their UTMs and source (app/Orders.jsx) */
 .od-toolbar { margin-top: 6px; }
-.od-search { flex: 1 1 260px; max-width: 420px; }
+/* Sized only once the toolbar is a row: in the stacked phone layout a flex-basis is a height. */
+@media (min-width: 900px) { .od-search { flex: 1 1 260px; max-width: 420px; } }
 .od-search .input { width: 100%; margin-bottom: 14px; }
 .od-buckets { margin-bottom: 8px; }
 .od-buckets .pf-chip i { opacity: 1; margin-right: 6px; }
@@ -908,3 +909,25 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .od-table td:first-child a { font-weight: 600; color: var(--text); }
 .od-table tr.od-cancelled td { opacity: 0.55; }
 .od-none { color: var(--faint); }
+
+/* Orders on phones: one card per order instead of the wide table. */
+.od-cards { display: none; }
+@media (max-width: 680px) {
+  .od-table-wrap { display: none; }
+  .od-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .od-toolbar .pf-chips { margin-bottom: 10px; }
+  .od-search .input { margin-bottom: 10px; }
+}
+.od-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.od-card.od-cancelled { opacity: 0.6; }
+.od-card-top { display: flex; align-items: center; gap: 4px; font-size: 15px; }
+.od-card-top a, .od-card-top b { font-weight: 700; color: var(--text); text-decoration: none; }
+.od-card-total { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; }
+.od-card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.od-card-src { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; margin-top: 8px; font-size: 13px; font-weight: 600; }
+.od-card-shop { color: var(--muted); font-weight: 500; }
+.od-card-fields { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--line); display: grid; gap: 4px; }
+.od-card-fields div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px; font-size: 12.5px; }
+.od-card-fields dt { color: var(--faint); }
+.od-card-fields dd { margin: 0; overflow-wrap: anywhere; }
+.od-card-none { margin-top: 8px; font-size: 12px; color: var(--faint); }
