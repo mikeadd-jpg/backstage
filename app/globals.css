@@ -322,6 +322,28 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
   .mk-picker .mk-grid { max-height: none; flex: 1; min-height: 0; }
 }
 
+/* Ads: carousel builder. Reuses the Mockups layout; these are the card rows. */
+.mk-item { position: relative; }
+.ad-pos { position: absolute; top: 10px; left: 10px; z-index: 1; min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: 11px; background: var(--action); color: #fff; font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; }
+.ad-pos.static { top: 6px; left: 6px; }
+.ad-cards { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.ad-card { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 12px; align-items: start;
+  padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.ad-card-media { position: relative; }
+.ad-card-media img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; display: block;
+  background: var(--surface-2); }
+.ad-card-fields { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ad-card-actions { display: flex; flex-direction: column; gap: 4px; }
+.ad-card-actions .btn { padding: 4px 10px; }
+.ad-done a { margin-left: 2px; }
+@media (max-width: 680px) {
+  .ad-card { grid-template-columns: 72px minmax(0, 1fr); }
+  .ad-card-media img { width: 72px; height: 72px; }
+  .ad-card-actions { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; }
+}
+
 /* Approvals: Printful drafts with their print files */
 .approve-headrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .approve-card { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--blue);

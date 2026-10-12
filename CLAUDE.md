@@ -16,10 +16,10 @@ cookie that stored it in plaintext.
 
 **Roles decide which screens someone sees and which API routes answer them.** They are
 defined once in `lib/roles.js` (each role lists its *areas*: inbox, risk, approvals,
-products, mockups, profit, attribution, email, settings, users, connect), and both the navigation
+products, mockups, ads, profit, attribution, email, settings, users, connect), and both the navigation
 (`app/Shell.jsx`) and the server (`lib/access.js`) read that one file, so the two cannot
 drift. Owner (everything, the only role with profit, attribution, email and traffic), Admin (everything but those),
-Support (inbox, at risk, approvals), Creative (products, mockups, no customer data), and
+Support (inbox, at risk, approvals), Creative (products, mockups, ads, no customer data), and
 Member, which is exactly what everyone had before roles and exists so nobody lost access
 the day they shipped.
 
@@ -95,7 +95,7 @@ a headline, what is going well, what needs work, and 3 to 5 concrete actions.
 
 ## Navigation (`app/Shell.jsx`)
 
-Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups;
+Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups, Ads;
 Insights: Profit, Attribution, Email, Traffic) at 1100px and up, an icon rail from 681 to 1099px, and on
 phones a title bar plus at most five bottom tabs: Create and Insights each fold into one
 tab with a chooser (and Work too, when Home would otherwise make six, carrying the summed
@@ -420,11 +420,12 @@ in the route is a spending guard, not a technical ceiling.
 An approved mockup can go to Shopify, to a brand's Meta ad account, or both. Three
 buttons, one per destination plus "send everywhere".
 
-**The Meta side uploads to the ad image library and stops there.** It does not create a
-creative, does not create or run an ad, does not touch a budget, and shows nothing to
-anyone. That is the same line the Shopify side draws: the asset is in place, a human
-still decides what to do with it. If this ever grows write surface, weigh it against
-that rather than against convenience, the same way `lib/mcp.js` does.
+**The Meta side uploads to the ad image library and stops there.** It does not create or
+run an ad, does not touch a budget, and shows nothing to anyone. That is the same line
+the Shopify side draws: the asset is in place, a human still decides what to do with it.
+The Ads tab (below) goes one step further, to a creative, and no further. If this ever
+grows more write surface, weigh it against that rather than against convenience, the
+same way `lib/mcp.js` does.
 
 **The brand to ad account mapping is env, never code, and it is many-to-one.** This
 business has ten ad accounts, their names do not line up with the brand keys, and one
@@ -452,6 +453,29 @@ failure never stops the Meta upload.
 Token expiry is the failure you will hit. `uploadAdImage` names it specifically on Graph
 error 190, and permission trouble on 200/368/272, rather than passing through a Graph
 error that reads identically for every cause.
+
+## Ads tab: carousels (`app/Ads.jsx`, `/api/ads`, `lib/meta.js`)
+
+Builds a **carousel ad creative** from images already in a brand's Meta ad image library.
+Area `ads` (owner, admin, creative). Reels were ruled out for now: Canva only fills
+templates through the API on Enterprise, and Kittl has no public API.
+
+- **The library is the approval list.** Mockups are approved by sending them to Meta, and
+  the rejects never get there, so the tab reads the library rather than anything held in
+  the Mockups tab (which forgets everything when closed). "Backstage mockups only" filters
+  on the `<brand>-<handle>-lifestyle.png` name the mockups route gives every upload, and
+  the handle in that name is how a card gets its product title and link. Renaming that
+  pattern breaks the mapping.
+- **A creative, never an ad.** `createCarouselCreative` makes an unpublished Page post; the
+  person runs it from Ads Manager via "Use existing post". No campaign, ad set, ad or
+  budget is touched, and nothing is exposed over MCP.
+- **Needs `<BRAND>_META_PAGE_ID`** (the Page the ad posts as), and the token must be allowed
+  to create ads for that Page. `<BRAND>_META_INSTAGRAM_ID` is optional.
+- Links use the store's primary domain (`shopPrimaryUrl`), not the myshopify env domain.
+- Built creatives are named `Backstage · <Brand> · <name>`, which is how "Built here" finds
+  them again in an account two brands share.
+- `multi_share_optimized` (Meta reordering cards) is off by default: the person set the
+  order. Meta shows carousel cards square, so non-square images are flagged as cropped.
 
 ## Sending a mockup to Canva (`lib/canva.js`, `/api/canva/*`)
 

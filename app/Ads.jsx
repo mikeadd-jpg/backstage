@@ -1,0 +1,334 @@
+'use client';
+// Carousel ads from the images already in a brand's Meta ad account. Approving a mockup
+// means sending it to Meta from the Mockups tab, so the library is the list of keepers:
+// pick 2 to 10, order them, check each card's headline and link, build. The result is a
+// creative (an unpublished post) in the ad account; publishing it in an ad set is done
+// in Ads Manager, on purpose. Nothing here runs or spends.
+import { useEffect, useMemo, useState } from 'react';
+
+const CTA_LABELS = {
+  SHOP_NOW: 'Shop now', ORDER_NOW: 'Order now', BUY_NOW: 'Buy now', LEARN_MORE: 'Learn more', SEE_MORE: 'See more',
+};
+
+export default function Ads() {
+  const [config, setConfig] = useState(null);
+  const [brand, setBrand] = useState('');
+  const [libs, setLibs] = useState({});                  // brand -> { images, products, shopUrl }
+  const [loading, setLoading] = useState(false);
+  const [onlyMockups, setOnlyMockups] = useState(true);
+  const [search, setSearch] = useState('');
+
+  const [cards, setCards] = useState([]);                 // in carousel order
+  const [name, setName] = useState('');
+  const [message, setMessage] = useState('');
+  const [cta, setCta] = useState('SHOP_NOW');
+  const [reorder, setReorder] = useState(false);
+  const [endCard, setEndCard] = useState(false);
+  const [building, setBuilding] = useState(false);
+  const [result, setResult] = useState(null);
+  const [recent, setRecent] = useState({});               // brand -> creatives
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch('/api/ads').then((r) => r.json()).then((d) => {
+      if (d.error) return setError(d.error);
+      setConfig(d);
+      if (d.brands && d.brands.length) setBrand(d.brands[0].key);
+    }).catch(() => setError('Could not load the ad accounts.'));
+  }, []);
+
+  async function post(payload) {
+    const res = await fetch('/api/ads', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return { ok: res.ok, d: await res.json() };
+  }
+
+  async function loadRecent(b) {
+    const { ok, d } = await post({ action: 'recent', brand: b }).catch(() => ({ ok: false, d: {} }));
+    if (ok) setRecent((r) => ({ ...r, [b]: d.creatives || [] }));
+  }
+
+  useEffect(() => {
+    if (!brand || !config || !config.tokenSet) return;
+    loadRecent(brand);
+    if (libs[brand]) return;
+    setLoading(true); setError('');
+    post({ action: 'library', brand })
+      .then(({ ok, d }) => {
+        if (!ok) setError(d.error || 'Could not load the image library.');
+        else setLibs((l) => ({ ...l, [brand]: d }));
+      })
+      .catch(() => setError('Could not load the image library.'))
+      .finally(() => setLoading(false));
+  }, [brand, config]);
+
+  const lib = libs[brand] || { images: [], products: [], shopUrl: '' };
+  const brandInfo = (config && config.brands.find((b) => b.key === brand)) || null;
+  const maxCards = (config && config.maxCards) || 10;
+  const minCards = (config && config.minCards) || 2;
+
+  const shown = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return lib.images.filter((img) => {
+      if (onlyMockups && !img.mockup) return false;
+      if (!q) return true;
+      return (img.title || '').toLowerCase().includes(q) || img.name.toLowerCase().includes(q);
+    });
+  }, [lib, onlyMockups, search]);
+
+  const productLink = (handle) => (lib.shopUrl ? lib.shopUrl + '/products/' + handle : '');
+
+  function switchBrand(b) {
+    if (cards.length && !window.confirm('Switching store clears the ' + cards.length + ' card' + (cards.length === 1 ? '' : 's') + ' you have picked. Carry on?')) return;
+    setCards([]); setResult(null); setError(''); setSearch(''); setBrand(b);
+  }
+
+  function toggle(img) {
+    setResult(null); setError('');
+    if (cards.some((c) => c.hash === img.hash)) return setCards((cs) => cs.filter((c) => c.hash !== img.hash));
+    if (cards.length >= maxCards) return setError('A carousel holds at most ' + maxCards + ' cards.');
+    setCards((cs) => [...cs, {
+      hash: img.hash, url: img.url, width: img.width, height: img.height,
+      handle: img.handle || '',
+      headline: img.title || '',
+      link: img.handle ? productLink(img.handle) : lib.shopUrl,
+    }]);
+  }
+
+  function updateCard(hash, patch) {
+    setResult(null);
+    setCards((cs) => cs.map((c) => (c.hash === hash ? { ...c, ...patch } : c)));
+  }
+
+  function move(i, dir) {
+    setResult(null);
+    setCards((cs) => {
+      const j = i + dir;
+      if (j < 0 || j >= cs.length) return cs;
+      const next = cs.slice();
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  }
+
+  function pickProduct(hash, handle) {
+    const p = lib.products.find((x) => x.handle === handle);
+    if (p) updateCard(hash, { handle, headline: p.title, link: productLink(handle) });
+  }
+
+  const problems = [];
+  if (cards.length < minCards) problems.push('Pick at least ' + minCards + ' images.');
+  cards.forEach((c, i) => {
+    if (!c.headline.trim()) problems.push('Card ' + (i + 1) + ' needs a headline.');
+    if (!/^https?:\/\/\S+$/i.test(c.link.trim())) problems.push('Card ' + (i + 1) + ' needs a link starting with https://.');
+  });
+  if (brandInfo && !brandInfo.page) problems.push('Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel: the Facebook Page the ad posts as.');
+
+  async function build() {
+    setError(''); setResult(null); setBuilding(true);
+    try {
+      const { ok, d } = await post({
+        action: 'build', brand, name, message, cta, reorder, endCard,
+        cards: cards.map((c) => ({ hash: c.hash, headline: c.headline, link: c.link })),
+      });
+      if (!ok) setError(d.error || 'Meta would not create the carousel.');
+      else { setResult(d); loadRecent(brand); }
+    } catch {
+      setError('Request failed.');
+    } finally {
+      setBuilding(false);
+    }
+  }
+
+  const adsManager = brandInfo ? 'https://adsmanager.facebook.com/adsmanager/manage/ads?act=' + brandInfo.account : '';
+
+  if (!config) {
+    return (
+      <div className="pane"><div className="pane-head">Ads</div>
+        <p className="pane-sub">{error || 'Loading...'}</p></div>
+    );
+  }
+
+  return (
+    <div className="pane mk-pane">
+      <div className="pane-head">Carousel ads</div>
+      <p className="pane-sub">
+        Build a carousel from images already in the store's Meta ad account, such as the mockups you sent from the Mockups tab.
+        This creates the carousel only: it runs nowhere and spends nothing until you publish it in an ad set in Ads Manager.
+      </p>
+
+      {!config.tokenSet && (
+        <div className="flag" style={{ marginBottom: 14 }}>
+          <span className="ico">&#9873;</span>
+          <span>META_ACCESS_TOKEN is not set, so the ad accounts cannot be read.</span>
+        </div>
+      )}
+      {config.brands.length === 0 && (
+        <div className="flag" style={{ marginBottom: 14 }}>
+          <span className="ico">&#9873;</span>
+          <span>No store has a Meta ad account. Set &lt;BRAND&gt;_META_AD_ACCOUNT_ID in Vercel.</span>
+        </div>
+      )}
+
+      <div className="mk-layout">
+        <aside className="card mk-picker">
+          <div className="field-row">
+            <label className="field">
+              <span>Store</span>
+              <select className="input" value={brand} onChange={(e) => switchBrand(e.target.value)}>
+                {config.brands.map((b) => <option key={b.key} value={b.key}>{b.name}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              <span>Search</span>
+              <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="product or file name" />
+            </label>
+          </div>
+          <label className="check" style={{ marginTop: -4 }}>
+            <input type="checkbox" checked={onlyMockups} onChange={(e) => setOnlyMockups(e.target.checked)} />
+            Backstage mockups only
+          </label>
+          {brandInfo && <div className="ledger-note" style={{ marginBottom: 8 }}>Ad account {brandInfo.account}</div>}
+
+          <div className="mk-picker-head">
+            <span>Image library</span>
+            <span className="acc-count">
+              {loading ? 'loading...' : shown.length + ' shown'} · {cards.length} of {maxCards} picked
+            </span>
+          </div>
+          <div className="mk-grid">
+            {!loading && shown.length === 0 && (
+              <div className="ledger-note">
+                {onlyMockups ? 'No Backstage mockups in this ad account yet. Send some from the Mockups tab, or untick the box.' : 'No images in this ad account.'}
+              </div>
+            )}
+            {shown.map((img) => {
+              const pos = cards.findIndex((c) => c.hash === img.hash);
+              return (
+                <button
+                  key={img.hash} type="button"
+                  className={'mk-item' + (pos >= 0 ? ' picked' : '')}
+                  onClick={() => toggle(img)}
+                  disabled={pos < 0 && cards.length >= maxCards}
+                  title={img.name}
+                >
+                  {pos >= 0 && <span className="ad-pos">{pos + 1}</span>}
+                  <img className="mk-thumb" src={img.url} alt="" loading="lazy" />
+                  <span className="mk-title">{img.title || img.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </aside>
+
+        <section className="mk-work">
+          <div className="card">
+            <div className="card-label">Carousel</div>
+            <div className="field-row">
+              <label className="field">
+                <span>Name (for finding it in Ads Manager)</span>
+                <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. October lifestyle drop" />
+              </label>
+              <label className="field">
+                <span>Button</span>
+                <select className="input" value={cta} onChange={(e) => setCta(e.target.value)}>
+                  {(config.ctaTypes || []).map((t) => <option key={t} value={t}>{CTA_LABELS[t] || t}</option>)}
+                </select>
+              </label>
+            </div>
+            <label className="field">
+              <span>Primary text (above the carousel)</span>
+              <textarea className="textarea" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={reorder} onChange={(e) => setReorder(e.target.checked)} />
+              Let Meta reorder the cards by performance
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={endCard} onChange={(e) => setEndCard(e.target.checked)} />
+              Add an end card with the Page's profile picture
+            </label>
+
+            {cards.length === 0 && <div className="ledger-note" style={{ marginTop: 10 }}>Pick images from the library. Each one becomes a card, in the order you pick them.</div>}
+
+            <div className="ad-cards">
+              {cards.map((c, i) => (
+                <div className="ad-card" key={c.hash}>
+                  <div className="ad-card-media">
+                    <span className="ad-pos static">{i + 1}</span>
+                    <img src={c.url} alt="" />
+                  </div>
+                  <div className="ad-card-fields">
+                    {lib.products.length > 0 && (
+                      <select className="input" value={c.handle} onChange={(e) => pickProduct(c.hash, e.target.value)}>
+                        <option value="">{c.handle ? 'Product not found' : 'Fill from a product...'}</option>
+                        {lib.products.map((p) => <option key={p.handle} value={p.handle}>{p.title}</option>)}
+                      </select>
+                    )}
+                    <input className="input" value={c.headline} placeholder="Headline" onChange={(e) => updateCard(c.hash, { headline: e.target.value })} />
+                    <input className="input" value={c.link} placeholder="https://..." onChange={(e) => updateCard(c.hash, { link: e.target.value })} />
+                    {c.headline.length > 40 && <div className="ledger-note">Long headline: Meta cuts carousel headlines off at around 40 characters.</div>}
+                    {c.width && c.height && c.width !== c.height && (
+                      <div className="ledger-note">Not square ({c.width}x{c.height}). Meta shows carousel cards square, so this will be cropped.</div>
+                    )}
+                  </div>
+                  <div className="ad-card-actions">
+                    <button className="btn btn-ghost" type="button" onClick={() => move(i, -1)} disabled={i === 0} title="Move earlier">&uarr;</button>
+                    <button className="btn btn-ghost" type="button" onClick={() => move(i, 1)} disabled={i === cards.length - 1} title="Move later">&darr;</button>
+                    <button className="btn btn-ghost" type="button" onClick={() => setCards((cs) => cs.filter((x) => x.hash !== c.hash))} title="Remove">&times;</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {cards.length > 0 && problems.length > 0 && (
+              <div className="mk-dests" style={{ marginTop: 12 }}>
+                {problems.map((p) => (
+                  <div className="mk-dest" key={p}><span className="mini-dot" style={{ background: 'var(--amber)' }} /><span>{p}</span></div>
+                ))}
+              </div>
+            )}
+            {error && <div className="login-error">{error}</div>}
+
+            <div className="reply-actions" style={{ marginTop: 14 }}>
+              <button className="btn btn-primary" onClick={build} disabled={building || problems.length > 0}>
+                {building ? 'Building...' : 'Build carousel (' + cards.length + ' card' + (cards.length === 1 ? '' : 's') + ')'}
+              </button>
+            </div>
+
+            {result && (
+              <div className="flag ad-done" style={{ marginTop: 14 }}>
+                <span className="ico">&#10003;</span>
+                <span>
+                  Carousel built in ad account {result.accountId} (creative {result.id}
+                  {result.postId ? ', post ' + result.postId : ''}).
+                  {' '}To run it: in Ads Manager, create an ad in an ad set, choose <b>Use existing post</b>, and pick this one.
+                  {' '}{result.previewUrl && <a href={result.previewUrl} target="_blank" rel="noreferrer">Preview</a>}
+                  {result.previewUrl && ' · '}
+                  <a href={adsManager} target="_blank" rel="noreferrer">Open Ads Manager</a>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {(recent[brand] || []).length > 0 && (
+            <div className="card">
+              <div className="card-label">Built here for {brandInfo ? brandInfo.name : brand}</div>
+              {(recent[brand] || []).map((c) => (
+                <div className="build-row" key={c.id}>
+                  <span className="li-name">
+                    {c.name}
+                    <span className="li-sub">creative {c.id}{c.postId ? ' · post ' + c.postId : ''}</span>
+                  </span>
+                  {c.thumb && <img className="mk-job-thumb" src={c.thumb} alt="" />}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}

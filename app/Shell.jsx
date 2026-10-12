@@ -21,6 +21,7 @@ const PATHS = {
   attribution: ['M10 3.2A9 9 0 1 0 20.8 14H10z', 'M14 3.3A9 9 0 0 1 20.7 10H14z'],
   email: ['M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z', 'm3.5 7 8.5 6 8.5-6'],
   traffic: ['M3 12h4l3-8 4 16 3-8h4'],
+  ads: ['M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z', 'M17 9a4 4 0 0 1 0 6', 'M20 6a8 8 0 0 1 0 12'],
   insights: ['M4 20h16', 'M7 16v-4', 'M12 16V8', 'M17 16v-6'],
   create: ['M12 5v14', 'M5 12h14'],
   settings: ['M4 6h8', 'M16 6h4', 'M14 4v4', 'M4 12h4', 'M12 12h8', 'M10 10v4', 'M4 18h11', 'M19 18h1', 'M17 16v4'],
@@ -46,6 +47,7 @@ export const DESTINATIONS = {
   approvals: { area: 'approvals', label: 'Approvals', icon: 'approvals', group: 'Work', blurb: 'Print files waiting for a yes' },
   products:  { area: 'products',  label: 'Products',  icon: 'products',  group: 'Create', blurb: 'Printify drafts from a design' },
   mockups:   { area: 'mockups',   label: 'Mockups',   icon: 'mockups',   group: 'Create', blurb: 'Lifestyle shots for a live product' },
+  ads:       { area: 'ads',       label: 'Ads',       icon: 'ads',       group: 'Create', blurb: 'Carousel ads from the Meta image library' },
   profit:    { area: 'profit',    label: 'Profit',    icon: 'profit',    group: 'Insights', blurb: 'Revenue, costs and margin' },
   attribution: { area: 'attribution', label: 'Attribution', icon: 'attribution', group: 'Insights', blurb: 'Where revenue comes from' },
   email:     { area: 'email',     label: 'Email',     icon: 'email',     group: 'Insights', blurb: 'List growth, flows and campaigns' },
@@ -131,7 +133,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
   const [menu, setMenu] = useState(null);       // null | 'side' | 'top'
   const [chooser, setChooser] = useState(null);  // null | 'work' | 'create' | 'insights'
   const allowed = allowedDestinations(me);
-  const createKeys = ['products', 'mockups'].filter((k) => allowed.includes(k));
+  const createKeys = ['products', 'mockups', 'ads'].filter((k) => allowed.includes(k));
 
   // Bottom tabs on phones, five at most: Work screens, then Create and Insights. A group
   // with several screens folds into one tab that opens a chooser, but only when there are
