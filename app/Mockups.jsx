@@ -44,6 +44,13 @@ export default function Mockups() {
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // One setting for the whole run ("a concert venue"). Every scene written while it is set
+  // is a different take on that place. Read through a ref because rotations started by a
+  // pick close over an older render.
+  const [theme, setTheme] = useState('');
+  const themeRef = useRef('');
+  useEffect(() => { themeRef.current = theme.trim(); }, [theme]);
+  const [rewriting, setRewriting] = useState(false);
 
   const jobsRef = useRef(jobs);
   useEffect(() => { jobsRef.current = jobs; }, [jobs]);
@@ -168,6 +175,7 @@ export default function Mockups() {
     try {
       const { ok, d } = await post({
         action: 'suggest-scene', brand: job.brand, product: job.product, current: live.scene, previous,
+        theme: themeRef.current,
       });
       if (!ok) return updateJob(job.key, { rotating: false, msg: (d.error || 'Could not write a new scene.') + ' Using the scene shown.' });
       seenRef.current[job.brand] = Array.from(new Set([d.scene, live.scene, ...seen].filter(Boolean))).slice(0, 10);
@@ -175,6 +183,20 @@ export default function Mockups() {
     } catch {
       updateJob(job.key, { rotating: false, msg: 'Could not write a new scene. Using the scene shown.' });
     }
+  }
+
+  // Rewrite every card's scene, e.g. after setting a theme. Three at a time rather than
+  // all at once, so later cards see the scenes the earlier ones landed on and steer away.
+  async function rewriteAll() {
+    setError('');
+    const list = jobsRef.current.filter((j) => !j.rotating);
+    if (!list.length) return;
+    setRewriting(true);
+    let next = 0;
+    await Promise.all(Array.from({ length: Math.min(3, list.length) }, async () => {
+      while (next < list.length) await rotate(list[next++]);
+    }));
+    setRewriting(false);
   }
 
   async function saveDefault(job) {
@@ -527,6 +549,23 @@ export default function Mockups() {
 
         <section className="mk-work">
           <div className="card">
+            <label className="field">
+              <span>Theme for every scene (optional)</span>
+              <input
+                className="input" value={theme} onChange={(e) => setTheme(e.target.value)} maxLength={300}
+                placeholder="e.g. a concert venue, an abandoned parking lot"
+              />
+            </label>
+            <div className="reply-actions" style={{ marginTop: -6, marginBottom: 14 }}>
+              <button className="btn btn-ghost" type="button" onClick={rewriteAll} disabled={!jobs.length || busy || rewriting || anyRotating}>
+                {rewriting ? 'Rewriting...' : '\u21bb Rewrite all scenes'}
+              </button>
+              <span className="ledger-note">
+                {theme.trim()
+                  ? 'New picks and every rotate stay in this setting, each a different take on it.'
+                  : 'Empty means each scene goes wherever suits its product.'}
+              </span>
+            </div>
             <div className="field-row">
               <label className="field">
                 <span>Shots per product</span>

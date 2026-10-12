@@ -366,14 +366,19 @@ shown this session passed as "already used" so it moves on rather than circling 
 describes only the surroundings, never the artwork, so it cannot argue with `HARD_RULES`.
 It saves nothing; "Save as default" is still the only way a scene becomes the default.
 Picking a product rotates automatically, and the other cards' scenes go along as "already
-used" so ten products get ten different settings.
+used" so ten products get ten different settings. A **theme** at the top of the tab ("a concert venue")
+pins the place for the run: `suggestScene` keeps every scene inside it and varies the spot,
+time and mood instead. It is session-only, and "Rewrite all scenes" re-rotates every card
+three at a time so later cards see where the earlier ones landed.
 
 **Store notes** (`mockup_notes_<brand>` in `app_settings`, edited in Settings) are standing
 direction for every shot in a store: Elder Emo "no tattoos", Wallspoke "frame the map
 tight". `generateMockup` reads them server side and `suggestScene` is told to respect them,
 so a rotated scene cannot argue with them. `DEFAULT_NOTES` is the fallback until saved; a
 saved empty string means "none". The Wallspoke variations were tightened to match: a wide
-room shot left the map a small rectangle on the wall.
+room shot left the map a small rectangle on the wall. Elder Emo is framed close the same way, in code
+rather than notes: its own `DEFAULT_VARIATIONS` (waist up at the widest) and a
+`CLOSE_FRAMING` line that tells `suggestScene` the setting is only a blurred backdrop.
 
 **"Send everywhere" makes the shot the Shopify main image**, then Meta and Canva where set
 up. **Main image** is `productReorderMedia` moving the new media to position 0. A shot already

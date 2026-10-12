@@ -13,7 +13,8 @@
 //   { action: 'attach', brand, productId, b64, main } push an approved image onto the
 //                                                product; main moves it to the front
 //   { action: 'make-main', brand, productId, mediaId } front an image already attached
-//   { action: 'suggest-scene', brand, product, current, previous } Claude writes a new scene
+//   { action: 'suggest-scene', brand, product, current, previous, theme } Claude writes a
+//                                                new scene, inside the theme if one is given
 //   { action: 'attach-meta', brand, b64 }        push it into the Meta ad image library
 //   { action: 'attach-canva', brand, b64 }       upload it to the brand's Canva folder
 //   { action: 'save-scene', brand, scene }       store that brand's scene direction
@@ -147,6 +148,7 @@ export async function POST(req) {
         product: { title: p.title, productType: p.productType, image: p.image },
         current: body.current,
         previous: Array.isArray(body.previous) ? body.previous : [],
+        theme: typeof body.theme === 'string' ? body.theme : '',
       });
       return NextResponse.json({ scene });
     }
