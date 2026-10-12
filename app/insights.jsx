@@ -1,5 +1,5 @@
 'use client';
-// Shared by the Insights tabs (Profit, Attribution, Email): one data fetch per source, one
+// Shared by the Insights tabs (Profit, Attribution, Email, Traffic, Orders): one data fetch per source, one
 // set of brand and period filters, one filter bar, and the number formatting they use. The
 // filters are remembered per device and shared, so switching tabs keeps the same brands
 // and dates.
@@ -123,8 +123,11 @@ export function useInsights({ url = '/api/profit', pnl = true } = {}) {
   };
 }
 
-/** Title, brand and period filters, custom dates, the period line and the coverage note. */
-export function InsightsHeader({ ins, title, sub }) {
+/**
+ * Title, brand and period filters, custom dates, the period line and the coverage note.
+ * `compare={false}` drops the comparison wording for a tab that shows no deltas.
+ */
+export function InsightsHeader({ ins, title, sub, compare = true }) {
   const { data, error, selected, setSelected, toggleBrand, allOn, periodKey, setPeriodKey, custom, setCustom,
     customValid, presets, period, view } = ins;
   return (
@@ -184,9 +187,9 @@ export function InsightsHeader({ ins, title, sub }) {
             <>
               <div className="pf-period">
                 {period.from === period.to ? shortDate(period.from) : shortDate(period.from) + ' – ' + shortDate(period.to)}
-                {' · '}<span className="pf-cmp">{period.compareLabel}</span>
+                {compare && <>{' · '}<span className="pf-cmp">{period.compareLabel}</span></>}
               </div>
-              {view.partial.length > 0 && (
+              {compare && view.partial.length > 0 && (
                 <div className="pf-note">
                   {view.partial.map((b) => b + ' data starts ' + shortDate(view.starts[b])).join('; ')}, inside the
                   comparison window, so the % changes overstate growth.

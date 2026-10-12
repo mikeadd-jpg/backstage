@@ -21,6 +21,7 @@ const PATHS = {
   attribution: ['M10 3.2A9 9 0 1 0 20.8 14H10z', 'M14 3.3A9 9 0 0 1 20.7 10H14z'],
   email: ['M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z', 'm3.5 7 8.5 6 8.5-6'],
   traffic: ['M3 12h4l3-8 4 16 3-8h4'],
+  orders: ['M6 3h12v18l-3-2-3 2-3-2-3 2z', 'M9 8h6', 'M9 12h6'],
   ads: ['M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z', 'M17 9a4 4 0 0 1 0 6', 'M20 6a8 8 0 0 1 0 12'],
   insights: ['M4 20h16', 'M7 16v-4', 'M12 16V8', 'M17 16v-6'],
   create: ['M12 5v14', 'M5 12h14'],
@@ -52,6 +53,7 @@ export const DESTINATIONS = {
   attribution: { area: 'attribution', label: 'Attribution', icon: 'attribution', group: 'Insights', blurb: 'Where revenue comes from' },
   email:     { area: 'email',     label: 'Email',     icon: 'email',     group: 'Insights', blurb: 'List growth, flows and campaigns' },
   traffic:   { area: 'traffic',   label: 'Traffic',   icon: 'traffic',   group: 'Insights', blurb: 'Sessions and how well they convert' },
+  orders:    { area: 'orders',    label: 'Orders',    icon: 'orders',    group: 'Insights', blurb: 'Recent orders, their UTMs and source' },
   // Account-menu destinations: reachable, but not worth a permanent slot.
   settings:  { area: 'settings',  label: 'Settings',  icon: 'settings',  group: 'Account' },
   users:     { area: 'users',     label: 'Users',     icon: 'users',     group: 'Account' },
@@ -139,7 +141,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
   // with several screens folds into one tab that opens a chooser, but only when there are
   // other tabs beside it: a Creative's only tab would otherwise be Create, and a lone tab
   // hides the bar, leaving no way between Products and Mockups.
-  const insightKeys = ['profit', 'attribution', 'email', 'traffic'].filter((k) => allowed.includes(k));
+  const insightKeys = ['profit', 'attribution', 'email', 'traffic', 'orders'].filter((k) => allowed.includes(k));
   const homeTab = allowed.includes('home') ? [{ key: 'home', ...DESTINATIONS.home }] : [];
   const workKeys = ['inbox', 'risk', 'approvals'].filter((k) => allowed.includes(k));
   const groupTabs = (keys, fold) => (keys.length > 1 && fold ? [fold] : keys.map((k) => ({ key: k, ...DESTINATIONS[k] })));

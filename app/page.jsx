@@ -5,6 +5,7 @@ import Attribution from './Attribution';
 import Email from './Email';
 import Home from './Home';
 import Traffic from './Traffic';
+import Orders from './Orders';
 import AtRisk from './AtRisk';
 import Inbox from './Inbox';
 import { BRANDS } from './ui';
@@ -162,6 +163,7 @@ export default function Page() {
       {tab === 'attribution' && <Attribution />}
       {tab === 'email' && <Email />}
       {tab === 'traffic' && <Traffic />}
+      {tab === 'orders' && <Orders />}
       {tab === 'settings' && <Settings />}
       {tab === 'users' && <Users />}
     </Shell>

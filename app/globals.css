@@ -893,3 +893,18 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .approve-cancelled { font-size: 12.5px; font-weight: 600; color: var(--red); background: var(--red-bg, rgba(214, 69, 69, 0.08));
   border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; line-height: 1.4; }
 .btn-danger { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* Orders: recent orders with their UTMs and source (app/Orders.jsx) */
+.od-toolbar { margin-top: 6px; }
+.od-search { flex: 1 1 260px; max-width: 420px; }
+.od-search .input { width: 100%; margin-bottom: 14px; }
+.od-buckets { margin-bottom: 8px; }
+.od-buckets .pf-chip i { opacity: 1; margin-right: 6px; }
+.od-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.od-csv { margin-left: auto; }
+.od-table td { font-family: 'Inter', sans-serif; text-align: left; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.od-table th { text-align: left; }
+.od-table td:nth-child(3), .od-table th:nth-child(3) { text-align: right; font-family: 'Space Mono', monospace; }
+.od-table td:first-child a { font-weight: 600; color: var(--text); }
+.od-table tr.od-cancelled td { opacity: 0.55; }
+.od-none { color: var(--faint); }

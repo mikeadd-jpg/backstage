@@ -16,9 +16,9 @@ cookie that stored it in plaintext.
 
 **Roles decide which screens someone sees and which API routes answer them.** They are
 defined once in `lib/roles.js` (each role lists its *areas*: inbox, risk, approvals,
-products, mockups, ads, profit, attribution, email, settings, users, connect), and both the navigation
+products, mockups, ads, profit, attribution, email, traffic, orders, settings, users, connect), and both the navigation
 (`app/Shell.jsx`) and the server (`lib/access.js`) read that one file, so the two cannot
-drift. Owner (everything, the only role with profit, attribution, email and traffic), Admin (everything but those),
+drift. Owner (everything, the only role with profit, attribution, email, traffic and orders), Admin (everything but those),
 Support (inbox, at risk, approvals), Creative (products, mockups, ads, no customer data), and
 Member, which is exactly what everyone had before roles and exists so nobody lost access
 the day they shipped.
@@ -96,7 +96,7 @@ a headline, what is going well, what needs work, and 3 to 5 concrete actions.
 ## Navigation (`app/Shell.jsx`)
 
 Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups, Ads;
-Insights: Profit, Attribution, Email, Traffic) at 1100px and up, an icon rail from 681 to 1099px, and on
+Insights: Profit, Attribution, Email, Traffic, Orders) at 1100px and up, an icon rail from 681 to 1099px, and on
 phones a title bar plus at most five bottom tabs: Create and Insights each fold into one
 tab with a chooser (and Work too, when Home would otherwise make six, carrying the summed
 badge) when the person has more than one screen in the group and other tabs
@@ -717,6 +717,25 @@ Shopify's own Sessions and Conversion reports. Owners only, through the `traffic
 - Six ShopifyQL queries per brand per range, run sequentially (a burst trips Shopify's
   cost throttle), cached in `insights_cache` for an hour (a week for past ranges). The
   comparison period asks for `lite=1`: channels and totals only.
+
+## Orders tab (`lib/orders.js`, `/api/orders`, `app/Orders.jsx`)
+
+The newest 50 orders per brand (`ORDER_LIMIT`) in the chosen period, with where each came
+from. Owners only, through the `orders` area. Shares the Insights filter bar with
+`compare={false}`, since there are no deltas. Read live from Shopify on every load, no cache.
+
+- **Shopify source is `customerJourneySummary`**, the same "Conversion summary" as on an
+  order in the Shopify admin: first and last visit, each with source, source type, landing
+  page, referrer and parsed UTMs. UTMs fall back to the landing page's query string when
+  Shopify has none. Orders with no storefront visit (drafts, Shop app) show "no visit".
+- **Sales channel** is `channelInformation` / `sourceName`: where the order was placed,
+  not where the customer came from. Different question, both shown.
+- **The Attribution column is `orderSource_` from `sheets/pp-pnl`, ported** to
+  `sheetSource()`, run on the last visit (the order's `landing_site` / `referring_site`),
+  so a row can be checked against the Attribution tab. Change one, change the other.
+- No customer fields are queried. The order name links to the Shopify admin.
+- The apps lack `read_all_orders`, so periods reaching past 60 days come back short; the
+  tab says so. Visit data needs Level 2 protected customer data, same as Traffic.
 
 ## Remote MCP server (`lib/mcp.js`, `app/api/mcp/route.js`)
 
