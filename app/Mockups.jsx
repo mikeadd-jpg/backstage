@@ -27,6 +27,8 @@ export default function Mockups() {
   const [cache, setCache] = useState({});          // brand -> products
   const [loadingList, setLoadingList] = useState(false);
   const [search, setSearch] = useState('');
+  const [collection, setCollection] = useState('');       // '' = any
+  const [tag, setTag] = useState('');                     // '' = any
 
   const [size, setSize] = useState('portrait');
   const [quality, setQuality] = useState('high');
@@ -84,11 +86,28 @@ export default function Mockups() {
   }, [brand]);
 
   const products = cache[brand] || [];
+  // Collection and tag lists come from the products already loaded, so they only ever
+  // offer choices that match something in this store.
+  const collectionOptions = useMemo(
+    () => Array.from(new Set(products.flatMap((p) => p.collections || []))).sort((a, b) => a.localeCompare(b)),
+    [products],
+  );
+  const tagOptions = useMemo(
+    () => Array.from(new Set(products.flatMap((p) => p.tags || []))).sort((a, b) => a.localeCompare(b)),
+    [products],
+  );
+  // Search matches the title, any tag or any collection, on top of the two dropdowns.
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter((p) => p.title.toLowerCase().includes(q));
-  }, [products, search]);
+    return products.filter((p) => {
+      if (collection && !(p.collections || []).includes(collection)) return false;
+      if (tag && !(p.tags || []).includes(tag)) return false;
+      if (!q) return true;
+      return p.title.toLowerCase().includes(q)
+        || (p.tags || []).some((t) => t.toLowerCase().includes(q))
+        || (p.collections || []).some((c) => c.toLowerCase().includes(q));
+    });
+  }, [products, search, collection, tag]);
 
   const brandName = (b) => brands.find((x) => x.key === b)?.name || b;
   const jobKey = (b, p) => b + ':' + p.id;
@@ -450,14 +469,30 @@ export default function Mockups() {
           <div className="field-row">
             <label className="field">
               <span>Store</span>
-              <select className="input" value={brand} onChange={(e) => { setBrand(e.target.value); setSearch(''); }}>
+              <select className="input" value={brand} onChange={(e) => { setBrand(e.target.value); setSearch(''); setCollection(''); setTag(''); }}>
                 {brands.length === 0 && <option value="">No stores configured</option>}
                 {brands.map((b) => <option key={b.key} value={b.key}>{b.name}</option>)}
               </select>
             </label>
             <label className="field">
               <span>Search</span>
-              <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="filter by title" />
+              <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="title, tag or collection" />
+            </label>
+          </div>
+          <div className="field-row">
+            <label className="field">
+              <span>Collection</span>
+              <select className="input" value={collection} onChange={(e) => setCollection(e.target.value)}>
+                <option value="">All collections</option>
+                {collectionOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              <span>Tag</span>
+              <select className="input" value={tag} onChange={(e) => setTag(e.target.value)}>
+                <option value="">All tags</option>
+                {tagOptions.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
             </label>
           </div>
 
