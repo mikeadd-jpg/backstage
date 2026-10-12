@@ -423,7 +423,7 @@ buttons, one per destination plus "send everywhere".
 **The Meta side uploads to the ad image library and stops there.** It does not create or
 run an ad, does not touch a budget, and shows nothing to anyone. That is the same line
 the Shopify side draws: the asset is in place, a human still decides what to do with it.
-The Ads tab (below) goes one step further, to a creative, and no further. If this ever
+The Ads tab (below) goes further, to a creative and a paused ad, and no further. If this ever
 grows more write surface, weigh it against that rather than against convenience, the
 same way `lib/mcp.js` does.
 
@@ -456,7 +456,8 @@ error that reads identically for every cause.
 
 ## Ads tab: carousels (`app/Ads.jsx`, `/api/ads`, `lib/meta.js`)
 
-Builds a **carousel ad creative** from images already in a brand's Meta ad image library.
+Builds a **carousel ad creative** from images already in a brand's Meta ad image library,
+and can put it into an existing ad set as a **paused** ad.
 Area `ads` (owner, admin, creative). Reels were ruled out for now: Canva only fills
 templates through the API on Enterprise, and Kittl has no public API.
 
@@ -466,14 +467,30 @@ templates through the API on Enterprise, and Kittl has no public API.
   on the `<brand>-<handle>-lifestyle.png` name the mockups route gives every upload, and
   the handle in that name is how a card gets its product title and link. Renaming that
   pattern breaks the mapping.
-- **A creative, never an ad.** `createCarouselCreative` makes an unpublished Page post; the
-  person runs it from Ads Manager via "Use existing post". No campaign, ad set, ad or
-  budget is touched, and nothing is exposed over MCP.
-- **Needs `<BRAND>_META_PAGE_ID`** (the Page the ad posts as), and the token must be allowed
-  to create ads for that Page. `<BRAND>_META_INSTAGRAM_ID` is optional.
+- **A creative, then at most a paused ad.** `createCarouselCreative` makes an unpublished
+  Page post. "Add to ad set" lists the account's campaigns and ad sets (read-only) and
+  `createPausedAd` creates the ad there with `status: PAUSED` hardcoded in `lib/meta.js`,
+  never taken from the client. Nothing creates a campaign or ad set, changes a budget or
+  targeting, or switches anything on: that is a human in Ads Manager with the spend in
+  view. Not exposed over MCP. One shared ad account lists both brands' ad sets, since
+  nothing reliably marks which brand an ad set is for.
+- **The Page the ad posts as is found automatically** (`resolveMetaPage`): the account's
+  `promote_pages` plus the token's `me/accounts`, matched to the brand by name. A lone Page
+  is only taken when no other brand shares the ad account, since Elder Emo and PopPunks do.
+  `<BRAND>_META_PAGE_ID` overrides it; the tab shows which Page it chose and where from.
+  The token must be allowed to create ads for that Page. The Instagram account is read off
+  the Page (`instagram_business_account`, the 1784... id `instagram_user_id` wants), with
+  `<BRAND>_META_INSTAGRAM_ID` as the override; none linked means the Page shows on
+  Instagram, which never fails a build.
 - Links use the store's primary domain (`shopPrimaryUrl`), not the myshopify env domain.
 - Built creatives are named `Backstage · <Brand> · <name>`, which is how "Built here" finds
   them again in an account two brands share.
+- **Primary text** can be drafted by Claude (`lib/adcopy.js`, `DRAFT_MODEL`, brand voice)
+  from the cards' headlines, with per-ad notes and standing per-store notes
+  (`ad_text_notes_<brand>` in `app_settings`, read server side). The prompt forbids
+  inventing offers, prices or shipping promises unless the notes state them; keep that,
+  since this text runs as paid copy. Rewrite passes earlier drafts as "already written";
+  Undo steps back. `stripDashes` runs on the output.
 - `multi_share_optimized` (Meta reordering cards) is off by default: the person set the
   order. Meta shows carousel cards square, so non-square images are flagged as cropped.
 

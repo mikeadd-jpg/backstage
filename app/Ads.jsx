@@ -2,8 +2,9 @@
 // Carousel ads from the images already in a brand's Meta ad account. Approving a mockup
 // means sending it to Meta from the Mockups tab, so the library is the list of keepers:
 // pick 2 to 10, order them, check each card's headline and link, build. The result is a
-// creative (an unpublished post) in the ad account; publishing it in an ad set is done
-// in Ads Manager, on purpose. Nothing here runs or spends.
+// creative (an unpublished post) in the ad account, which can then go into an existing
+// ad set as a PAUSED ad. Switching it on stays in Ads Manager, on purpose: nothing here
+// runs or spends.
 import { useEffect, useMemo, useState } from 'react';
 
 const CTA_LABELS = {
@@ -21,6 +22,11 @@ export default function Ads() {
   const [cards, setCards] = useState([]);                 // in carousel order
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
+  const [textNotes, setTextNotes] = useState('');         // this ad only
+  const [storeNotes, setStoreNotes] = useState({});       // brand -> standing copy notes
+  const [storeNotesMsg, setStoreNotesMsg] = useState('');
+  const [writing, setWriting] = useState(false);
+  const [textHistory, setTextHistory] = useState([]);     // earlier drafts, newest first
   const [cta, setCta] = useState('SHOP_NOW');
   const [reorder, setReorder] = useState(false);
   const [endCard, setEndCard] = useState(false);
@@ -29,10 +35,21 @@ export default function Ads() {
   const [recent, setRecent] = useState({});               // brand -> creatives
   const [error, setError] = useState('');
 
+  // Putting a built carousel into an ad set, always as a paused ad.
+  const [attach, setAttach] = useState(null);             // { id, name } of the creative
+  const [adsets, setAdsets] = useState({});               // brand -> ad sets
+  const [adsetsLoading, setAdsetsLoading] = useState(false);
+  const [adsetId, setAdsetId] = useState('');
+  const [adName, setAdName] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [adResult, setAdResult] = useState(null);
+  const [adError, setAdError] = useState('');
+
   useEffect(() => {
     fetch('/api/ads').then((r) => r.json()).then((d) => {
       if (d.error) return setError(d.error);
       setConfig(d);
+      setStoreNotes(Object.fromEntries((d.brands || []).map((b) => [b.key, b.textNotes || ''])));
       if (d.brands && d.brands.length) setBrand(d.brands[0].key);
     }).catch(() => setError('Could not load the ad accounts.'));
   }, []);
@@ -82,7 +99,7 @@ export default function Ads() {
 
   function switchBrand(b) {
     if (cards.length && !window.confirm('Switching store clears the ' + cards.length + ' card' + (cards.length === 1 ? '' : 's') + ' you have picked. Carry on?')) return;
-    setCards([]); setResult(null); setError(''); setSearch(''); setBrand(b);
+    setCards([]); setResult(null); setError(''); setSearch(''); setTextHistory([]); setStoreNotesMsg(''); setAttach(null); setAdsetId(''); setBrand(b);
   }
 
   function toggle(img) {
@@ -124,7 +141,78 @@ export default function Ads() {
     if (!c.headline.trim()) problems.push('Card ' + (i + 1) + ' needs a headline.');
     if (!/^https?:\/\/\S+$/i.test(c.link.trim())) problems.push('Card ' + (i + 1) + ' needs a link starting with https://.');
   });
-  if (brandInfo && !brandInfo.page) problems.push('Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel: the Facebook Page the ad posts as.');
+  if (brandInfo && !brandInfo.page) problems.push('No Facebook Page found for ' + brandInfo.name + '. Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel.');
+
+  // Claude drafts the primary text from the cards' products. Every earlier draft goes
+  // along as "already written", so Rewrite moves to a new angle. Undo steps back.
+  async function writeText() {
+    setError(''); setWriting(true);
+    const previous = [message, ...textHistory].map((t) => t.trim()).filter(Boolean);
+    try {
+      const { ok, d } = await post({
+        action: 'write-text', brand, notes: textNotes, previous,
+        titles: cards.map((c) => c.headline).filter(Boolean),
+      });
+      if (!ok) return setError(d.error || 'Could not write the text.');
+      if (message.trim()) setTextHistory((h) => [message, ...h].slice(0, 10));
+      setMessage(d.text);
+      setResult(null);
+    } catch {
+      setError('Could not write the text.');
+    } finally {
+      setWriting(false);
+    }
+  }
+
+  function undoText() {
+    const [last, ...rest] = textHistory;
+    if (last === undefined) return;
+    setMessage(last); setTextHistory(rest);
+  }
+
+  async function saveStoreNotes() {
+    setStoreNotesMsg('');
+    const { ok, d } = await post({ action: 'save-text-notes', brand, notes: storeNotes[brand] || '' })
+      .catch(() => ({ ok: false, d: {} }));
+    setStoreNotesMsg(ok ? 'Saved for every ' + (brandInfo ? brandInfo.name : brand) + ' ad.' : (d.error || 'Could not save.'));
+  }
+
+  function startAttach(creative) {
+    setAttach(creative); setAdName(creative.name || ''); setAdResult(null); setAdError('');
+    if (adsets[brand]) return;
+    setAdsetsLoading(true);
+    post({ action: 'adsets', brand })
+      .then(({ ok, d }) => {
+        if (!ok) setAdError(d.error || 'Could not load the ad sets.');
+        else setAdsets((a) => ({ ...a, [brand]: d.adsets || [] }));
+      })
+      .catch(() => setAdError('Could not load the ad sets.'))
+      .finally(() => setAdsetsLoading(false));
+  }
+
+  async function addToAdSet() {
+    setAdError(''); setAdResult(null); setAdding(true);
+    try {
+      const { ok, d } = await post({ action: 'create-ad', brand, creativeId: attach.id, adsetId, name: adName });
+      if (!ok) setAdError(d.error || 'Meta would not create the ad.');
+      else setAdResult(d);
+    } catch {
+      setAdError('Request failed.');
+    } finally {
+      setAdding(false);
+    }
+  }
+
+  // Ad sets grouped under their campaign for the picker, campaigns in name order.
+  const campaigns = useMemo(() => {
+    const groups = new Map();
+    for (const a of adsets[brand] || []) {
+      const k = a.campaignId || 'none';
+      if (!groups.has(k)) groups.set(k, { key: k, name: a.campaignName, status: a.campaignStatus, sets: [] });
+      groups.get(k).sets.push(a);
+    }
+    return [...groups.values()].sort((x, y) => x.name.localeCompare(y.name));
+  }, [adsets, brand]);
 
   async function build() {
     setError(''); setResult(null); setBuilding(true);
@@ -134,7 +222,7 @@ export default function Ads() {
         cards: cards.map((c) => ({ hash: c.hash, headline: c.headline, link: c.link })),
       });
       if (!ok) setError(d.error || 'Meta would not create the carousel.');
-      else { setResult(d); loadRecent(brand); }
+      else { setResult(d); loadRecent(brand); startAttach({ id: d.id, name: d.name }); }
     } catch {
       setError('Request failed.');
     } finally {
@@ -190,7 +278,21 @@ export default function Ads() {
             <input type="checkbox" checked={onlyMockups} onChange={(e) => setOnlyMockups(e.target.checked)} />
             Backstage mockups only
           </label>
-          {brandInfo && <div className="ledger-note" style={{ marginBottom: 8 }}>Ad account {brandInfo.account}</div>}
+          {brandInfo && (
+            <div className="ledger-note" style={{ marginBottom: 8 }}>
+              Ad account {brandInfo.account} · {brandInfo.page
+                ? 'posts as ' + (brandInfo.page.name || 'Page') + ' (' + brandInfo.page.id + ')' +
+                  (brandInfo.page.source === 'env' ? ', set in Vercel' : ', found automatically')
+                : brandInfo.pageError ? 'Page lookup failed: ' + brandInfo.pageError
+                : 'no Page found' + (brandInfo.pageCandidates.length
+                  ? '. Meta lists ' + brandInfo.pageCandidates.map((p) => p.name + ' (' + p.id + ')').join(', ')
+                  : '')}
+              {brandInfo.page && (' · Instagram: ' + (brandInfo.instagram
+                ? (brandInfo.instagram.username ? '@' + brandInfo.instagram.username : brandInfo.instagram.id) +
+                  (brandInfo.instagram.source === 'env' ? ', set in Vercel' : ', linked to the Page')
+                : 'none linked, ads show the Page there'))}
+            </div>
+          )}
 
           <div className="mk-picker-head">
             <span>Image library</span>
@@ -240,8 +342,36 @@ export default function Ads() {
             </div>
             <label className="field">
               <span>Primary text (above the carousel)</span>
-              <textarea className="textarea" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
+              <textarea className="textarea" rows={3} value={message} onChange={(e) => { setMessage(e.target.value); setResult(null); }}
+                placeholder="Write it yourself, or have Claude draft it from the cards" />
             </label>
+            {message.length > 125 && (
+              <div className="ledger-note" style={{ marginTop: -8, marginBottom: 10 }}>
+                Meta shows about the first 125 characters before "See more": {message.slice(0, 125)}...
+              </div>
+            )}
+            <label className="field">
+              <span>Notes for this ad's text (optional)</span>
+              <input className="input" value={textNotes} onChange={(e) => setTextNotes(e.target.value)}
+                placeholder="e.g. lead with Halloween, mention the new hoodies" />
+            </label>
+            <div className="reply-actions" style={{ marginTop: -4, marginBottom: 12 }}>
+              <button className="btn btn-ghost" type="button" onClick={writeText} disabled={writing || !brand}>
+                {writing ? 'Writing...' : message.trim() ? '\u21bb Rewrite with Claude' : 'Write with Claude'}
+              </button>
+              <button className="btn btn-ghost" type="button" onClick={undoText} disabled={writing || !textHistory.length}>Undo</button>
+              {!cards.length && <span className="ledger-note">Pick the cards first and the text is written for those products.</span>}
+            </div>
+            <details className="mk-prompt" style={{ marginTop: 0, marginBottom: 12 }}>
+              <summary>Store notes for every {brandInfo ? brandInfo.name : ''} ad{(storeNotes[brand] || '').trim() ? ' (set)' : ''}</summary>
+              <textarea className="textarea" rows={3} style={{ marginTop: 8 }} value={storeNotes[brand] || ''}
+                onChange={(e) => { setStoreNotes((n) => ({ ...n, [brand]: e.target.value })); setStoreNotesMsg(''); }}
+                placeholder="Rules for every ad's text, e.g. never mention discounts; we ship worldwide" />
+              <div className="reply-actions" style={{ marginTop: 6 }}>
+                <button className="btn btn-ghost" type="button" onClick={saveStoreNotes}>Save store notes</button>
+                {storeNotesMsg && <span className="confidence">{storeNotesMsg}</span>}
+              </div>
+            </details>
             <label className="check">
               <input type="checkbox" checked={reorder} onChange={(e) => setReorder(e.target.checked)} />
               Let Meta reorder the cards by performance
@@ -304,7 +434,7 @@ export default function Ads() {
                 <span>
                   Carousel built in ad account {result.accountId} (creative {result.id}
                   {result.postId ? ', post ' + result.postId : ''}).
-                  {' '}To run it: in Ads Manager, create an ad in an ad set, choose <b>Use existing post</b>, and pick this one.
+                  {' '}Add it to an ad set below, or in Ads Manager create an ad and choose <b>Use existing post</b>.
                   {' '}{result.previewUrl && <a href={result.previewUrl} target="_blank" rel="noreferrer">Preview</a>}
                   {result.previewUrl && ' · '}
                   <a href={adsManager} target="_blank" rel="noreferrer">Open Ads Manager</a>
@@ -312,6 +442,55 @@ export default function Ads() {
               </div>
             )}
           </div>
+
+          {attach && (
+            <div className="card">
+              <div className="card-label">Add to an ad set (paused)</div>
+              <p className="pane-sub" style={{ marginTop: 0, marginBottom: 12 }}>
+                Creates a new ad from <b>{attach.name}</b> in the ad set you pick, switched off. It spends nothing until you turn it on in Ads Manager, where the budget and targeting are.
+              </p>
+              <div className="field-row">
+                <label className="field">
+                  <span>Campaign and ad set</span>
+                  <select className="input" value={adsetId} onChange={(e) => { setAdsetId(e.target.value); setAdResult(null); }} disabled={adsetsLoading}>
+                    <option value="">{adsetsLoading ? 'Loading...' : 'Pick an ad set'}</option>
+                    {campaigns.map((c) => (
+                      <optgroup key={c.key} label={c.name + (c.status && c.status !== 'ACTIVE' ? ' (' + c.status.toLowerCase() + ')' : '')}>
+                        {c.sets.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.name}{a.status && a.status !== 'ACTIVE' ? ' (' + a.status.toLowerCase().replace(/_/g, ' ') + ')' : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Ad name</span>
+                  <input className="input" value={adName} onChange={(e) => setAdName(e.target.value)} />
+                </label>
+              </div>
+              {!adsetsLoading && adsets[brand] && adsets[brand].length === 0 && (
+                <div className="ledger-note">This ad account has no ad sets yet. Create a campaign and ad set in Ads Manager first.</div>
+              )}
+              {adError && <div className="login-error">{adError}</div>}
+              <div className="reply-actions" style={{ marginTop: 6 }}>
+                <button className="btn btn-primary" onClick={addToAdSet} disabled={adding || !adsetId || !!adResult}>
+                  {adding ? 'Adding...' : adResult ? 'Added, paused' : 'Add as paused ad'}
+                </button>
+                <button className="btn btn-ghost" type="button" onClick={() => setAttach(null)}>Close</button>
+              </div>
+              {adResult && (
+                <div className="flag ad-done" style={{ marginTop: 12 }}>
+                  <span className="ico">&#10003;</span>
+                  <span>
+                    Ad {adResult.id} created, paused. Turn it on in Ads Manager when you are ready.
+                    {' '}<a href={adsManager + '&selected_ad_ids=' + adResult.id} target="_blank" rel="noreferrer">Open it in Ads Manager</a>
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           {(recent[brand] || []).length > 0 && (
             <div className="card">
@@ -323,6 +502,7 @@ export default function Ads() {
                     <span className="li-sub">creative {c.id}{c.postId ? ' · post ' + c.postId : ''}</span>
                   </span>
                   {c.thumb && <img className="mk-job-thumb" src={c.thumb} alt="" />}
+                  <button className="btn btn-ghost" type="button" onClick={() => startAttach({ id: c.id, name: c.name })}>Add to ad set</button>
                 </div>
               ))}
             </div>

@@ -5,17 +5,23 @@
 //   { action: 'library', brand }      the account's images, mapped to Shopify products
 //   { action: 'recent', brand }       carousels built here for this brand
 //   { action: 'build', brand, ... }   create one carousel creative
+//   { action: 'write-text', brand, titles, notes, previous }  Claude drafts the primary text
+//   { action: 'save-text-notes', brand, notes }               standing copy notes per store
 //
-// A creative is an unpublished post. Nothing here creates an ad, an ad set or a campaign,
-// or spends anything: the person picks an ad set and publishes in Ads Manager. See the
-// header of lib/meta.js before widening that. Not exposed over MCP.
+//   { action: 'adsets', brand }       campaigns and ad sets to choose from (read-only)
+//   { action: 'create-ad', brand, creativeId, adsetId, name }  a PAUSED ad in that ad set
+//
+// A creative is an unpublished post, and an ad is only ever created paused. Nothing here
+// creates an ad set or a campaign, touches a budget, or switches anything on: that stays
+// in Ads Manager. See the header of lib/meta.js before widening that. Not exposed over MCP.
 import { NextResponse } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
 import { listActiveProducts, shopPrimaryUrl } from '../../../lib/shopify.js';
+import { writePrimaryText, adNotesFor, saveAdNotes } from '../../../lib/adcopy.js';
 import {
-  metaAccountFor, metaPageFor, metaInstagramFor, listAdImages, createCarouselCreative,
-  listBuiltCreatives, CTA_TYPES,
+  metaAccountFor, listAdImages, createCarouselCreative, listBuiltCreatives,
+  resolveMetaPage, resolveInstagram, listAdSets, createPausedAd, CTA_TYPES,
 } from '../../../lib/meta.js';
 
 export const dynamic = 'force-dynamic';
@@ -44,18 +50,37 @@ function checkBrand(brand) {
   return brand;
 }
 
+// Page lookup needs to know whether another brand advertises from the same account,
+// because then "the account's only Page" is not a safe guess.
+function pageFor(brand) {
+  const account = metaAccountFor(brand);
+  const shared = configuredShopifyBrands().some((b) => b !== brand && metaAccountFor(b) === account);
+  return resolveMetaPage(brand, { brandName: BRANDS[brand].name, shared });
+}
+
 const isUrl = (u) => /^https?:\/\/\S+$/i.test(String(u || ''));
 
 export async function GET(req) {
   const gate = await requireArea(req, 'ads');
   if (gate.error) return gate.error;
   const tokenSet = Boolean(process.env.META_ACCESS_TOKEN);
-  const brands = configuredShopifyBrands().filter((b) => metaAccountFor(b)).map((b) => ({
+  const keys = configuredShopifyBrands().filter((b) => metaAccountFor(b));
+  const pages = await Promise.all(keys.map((b) => (tokenSet
+    ? pageFor(b).catch((err) => ({ page: null, candidates: [], error: String(err.message || err) }))
+    : { page: null, candidates: [] })));
+  const notes = await Promise.all(keys.map((b) => adNotesFor(b).catch(() => '')));
+  const igs = await Promise.all(keys.map((b, i) => (tokenSet
+    ? resolveInstagram(b, pages[i].page && pages[i].page.id).catch(() => null)
+    : null)));
+  const brands = keys.map((b, i) => ({
     key: b,
     name: BRANDS[b].name,
     account: metaAccountFor(b),
-    page: metaPageFor(b),
-    instagram: metaInstagramFor(b),
+    page: pages[i].page,                 // { id, name, source } or null
+    pageCandidates: pages[i].candidates,
+    pageError: pages[i].error || null,
+    instagram: igs[i],                   // { id, username, source } or null
+    textNotes: notes[i],
   }));
   return NextResponse.json({
     brands, tokenSet, ctaTypes: CTA_TYPES, minCards: MIN_CARDS, maxCards: MAX_CARDS,
@@ -94,6 +119,41 @@ export async function POST(req) {
       });
     }
 
+    if (body.action === 'write-text') {
+      const brand = checkBrand(body.brand);
+      const text = await writePrimaryText({
+        brand,
+        brandName: BRANDS[brand].name,
+        titles: Array.isArray(body.titles) ? body.titles.map(String) : [],
+        notes: typeof body.notes === 'string' ? body.notes.slice(0, 1000) : '',
+        // Read here, not trusted from the client, so the store's rules always apply.
+        standing: await adNotesFor(brand),
+        previous: Array.isArray(body.previous) ? body.previous.map(String) : [],
+      });
+      return NextResponse.json({ text });
+    }
+
+    if (body.action === 'save-text-notes') {
+      const brand = checkBrand(body.brand);
+      await saveAdNotes(brand, typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '');
+      return NextResponse.json({ ok: true });
+    }
+
+    if (body.action === 'adsets') {
+      const brand = checkBrand(body.brand);
+      return NextResponse.json({ adsets: await listAdSets(brand) });
+    }
+
+    if (body.action === 'create-ad') {
+      const brand = checkBrand(body.brand);
+      const creativeId = String(body.creativeId || '').trim();
+      const adsetId = String(body.adsetId || '').trim();
+      if (!/^\d+$/.test(creativeId)) throw new Error('No carousel to add.');
+      if (!/^\d+$/.test(adsetId)) throw new Error('Pick an ad set.');
+      const name = String(body.name || '').trim() || namePrefix(brand) + 'carousel';
+      return NextResponse.json(await createPausedAd(brand, { adsetId, creativeId, name }));
+    }
+
     if (body.action === 'recent') {
       const brand = checkBrand(body.brand);
       return NextResponse.json({ creatives: await listBuiltCreatives(brand, namePrefix(brand)) });
@@ -114,10 +174,20 @@ export async function POST(req) {
         if (!isUrl(link)) throw new Error('Card ' + (i + 1) + ' needs a link starting with https://.');
         return { hash, headline, link, description: String(c.description || '').trim() };
       });
+      const { page, candidates } = await pageFor(brand);
+      if (!page) {
+        throw new Error('Could not tell which Facebook Page ' + BRANDS[brand].name + ' ads post as' +
+          (candidates.length ? ' (found: ' + candidates.map((p) => p.name + ' ' + p.id).join(', ') + ')' : '') +
+          '. Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel.');
+      }
       const shopUrl = await shopPrimaryUrl(brand).catch(() => '');
       const label = String(body.name || '').trim() || new Date().toISOString().slice(0, 10);
+      const creativeName = namePrefix(brand) + label;
+      const instagram = await resolveInstagram(brand, page.id).catch(() => null);
       const result = await createCarouselCreative(brand, {
-        name: namePrefix(brand) + label,
+        pageId: page.id,
+        instagramId: instagram && instagram.id,
+        name: creativeName,
         message: String(body.message || '').trim(),
         link: isUrl(shopUrl) ? shopUrl : clean[0].link,
         cards: clean,
@@ -125,7 +195,7 @@ export async function POST(req) {
         reorder: body.reorder,
         endCard: body.endCard,
       });
-      return NextResponse.json(result);
+      return NextResponse.json({ ...result, name: creativeName });
     }
 
     return NextResponse.json({ error: 'unknown action' }, { status: 400 });

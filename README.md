@@ -45,9 +45,10 @@ card your team can read and copy.
 - Meta: `META_ACCESS_TOKEN`, a system user token with `ads_management`, plus
   `<BRAND>_META_AD_ACCOUNT_ID` per brand (the numeric id; a pasted `act_123` is tolerated).
   Used to upload an approved mockup into that account's ad image library, and by the Ads
-  tab to build carousel creatives from that library, which also needs
-  `<BRAND>_META_PAGE_ID` (the Facebook Page the ads post as). Optional:
-  `<BRAND>_META_INSTAGRAM_ID`, and `META_API_VERSION`, pinned to `v26.0` by default.
+  tab to build carousel creatives from that library. The Facebook Page each brand's ads
+  post as, and the Instagram account linked to it, are found automatically;
+  `<BRAND>_META_PAGE_ID` and `<BRAND>_META_INSTAGRAM_ID` override them. The tab can also
+  add a carousel to an existing ad set as a paused ad. Optional: `META_API_VERSION`, pinned to `v26.0` by default.
 - Canva: `CANVA_CLIENT_ID` and `CANVA_CLIENT_SECRET` from an integration created in Canva's
   Developer Portal (your Canva account needs two-factor sign-in on first). Tick the scopes
   `asset:read`, `asset:write`, `folder:read`, `folder:write`, and add
