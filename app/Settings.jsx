@@ -1,5 +1,5 @@
 'use client';
-// Brand voice, reply structure, stores, product pricing and the Canva connection. Who
+// Brand voice, reply structure, mockup notes, stores, product pricing and the Canva connection. Who
 // can sign in moved to its own Users screen (app/Users.jsx), opened from the account menu.
 import { useEffect, useState } from 'react';
 
@@ -10,6 +10,7 @@ export default function Settings() {
   const [data, setData] = useState(null);
   const [voices, setVoices] = useState({});
   const [structure, setStructure] = useState('');
+  const [mockupNotes, setMockupNotes] = useState({});
   const [cfg, setCfg] = useState({}); // `${brand}|${garment}` -> { price, tags }
   const [newStore, setNewStore] = useState({ name: '', brandKey: '', printifyShopId: '', isDefault: false, copyFrom: '' });
   const [storeMsg, setStoreMsg] = useState('');
@@ -48,6 +49,7 @@ export default function Settings() {
     setData(d);
     setVoices(d.voices || {});
     setStructure(d.replyStructure || '');
+    setMockupNotes(d.mockupNotes || {});
     const map = {};
     for (const c of d.config || []) map[c.brand_key + '|' + c.garment_key] = { price: (c.price_cents / 100).toFixed(2), tags: c.tags || '' };
     setCfg(map);
@@ -92,6 +94,26 @@ export default function Settings() {
         <textarea className="textarea" value={structure} onChange={(e) => setStructure(e.target.value)} rows={8} />
         <button className="btn btn-ghost" style={{ marginTop: 6, alignSelf: 'flex-start' }}
           onClick={() => post({ kind: 'replyStructure', value: structure }, 'Structure saved')}>Save reply structure</button>
+      </div>
+
+      {/* Mockup notes */}
+      <div className="card">
+        <div className="card-label">Mockup notes</div>
+        <p className="pane-sub" style={{ marginTop: 0 }}>
+          Standing direction for every lifestyle mockup in a store, whatever the scene: who
+          should or should not be in it, how close to frame the product. Rotated scenes are
+          written to respect it too. Leave empty for none.
+        </p>
+        {CS_BRANDS.map((b) => (
+          <div className="field" key={b}>
+            <span>{BRAND_NAMES[b] || b}</span>
+            <textarea className="textarea" rows={3} value={mockupNotes[b] || ''}
+              placeholder={b === 'elderemo' ? 'e.g. No visible tattoos on anyone in the frame.' : 'e.g. Frame the print tight so it fills most of the image.'}
+              onChange={(e) => setMockupNotes((n) => ({ ...n, [b]: e.target.value }))} />
+            <button className="btn btn-ghost" style={{ marginTop: 6, alignSelf: 'flex-start' }}
+              onClick={() => post({ kind: 'mockupNotes', brandKey: b, notes: mockupNotes[b] || '' }, 'Notes saved')}>Save {BRAND_NAMES[b] || b} notes</button>
+          </div>
+        ))}
       </div>
 
       {/* Product pricing + tags */}

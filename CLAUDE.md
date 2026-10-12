@@ -316,8 +316,10 @@ tags come entirely from `product_config`.
 ## Lifestyle mockups (`lib/mockups.js`, `app/Mockups.jsx`)
 
 Takes a live product's own storefront image, which is a flat print-on-demand mockup, and
-asks an image model to place it in a scene. Pick a product, review, attach. Nothing is
-automatic.
+asks an image model to place it in a scene. Pick up to ten products (`MAX_PRODUCTS` in the
+route); each opens a card and Claude writes a scene for it on the spot. Review or rotate
+the scenes, generate every card in one run, review each result, attach. Nothing reaches a
+store without a click. Defaults are one shot per product at `high` quality.
 
 **The model choice is not cosmetic.** GPT Image 2.5 ships as two variants: `flare` for
 fast general generation, `sunburst` for editing precision. Putting an existing shirt into
@@ -363,8 +365,18 @@ a fresh scene in the brand voice, looking at the product image, with every scene
 shown this session passed as "already used" so it moves on rather than circling back. It
 describes only the surroundings, never the artwork, so it cannot argue with `HARD_RULES`.
 It saves nothing; "Save as default" is still the only way a scene becomes the default.
+Picking a product rotates automatically, and the other cards' scenes go along as "already
+used" so ten products get ten different settings.
 
-**Main image** is `productReorderMedia` moving the new media to position 0. A shot already
+**Store notes** (`mockup_notes_<brand>` in `app_settings`, edited in Settings) are standing
+direction for every shot in a store: Elder Emo "no tattoos", Wallspoke "frame the map
+tight". `generateMockup` reads them server side and `suggestScene` is told to respect them,
+so a rotated scene cannot argue with them. `DEFAULT_NOTES` is the fallback until saved; a
+saved empty string means "none". The Wallspoke variations were tightened to match: a wide
+room shot left the map a small rectangle on the wall.
+
+**"Send everywhere" makes the shot the Shopify main image**, then Meta and Canva where set
+up. **Main image** is `productReorderMedia` moving the new media to position 0. A shot already
 added as a secondary image is moved (`make-main`), not uploaded twice. Once a lifestyle
 shot is the featured image, the featured image is no longer the flat mockup, so
 `listActiveProducts` picks the first image whose alt text lacks "lifestyle" as the

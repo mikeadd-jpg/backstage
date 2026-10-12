@@ -18,9 +18,9 @@
 //   { action: 'attach-canva', brand, b64 }       upload it to the brand's Canva folder
 //   { action: 'save-scene', brand, scene }       store that brand's scene direction
 //
-// "Send everywhere" is the client calling attach, attach-meta and attach-canva in turn rather than a
-// combined action, so a half-success reports which half, and each destination keeps its
-// own error.
+// "Send everywhere" is the client calling attach (as the main image), attach-meta and
+// attach-canva in turn rather than a combined action, so a half-success reports which
+// half, and each destination keeps its own error.
 //
 // Generated images are never persisted. They live in the browser between generate and
 // attach, which keeps a review step in the loop and avoids needing a blob store.
@@ -29,7 +29,7 @@ import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
 import { listActiveProducts, addProductImage, setProductMainImage } from '../../../lib/shopify.js';
 import {
-  generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, SIZES,
+  generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, notesFor, SIZES,
 } from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
 import { uploadToCanva, canvaStatus } from '../../../lib/canva.js';
@@ -40,6 +40,9 @@ export const maxDuration = 300;
 // How many shots one batch may ask for. Not a technical ceiling, since each image is its
 // own request: it is a spending guard, because the button spends real money per image.
 const MAX_BATCH = 6;
+// How many products one run may hold. Same kind of guard: ten products at six shots each
+// is already sixty paid images from one button.
+const MAX_PRODUCTS = 10;
 
 function checkBrand(brand) {
   if (!brand || !configuredShopifyBrands().includes(brand)) {
@@ -57,11 +60,13 @@ export async function GET(req) {
   const scenes = {};
   const defaults = {};
   const variations = {};
+  const notes = {};
   const meta = {};
   for (const b of brands) {
     scenes[b] = await sceneFor(b);
     defaults[b] = defaultScene(b);
     variations[b] = variationsFor(b, MAX_BATCH);
+    notes[b] = await notesFor(b);
     // Surfaced so the tab can show which advertiser it is about to push into. The
     // account names in this business do not match the brand keys, so "configured" on
     // its own would not tell you whether it is configured *correctly*.
@@ -76,7 +81,9 @@ export async function GET(req) {
     scenes,
     defaults,
     variations,
+    notes,
     maxBatch: MAX_BATCH,
+    maxProducts: MAX_PRODUCTS,
     meta,
     metaToken: Boolean(process.env.META_ACCESS_TOKEN),
     canva: await canvaStatus().catch(() => ({ configured: false, connected: false })),

@@ -8,7 +8,8 @@ import {
 } from '../../../lib/db.js';
 import { garmentList } from '../../../lib/builder.js';
 import { kidsGarmentList } from '../../../lib/kids.js';
-import { REPLY_STRUCTURE } from '../../../lib/brands.js';
+import { REPLY_STRUCTURE, BRANDS } from '../../../lib/brands.js';
+import { notesFor, saveNotes } from '../../../lib/mockups.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,12 +17,16 @@ export async function GET(req) {
   const gate = await requireArea(req, ['settings', 'products']);
   if (gate.error) return gate.error;
   try {
-    const [stores, config, voices, structure] = await Promise.all([
+    const brandKeys = Object.keys(BRANDS);
+    const [stores, config, voices, structure, notes] = await Promise.all([
       getStores(), getAllProductConfig(), getAllVoices(), getSetting('cs_reply_structure'),
+      Promise.all(brandKeys.map((b) => notesFor(b))),
     ]);
+    const mockupNotes = Object.fromEntries(brandKeys.map((b, i) => [b, notes[i]]));
     return NextResponse.json({
       stores, config, voices, garments: [...garmentList(), ...kidsGarmentList()],
       replyStructure: structure || REPLY_STRUCTURE,
+      mockupNotes,
     });
   } catch (err) {
     return NextResponse.json({ error: String(err.message || err) }, { status: 500 });
@@ -35,6 +40,10 @@ export async function POST(req) {
     const b = await req.json();
     if (b.kind === 'voice') await upsertVoice(b.brandKey, b.voice);
     else if (b.kind === 'replyStructure') await setSetting('cs_reply_structure', b.value);
+    else if (b.kind === 'mockupNotes') {
+      if (!BRANDS[b.brandKey]) return NextResponse.json({ error: 'Unknown brand.' }, { status: 400 });
+      await saveNotes(b.brandKey, b.notes);
+    }
     else if (b.kind === 'config') await upsertProductConfig({ brandKey: b.brandKey, garmentKey: b.garmentKey, priceCents: Math.round(Number(b.price) * 100), tags: b.tags });
     else if (b.kind === 'store') {
       // brand_key is a primary key and is uppercased into env var names elsewhere, so
