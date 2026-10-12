@@ -44,6 +44,7 @@ export default function Ads() {
   const [adding, setAdding] = useState(false);
   const [adResult, setAdResult] = useState(null);
   const [adError, setAdError] = useState('');
+  const [adsetFilter, setAdsetFilter] = useState('active'); // 'active' | 'recent' | 'all'
 
   useEffect(() => {
     fetch('/api/ads').then((r) => r.json()).then((d) => {
@@ -179,12 +180,20 @@ export default function Ads() {
 
   function startAttach(creative) {
     setAttach(creative); setAdName(creative.name || ''); setAdResult(null); setAdError('');
-    if (adsets[brand]) return;
-    setAdsetsLoading(true);
-    post({ action: 'adsets', brand })
+    if (!adsets[brand]) loadAdsets();
+  }
+
+  // Also behind the Refresh button, for a campaign or ad set made in Ads Manager after the
+  // list was loaded. The chosen ad set is kept if it is still there.
+  function loadAdsets() {
+    const b = brand;
+    setAdsetsLoading(true); setAdError('');
+    post({ action: 'adsets', brand: b })
       .then(({ ok, d }) => {
-        if (!ok) setAdError(d.error || 'Could not load the ad sets.');
-        else setAdsets((a) => ({ ...a, [brand]: d.adsets || [] }));
+        if (!ok) return setAdError(d.error || 'Could not load the ad sets.');
+        const list = d.adsets || [];
+        setAdsets((a) => ({ ...a, [b]: list }));
+        setAdsetId((id) => (list.some((x) => x.id === id) ? id : ''));
       })
       .catch(() => setAdError('Could not load the ad sets.'))
       .finally(() => setAdsetsLoading(false));
@@ -203,16 +212,28 @@ export default function Ads() {
     }
   }
 
-  // Ad sets grouped under their campaign for the picker, campaigns in name order.
-  const campaigns = useMemo(() => {
+  // Ad sets grouped under their campaign, most recently edited campaign first. A campaign
+  // counts as edited when it or any of its ad sets was, since editing an ad set does not
+  // move the campaign's own timestamp.
+  const RECENT_DAYS = 30;
+  const allCampaigns = useMemo(() => {
     const groups = new Map();
     for (const a of adsets[brand] || []) {
       const k = a.campaignId || 'none';
-      if (!groups.has(k)) groups.set(k, { key: k, name: a.campaignName, status: a.campaignStatus, sets: [] });
-      groups.get(k).sets.push(a);
+      if (!groups.has(k)) groups.set(k, { key: k, name: a.campaignName, status: a.campaignStatus, edited: a.campaignUpdated || '', sets: [] });
+      const g = groups.get(k);
+      g.sets.push(a);
+      if (a.updated && a.updated > g.edited) g.edited = a.updated;
     }
-    return [...groups.values()].sort((x, y) => x.name.localeCompare(y.name));
+    return [...groups.values()].sort((x, y) => y.edited.localeCompare(x.edited) || x.name.localeCompare(y.name));
   }, [adsets, brand]);
+  const campaigns = useMemo(() => {
+    const cutoff = new Date(Date.now() - RECENT_DAYS * 86400000).toISOString();
+    return allCampaigns.filter((c) => (adsetFilter === 'active' ? c.status === 'ACTIVE'
+      : adsetFilter === 'recent' ? Date.parse(c.edited) >= Date.parse(cutoff)
+      : true));
+  }, [allCampaigns, adsetFilter]);
+  const fmtDay = (iso) => (iso ? new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '');
 
   async function build() {
     setError(''); setResult(null); setBuilding(true);
@@ -449,13 +470,23 @@ export default function Ads() {
               <p className="pane-sub" style={{ marginTop: 0, marginBottom: 12 }}>
                 Creates a new ad from <b>{attach.name}</b> in the ad set you pick, switched off. It spends nothing until you turn it on in Ads Manager, where the budget and targeting are.
               </p>
+              <div className="pf-chips" role="group" aria-label="Which campaigns to show">
+                {[['active', 'Active campaigns'], ['recent', 'Edited in the last ' + RECENT_DAYS + ' days'], ['all', 'All']].map(([k, label]) => (
+                  <button key={k} type="button" className={'chip' + (adsetFilter === k ? ' active' : '')}
+                    onClick={() => { setAdsetFilter(k); setAdsetId(''); setAdResult(null); }}>{label}</button>
+                ))}
+                <button type="button" className="chip" onClick={loadAdsets} disabled={adsetsLoading}
+                  title="Reload campaigns and ad sets from Meta">
+                  {adsetsLoading ? 'Refreshing...' : '\u21bb Refresh'}
+                </button>
+              </div>
               <div className="field-row">
                 <label className="field">
-                  <span>Campaign and ad set</span>
+                  <span>Campaign and ad set ({campaigns.length} campaign{campaigns.length === 1 ? '' : 's'}, newest edit first)</span>
                   <select className="input" value={adsetId} onChange={(e) => { setAdsetId(e.target.value); setAdResult(null); }} disabled={adsetsLoading}>
                     <option value="">{adsetsLoading ? 'Loading...' : 'Pick an ad set'}</option>
                     {campaigns.map((c) => (
-                      <optgroup key={c.key} label={c.name + (c.status && c.status !== 'ACTIVE' ? ' (' + c.status.toLowerCase() + ')' : '')}>
+                      <optgroup key={c.key} label={c.name + (c.status && c.status !== 'ACTIVE' ? ' (' + c.status.toLowerCase() + ')' : '') + (c.edited ? ' · edited ' + fmtDay(c.edited) : '')}>
                         {c.sets.map((a) => (
                           <option key={a.id} value={a.id}>
                             {a.name}{a.status && a.status !== 'ACTIVE' ? ' (' + a.status.toLowerCase().replace(/_/g, ' ') + ')' : ''}
@@ -472,6 +503,9 @@ export default function Ads() {
               </div>
               {!adsetsLoading && adsets[brand] && adsets[brand].length === 0 && (
                 <div className="ledger-note">This ad account has no ad sets yet. Create a campaign and ad set in Ads Manager first.</div>
+              )}
+              {!adsetsLoading && allCampaigns.length > 0 && campaigns.length === 0 && (
+                <div className="ledger-note">No campaigns match this filter. Try another, or All.</div>
               )}
               {adError && <div className="login-error">{adError}</div>}
               <div className="reply-actions" style={{ marginTop: 6 }}>
