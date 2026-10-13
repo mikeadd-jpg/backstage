@@ -362,7 +362,7 @@ export default function Mockups() {
           </figure>
         </div>
 
-        <div className="flag" style={{ marginTop: 12 }}>
+        <div className="flag warn" style={{ marginTop: 12 }}>
           <span className="ico">&#9873;</span>
           <span>Check the artwork against the store image before attaching, especially any lettering. The model redraws the whole frame.</span>
         </div>

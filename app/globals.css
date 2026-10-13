@@ -80,6 +80,11 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .flag { margin-top: 14px; padding: 11px 14px; border-radius: 9px; background: var(--red-bg); border: 1px solid var(--red);
   font-size: 12.5px; color: #96121E; display: flex; gap: 10px; line-height: 1.5; align-items: flex-start; }
 .flag .ico { color: var(--red); font-weight: 700; }
+/* Red is for errors only. A caution is amber, a success is green. */
+.flag.warn { background: var(--amber-bg); border-color: var(--amber); color: #6E4100; }
+.flag.warn .ico { color: var(--amber); }
+.flag.ok { background: var(--green-bg); border-color: var(--green); color: #0B5E38; }
+.flag.ok .ico { color: var(--green); }
 .links-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 .link-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600;
   padding: 8px 13px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface);

@@ -491,6 +491,12 @@ templates through the API on Enterprise, and Kittl has no public API.
   inventing offers, prices or shipping promises unless the notes state them; keep that,
   since this text runs as paid copy. Rewrite passes earlier drafts as "already written";
   Undo steps back. `stripDashes` runs on the output.
+- **Every creative carries `url_tags`** (`URL_TAGS` in `lib/meta.js`, override
+  `META_URL_TAGS`): `utm_source={{site_source_name}}&utm_medium=paid_social&
+  utm_campaign={{adset.name}}&utm_content={{ad.name}}`. Meta fills the macros per ad at
+  click time. `paid_social` with a Meta source is what the brand sheets classify as Meta
+  ads, so the two must stay in step. Creatives cannot be edited after creation, so a
+  change here only reaches carousels built afterwards.
 - `multi_share_optimized` (Meta reordering cards) is off by default: the person set the
   order. Meta shows carousel cards square, so non-square images are flagged as cropped.
 

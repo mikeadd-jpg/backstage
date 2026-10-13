@@ -450,7 +450,7 @@ export default function Ads() {
             </div>
 
             {result && (
-              <div className="flag ad-done" style={{ marginTop: 14 }}>
+              <div className="flag ok ad-done" style={{ marginTop: 14 }}>
                 <span className="ico">&#10003;</span>
                 <span>
                   Carousel built in ad account {result.accountId} (creative {result.id}
@@ -515,7 +515,7 @@ export default function Ads() {
                 <button className="btn btn-ghost" type="button" onClick={() => setAttach(null)}>Close</button>
               </div>
               {adResult && (
-                <div className="flag ad-done" style={{ marginTop: 12 }}>
+                <div className="flag ok ad-done" style={{ marginTop: 12 }}>
                   <span className="ico">&#10003;</span>
                   <span>
                     Ad {adResult.id} created, paused. Turn it on in Ads Manager when you are ready.
