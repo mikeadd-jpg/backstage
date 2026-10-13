@@ -524,7 +524,7 @@ from code is not worth the risk.
 and **pasted in by hand** (like `sheets/`, a record, not deployed from here). Wallspoke's
 theme is custom (no Featured collection section), so it gets `sections/also-like.liquid`,
 which reads the metafield directly and needs no dynamic-source wiring, plus
-`templates/collection.landing.json`. Elder Emo runs Shopify's Horizon, whose own Product list
+`templates/collection.landing.json`. Elder Emo and PopPunks run Shopify's Horizon, whose own Product list
 section takes the collection as a dynamic source
 (`{{ collection.metafields.custom.also_like.value }}`), so it needs only
 `templates/collection.landing.json`: the store's collection template plus that section,

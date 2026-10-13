@@ -17,6 +17,7 @@
 //   { action: 'video-status', brand, videoId }        poll Meta's processing
 //   { action: 'build-video', brand, videoId, ... }    create the video ad creative
 //
+//   { action: 'check-access', brand } what the Meta token can do for this brand (read-only)
 //   { action: 'collections', brand }  the store's collections, for "you might also like"
 //   { action: 'landing-page', brand, title, handles, alsoLike }  a manual Shopify collection
 //                                     of the ad's products, in order, published to the Online
@@ -36,7 +37,7 @@ import { writePrimaryText, adNotesFor, saveAdNotes } from '../../../lib/adcopy.j
 import {
   metaAccountFor, listAdImages, createCarouselCreative, listBuiltCreatives,
   resolveMetaPage, resolveInstagram, listAdSets, createPausedAd, CTA_TYPES,
-  uploadAdVideoFromUrl, adVideoStatus, createVideoCreative,
+  uploadAdVideoFromUrl, adVideoStatus, createVideoCreative, checkMetaAccess,
 } from '../../../lib/meta.js';
 import { canvaStatus, listDesigns, startVideoExport, exportStatus } from '../../../lib/canva.js';
 
@@ -223,6 +224,14 @@ export async function POST(req) {
         cta: body.cta,
       });
       return NextResponse.json({ ...result, name: creativeName });
+    }
+
+    // Read-only diagnosis of what the Meta token can do for this brand.
+    if (body.action === 'check-access') {
+      const brand = checkBrand(body.brand);
+      const { page } = await pageFor(brand).catch(() => ({ page: null }));
+      const instagram = page ? await resolveInstagram(brand, page.id).catch(() => null) : null;
+      return NextResponse.json(await checkMetaAccess(brand, { pageId: page && page.id, instagramId: instagram && instagram.id }));
     }
 
     if (body.action === 'collections') {

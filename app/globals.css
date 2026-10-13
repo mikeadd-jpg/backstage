@@ -343,6 +343,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .ad-card-actions { display: flex; flex-direction: column; gap: 4px; }
 .ad-card-actions .btn { padding: 4px 10px; }
 .ad-done a { margin-left: 2px; }
+.link-inline { background: none; border: 0; padding: 0; font: inherit; color: var(--blue); cursor: pointer; text-decoration: underline; }
+.link-inline:disabled { color: var(--faint); cursor: default; }
 .ad-landing { margin: 14px 0 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
 .ad-lp-list { max-height: 240px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .ad-lp-row { display: flex; align-items: center; gap: 10px; padding: 6px 10px; font-size: 13px; cursor: pointer;

@@ -64,6 +64,8 @@ export default function Ads() {
   const [vHeadline, setVHeadline] = useState('');
   const [vLink, setVLink] = useState('');
   const [vHandle, setVHandle] = useState('');
+  const [access, setAccess] = useState(null);            // { brand, data } from Check Meta access
+  const [checking, setChecking] = useState(false);
   const run = useRef(0);                                  // bumps to abandon a stale send
 
   // Landing page: a Shopify collection of the ad's products, one per mode.
@@ -134,6 +136,14 @@ export default function Ads() {
     resetVideo();   // a sent video belongs to the old store's ad account
     setLp({}); setLpTitle({}); setVPicked([]); setLpError(''); setAlsoLike({});
     setBrand(b);
+  }
+
+  async function checkAccess() {
+    setChecking(true); setAccess(null);
+    const b = brand;
+    const { ok, d } = await post({ action: 'check-access', brand: b }).catch(() => ({ ok: false, d: {} }));
+    setAccess({ brand: b, data: ok ? d : null, error: ok ? '' : (d.error || 'Could not check.') });
+    setChecking(false);
   }
 
   // ---- video from Canva ----
@@ -664,6 +674,37 @@ export default function Ads() {
                 ? (brandInfo.instagram.username ? '@' + brandInfo.instagram.username : brandInfo.instagram.id) +
                   (brandInfo.instagram.source === 'env' ? ', set in Vercel' : ', linked to the Page')
                 : 'none linked, ads show the Page there'))}
+              {' · '}<button type="button" className="link-inline" onClick={checkAccess} disabled={checking}>
+                {checking ? 'Checking...' : 'Check Meta access'}
+              </button>
+            </div>
+          )}
+          {access && access.brand === brand && (
+            <div className="mk-dests" style={{ marginTop: 0, marginBottom: 10 }}>
+              {access.error && <div className="mk-dest"><span className="mini-dot" style={{ background: 'var(--red)' }} /><span>{access.error}</span></div>}
+              {access.data && (() => {
+                const a = access.data;
+                const rows = [
+                  [a.token.ok, a.token.ok ? 'Token works, acting as ' + a.token.name : 'Token rejected: ' + a.token.error],
+                  [a.permissions.missing.length === 0,
+                    a.permissions.missing.length === 0 ? 'Token has every permission needed'
+                      : 'Token is missing: ' + a.permissions.missing.join(', ') + '. Generate a new system user token with these ticked.'],
+                  [a.adAccount.ok, a.adAccount.ok ? 'Ad account ' + a.adAccount.id + ' (' + a.adAccount.name + ') answers'
+                    : 'Ad account ' + a.adAccount.id + ' refused: ' + a.adAccount.error + '. Assign it to the system user with Manage campaigns.'],
+                  a.page && [a.page.assigned && a.page.canAdvertise,
+                    !a.page.assigned ? 'Page ' + a.page.id + ' is not assigned to the token. Business Settings, System users, Assign assets, the Page, with Create ads.'
+                      : a.page.canAdvertise ? 'Page ' + a.page.name + ' can be advertised as'
+                      : 'Page ' + a.page.name + ' is assigned without the ad task (' + (a.page.tasks.join(', ') || 'none') + '). Give the system user Create ads on it.'],
+                  a.instagram && [a.instagram.ok, a.instagram.ok ? 'Instagram @' + a.instagram.username + ' readable'
+                    : 'Instagram account not usable: ' + a.instagram.error],
+                ].filter(Boolean);
+                return rows.map(([good, text], i) => (
+                  <div className="mk-dest" key={i}>
+                    <span className="mini-dot" style={{ background: good ? 'var(--green)' : 'var(--red)' }} />
+                    <span>{text}</span>
+                  </div>
+                ));
+              })()}
             </div>
           )}
 
@@ -820,6 +861,7 @@ export default function Ads() {
                   Carousel built in ad account {result.accountId} (creative {result.id}
                   {result.postId ? ', post ' + result.postId : ''}).
                   {' '}Add it to an ad set below, or in Ads Manager create an ad and choose <b>Use existing post</b>.
+                  {result.instagramDropped && <> Built without the Instagram account, so Instagram placements show the Facebook Page: Meta refused it with it ({result.instagramDropped}).</>}
                   {' '}{result.previewUrl && <a href={result.previewUrl} target="_blank" rel="noreferrer">Preview</a>}
                   {result.previewUrl && ' · '}
                   <a href={adsManager} target="_blank" rel="noreferrer">Open Ads Manager</a>
@@ -936,6 +978,7 @@ export default function Ads() {
                       <span>
                         Video ad built in ad account {result.accountId} (creative {result.id}{result.postId ? ', post ' + result.postId : ''}).
                         {' '}Add it to an ad set below.
+                        {result.instagramDropped && <> Built without the Instagram account, so Instagram placements show the Facebook Page: Meta refused it with it ({result.instagramDropped}).</>}
                         {' '}{result.previewUrl && <a href={result.previewUrl} target="_blank" rel="noreferrer">Preview</a>}
                         {result.previewUrl && ' · '}
                         <a href={adsManager} target="_blank" rel="noreferrer">Open Ads Manager</a>
