@@ -73,6 +73,8 @@ export default function Ads() {
   const [lpError, setLpError] = useState('');
   const [vPicked, setVPicked] = useState([]);             // product handles in the reel, in order
   const [lpSearch, setLpSearch] = useState('');
+  const [collections, setCollections] = useState({});     // brand -> [{ id, title }]
+  const [alsoLike, setAlsoLike] = useState({});           // mode -> collection id
 
   useEffect(() => {
     fetch('/api/ads').then((r) => r.json()).then((d) => {
@@ -130,7 +132,7 @@ export default function Ads() {
     if (cards.length && !window.confirm('Switching store clears the ' + cards.length + ' card' + (cards.length === 1 ? '' : 's') + ' you have picked. Carry on?')) return;
     setCards([]); setResult(null); setError(''); setSearch(''); setTextHistory([]); setStoreNotesMsg(''); setAttach(null); setAdsetId('');
     resetVideo();   // a sent video belongs to the old store's ad account
-    setLp({}); setLpTitle({}); setVPicked([]); setLpError('');
+    setLp({}); setLpTitle({}); setVPicked([]); setLpError(''); setAlsoLike({});
     setBrand(b);
   }
 
@@ -244,6 +246,16 @@ export default function Ads() {
   const titleOf = (h) => (lib.products.find((p) => p.handle === h) || {}).title || h;
   const lpFound = lp[mode] || null;
 
+  // Collections for "you might also like", fetched the first time a landing section shows.
+  const showLanding = mode === 'video' ? Boolean(design) : cards.length > 0;
+  useEffect(() => {
+    if (!showLanding || !brand || collections[brand]) return;
+    setCollections((c) => ({ ...c, [brand]: [] }));     // claim it so it loads once
+    post({ action: 'collections', brand })
+      .then(({ ok, d }) => { if (ok) setCollections((c) => ({ ...c, [brand]: d.collections || [] })); })
+      .catch(() => {});
+  }, [showLanding, brand]);
+
   function toggleVPicked(handle) {
     setVPicked((list) => (list.includes(handle) ? list.filter((h) => h !== handle) : [...list, handle]));
   }
@@ -253,7 +265,7 @@ export default function Ads() {
     const m = mode;
     const title = (lpTitle[m] || '').trim() || (m === 'video' && design ? design.title : name.trim());
     try {
-      const { ok, d } = await post({ action: 'landing-page', brand, title, handles: lpHandles });
+      const { ok, d } = await post({ action: 'landing-page', brand, title, handles: lpHandles, alsoLike: alsoLike[m] || '' });
       if (!ok) return setLpError(d.error || 'Shopify would not create the landing page.');
       setLp((x) => ({ ...x, [m]: d }));
       setResult(null);
@@ -328,6 +340,26 @@ export default function Ads() {
         </div>
       )}
 
+      <label className="field" style={{ marginBottom: 8 }}>
+        <span>"You might also like" below the products (optional)</span>
+        <select className="input" value={alsoLike[mode] || ''} onChange={(e) => setAlsoLike((a) => ({ ...a, [mode]: e.target.value }))}>
+          <option value="">None</option>
+          {(collections[brand] || []).map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+        </select>
+      </label>
+      {alsoLike[mode] && (
+        <details className="mk-prompt" style={{ marginTop: -2, marginBottom: 10 }}>
+          <summary>One-time theme setup per store, or the row will not show</summary>
+          <ol className="mk-varlist">
+            <li>Shopify admin: Online Store, Themes, Customize.</li>
+            <li>In the page picker at the top choose Collections, then Create template. Name it <b>landing</b>, based on the default collection template.</li>
+            <li>Add section: Featured collection. Set its heading to "You might also like".</li>
+            <li>On its Collection setting, click the dynamic source (database) icon and choose <b>You might also like</b>. Save.</li>
+          </ol>
+          <div className="ledger-note">Backstage creates the "You might also like" field the first time you use it, so it appears in step 4 after one landing page has been made with it.</div>
+        </details>
+      )}
+
       <div className="field-row" style={{ alignItems: 'flex-end' }}>
         <label className="field">
           <span>Page title (the heading shoppers see)</span>
@@ -349,6 +381,7 @@ export default function Ads() {
             {lpFound.published
               ? <>Landing page live: <a href={lpFound.url} target="_blank" rel="noreferrer">{lpFound.url}</a>. {mode === 'video' ? 'Set as the ad\'s link.' : 'Used as the carousel\'s main link when you build.'}</>
               : lpFound.publishError}
+            {lpFound.alsoLike && ' "You might also like" is set; it shows once the store\'s theme has the landing template.'}
             {' '}<a href={lpFound.adminUrl} target="_blank" rel="noreferrer">Open in Shopify</a>
           </span>
         </div>

@@ -510,6 +510,16 @@ and only replaces the carousel's *main* link (text, end card, "See more"); each 
 its own product link. Handles are resolved to product ids server side, so only the store's
 own active products can go in.
 
+**"You might also like"** is a second collection shown under the products. A collection
+page only renders its own products, so this lives in the theme: a collection template
+`landing` (`LANDING_TEMPLATE`) with a Featured collection section whose collection is a
+dynamic source on the `custom.also_like` collection metafield. That template is set up by
+hand once per store (steps are in the tab); Backstage creates the metafield definition on
+first use (the editor only offers defined metafields), sets `templateSuffix` and the
+metafield. A store without the template falls back to the default one, so nothing breaks.
+Backstage does not write theme files: themes differ per store, and editing a live theme
+from code is not worth the risk.
+
 **Publishing needs `read_publications` and `write_publications`** on each brand's Shopify
 app (then a redeploy for a fresh token). Without them the collection is still created,
 unpublished, and the tab says so with a link to it in Shopify rather than failing.

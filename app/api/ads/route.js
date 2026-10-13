@@ -17,8 +17,10 @@
 //   { action: 'video-status', brand, videoId }        poll Meta's processing
 //   { action: 'build-video', brand, videoId, ... }    create the video ad creative
 //
-//   { action: 'landing-page', brand, title, handles }  a manual Shopify collection of the
-//                                     ad's products, in order, published to the Online Store
+//   { action: 'collections', brand }  the store's collections, for "you might also like"
+//   { action: 'landing-page', brand, title, handles, alsoLike }  a manual Shopify collection
+//                                     of the ad's products, in order, published to the Online
+//                                     Store, optionally with a "you might also like" collection
 //
 //   { action: 'adsets', brand }       campaigns and ad sets to choose from (read-only)
 //   { action: 'create-ad', brand, creativeId, adsetId, name }  a PAUSED ad in that ad set
@@ -29,7 +31,7 @@
 import { NextResponse } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
-import { listActiveProducts, shopPrimaryUrl, createLandingCollection } from '../../../lib/shopify.js';
+import { listActiveProducts, shopPrimaryUrl, createLandingCollection, listCollections } from '../../../lib/shopify.js';
 import { writePrimaryText, adNotesFor, saveAdNotes } from '../../../lib/adcopy.js';
 import {
   metaAccountFor, listAdImages, createCarouselCreative, listBuiltCreatives,
@@ -223,6 +225,11 @@ export async function POST(req) {
       return NextResponse.json({ ...result, name: creativeName });
     }
 
+    if (body.action === 'collections') {
+      const brand = checkBrand(body.brand);
+      return NextResponse.json({ collections: await listCollections(brand) });
+    }
+
     if (body.action === 'landing-page') {
       const brand = checkBrand(body.brand);
       const title = String(body.title || '').trim().slice(0, 255);
@@ -234,8 +241,15 @@ export async function POST(req) {
       const byHandle = new Map((await listActiveProducts(brand)).map((p) => [p.handle, p.id]));
       const missing = handles.filter((h) => !byHandle.has(h));
       if (missing.length) throw new Error('Not active products in this store: ' + missing.join(', '));
+      // The "also like" collection must be one of this store's, checked here.
+      let alsoLikeId = null;
+      if (body.alsoLike) {
+        const found = (await listCollections(brand)).find((c) => c.id === String(body.alsoLike));
+        if (!found) throw new Error('That "you might also like" collection is not in this store.');
+        alsoLikeId = found.id;
+      }
       return NextResponse.json(await createLandingCollection(brand, {
-        title, productIds: handles.map((h) => byHandle.get(h)),
+        title, productIds: handles.map((h) => byHandle.get(h)), alsoLikeId,
       }));
     }
 
