@@ -500,6 +500,25 @@ templates through the API on Enterprise, and Kittl has no public API.
 - `multi_share_optimized` (Meta reordering cards) is off by default: the person set the
   order. Meta shows carousel cards square, so non-square images are flagged as cropped.
 
+### Video ads from Canva (Ads tab, "Video from Canva")
+
+A reel made in Canva becomes a Meta video ad without downloading anything by hand.
+
+- **Five stages, each its own request, polled by the tab:** list designs
+  (`listDesigns`, `design:meta:read`), start an MP4 export (`startVideoExport`,
+  `design:content:read`; vertical_1080p for a tall design), poll it, hand Meta the export's
+  download link (`uploadAdVideoFromUrl`, `file_url`, so the file never passes through a
+  function), poll Meta's processing (`adVideoStatus`) until it is ready *and* has a
+  thumbnail, then `createVideoCreative`. No request waits on a long export.
+- **`video-to-meta` only accepts Canva's own export hosts**, so the route cannot be used to
+  make Meta fetch an arbitrary URL.
+- **The design scopes are newer than the Canva connection.** `canva_auth` now records the
+  granted scopes; a connection without them reports `designs: false`, and the tab and
+  Settings say to tick the two scopes in Canva's Developer Portal and reconnect.
+- The video creative is the same kind of object as the carousel: an unpublished Page post
+  with `URL_TAGS`, built through the shared `postCreative`, then optionally a paused ad.
+  Every send re-exports, so edits made in Canva are picked up by sending again.
+
 ## Sending a mockup to Canva (`lib/canva.js`, `/api/canva/*`)
 
 A fourth destination beside Shopify, Meta and "send everywhere": the approved shot is

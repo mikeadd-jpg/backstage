@@ -5,7 +5,11 @@
 // creative (an unpublished post) in the ad account, which can then go into an existing
 // ad set as a PAUSED ad. Switching it on stays in Ads Manager, on purpose: nothing here
 // runs or spends.
-import { useEffect, useMemo, useState } from 'react';
+//
+// Video mode does the same for a reel made in Canva: pick the design, Backstage exports it
+// as MP4 and has Meta fetch it into the ad account, then builds a video creative from it.
+// Each stage is its own request, polled from here, so no request waits on a long export.
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 const CTA_LABELS = {
   SHOP_NOW: 'Shop now', ORDER_NOW: 'Order now', BUY_NOW: 'Buy now', LEARN_MORE: 'Learn more', SEE_MORE: 'See more',
@@ -45,6 +49,22 @@ export default function Ads() {
   const [adResult, setAdResult] = useState(null);
   const [adError, setAdError] = useState('');
   const [adsetFilter, setAdsetFilter] = useState('active'); // 'active' | 'recent' | 'all'
+
+  const [mode, setMode] = useState('carousel');           // 'carousel' | 'video'
+  // Video from Canva.
+  const [designs, setDesigns] = useState(null);           // null = not loaded yet
+  const [designsCont, setDesignsCont] = useState(null);
+  const [designsLoading, setDesignsLoading] = useState(false);
+  const [designQuery, setDesignQuery] = useState('');
+  const [design, setDesign] = useState(null);
+  const [vStage, setVStage] = useState('idle');           // idle|exporting|uploading|processing|ready|failed
+  const [vMsg, setVMsg] = useState('');
+  const [exportUrl, setExportUrl] = useState('');
+  const [videoId, setVideoId] = useState('');
+  const [vHeadline, setVHeadline] = useState('');
+  const [vLink, setVLink] = useState('');
+  const [vHandle, setVHandle] = useState('');
+  const run = useRef(0);                                  // bumps to abandon a stale send
 
   useEffect(() => {
     fetch('/api/ads').then((r) => r.json()).then((d) => {
@@ -100,8 +120,129 @@ export default function Ads() {
 
   function switchBrand(b) {
     if (cards.length && !window.confirm('Switching store clears the ' + cards.length + ' card' + (cards.length === 1 ? '' : 's') + ' you have picked. Carry on?')) return;
-    setCards([]); setResult(null); setError(''); setSearch(''); setTextHistory([]); setStoreNotesMsg(''); setAttach(null); setAdsetId(''); setBrand(b);
+    setCards([]); setResult(null); setError(''); setSearch(''); setTextHistory([]); setStoreNotesMsg(''); setAttach(null); setAdsetId('');
+    resetVideo();   // a sent video belongs to the old store's ad account
+    setBrand(b);
   }
+
+  // ---- video from Canva ----
+
+  const canva = (config && config.canva) || { configured: false, connected: false, designs: false };
+
+  async function loadDesigns({ more = false } = {}) {
+    setDesignsLoading(true); setError('');
+    try {
+      const { ok, d } = await post({ action: 'canva-designs', query: designQuery, continuation: more ? designsCont : '' });
+      if (!ok) return setError(d.error || 'Could not load your Canva designs.');
+      setDesigns((prev) => (more && prev ? [...prev, ...(d.designs || [])] : d.designs || []));
+      setDesignsCont(d.continuation || null);
+    } catch {
+      setError('Could not load your Canva designs.');
+    } finally {
+      setDesignsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (mode === 'video' && canva.designs && designs === null && !designsLoading) loadDesigns();
+  }, [mode, config]);
+
+  function resetVideo() {
+    run.current += 1;
+    setVStage('idle'); setVMsg(''); setExportUrl(''); setVideoId('');
+  }
+
+  function pickDesign(d) {
+    if (vStage === 'exporting' || vStage === 'uploading' || vStage === 'processing') {
+      if (!window.confirm('A video is still being sent. Switch to this design and abandon it?')) return;
+    }
+    resetVideo(); setResult(null); setError('');
+    setDesign(d);
+    if (!vHeadline) setVHeadline(d.title);
+    if (!vLink) setVLink(lib.shopUrl || '');
+  }
+
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // Export from Canva, hand the file to Meta, wait for Meta to process it. Each stage is
+  // polled with its own requests; a newer send or a store switch abandons this one.
+  async function sendVideo() {
+    if (!design) return;
+    const mine = ++run.current;
+    const live = () => run.current === mine;
+    setError(''); setResult(null); setVMsg(''); setExportUrl(''); setVideoId('');
+    const fail = (msg) => { if (live()) { setVStage('failed'); setVMsg(msg); } };
+    try {
+      setVStage('exporting');
+      const vertical = !(design.width && design.height) || design.height >= design.width;
+      let r = await post({ action: 'video-export', designId: design.id, vertical });
+      if (!r.ok) return fail(r.d.error || 'Canva would not export the design.');
+      const exportId = r.d.exportId;
+      let url = '';
+      for (let i = 0; i < 100 && live(); i++) {           // about five minutes
+        await wait(3000);
+        r = await post({ action: 'video-export-status', exportId });
+        if (!r.ok) return fail(r.d.error || 'Could not check the Canva export.');
+        if (r.d.status === 'failed') return fail(r.d.error || 'Canva could not export the design.');
+        if (r.d.status === 'success' && r.d.url) { url = r.d.url; break; }
+      }
+      if (!live()) return;
+      if (!url) return fail('Canva is taking unusually long to export. Try again in a few minutes.');
+      setExportUrl(url);
+
+      setVStage('uploading');
+      r = await post({ action: 'video-to-meta', brand, url, title: design.title });
+      if (!r.ok) return fail(r.d.error || 'Meta would not take the video.');
+      const id = r.d.videoId;
+      if (!live()) return;
+      setVideoId(id);
+
+      setVStage('processing');
+      for (let i = 0; i < 120 && live(); i++) {           // about ten minutes
+        await wait(5000);
+        r = await post({ action: 'video-status', brand, videoId: id });
+        if (!r.ok) return fail(r.d.error || 'Could not check the video in Meta.');
+        if (r.d.status === 'error') return fail(r.d.error);
+        if (r.d.status === 'ready') { if (live()) setVStage('ready'); return; }
+        if (live() && r.d.progress != null) setVMsg(r.d.progress + '%');
+      }
+      fail('Meta is still processing the video. Send it again in a few minutes.');
+    } catch {
+      fail('Request failed.');
+    }
+  }
+
+  function pickVideoProduct(handle) {
+    setVHandle(handle);
+    const p = lib.products.find((x) => x.handle === handle);
+    if (p) { setVHeadline(p.title); setVLink(productLink(handle)); }
+    setResult(null);
+  }
+
+  const vProblems = [];
+  if (!design) vProblems.push('Pick a Canva design.');
+  else if (vStage !== 'ready') vProblems.push('Send the video to Meta and wait for it to be ready.');
+  if (!/^https?:\/\/\S+$/i.test(vLink.trim())) vProblems.push('The ad needs a link starting with https://.');
+  if (brandInfo && !brandInfo.page) vProblems.push('No Facebook Page found for ' + brandInfo.name + '. Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel.');
+
+  async function buildVideo() {
+    setError(''); setResult(null); setBuilding(true);
+    try {
+      const { ok, d } = await post({
+        action: 'build-video', brand, videoId, name, message, cta,
+        headline: vHeadline, link: vLink,
+      });
+      if (!ok) setError(d.error || 'Meta would not create the video ad.');
+      else { setResult(d); loadRecent(brand); startAttach({ id: d.id, name: d.name }); }
+    } catch {
+      setError('Request failed.');
+    } finally {
+      setBuilding(false);
+    }
+  }
+
+  const ratio = design && design.width && design.height ? design.height / design.width : null;
+  const STAGES = [['exporting', 'Exporting from Canva'], ['uploading', 'Sending to Meta'], ['processing', 'Meta is processing'], ['ready', 'Ready']];
 
   function toggle(img) {
     setResult(null); setError('');
@@ -152,7 +293,9 @@ export default function Ads() {
     try {
       const { ok, d } = await post({
         action: 'write-text', brand, notes: textNotes, previous,
-        titles: cards.map((c) => c.headline).filter(Boolean),
+        titles: mode === 'video'
+          ? [vHeadline, design && design.title].filter(Boolean)
+          : cards.map((c) => c.headline).filter(Boolean),
       });
       if (!ok) return setError(d.error || 'Could not write the text.');
       if (message.trim()) setTextHistory((h) => [message, ...h].slice(0, 10));
@@ -251,6 +394,44 @@ export default function Ads() {
     }
   }
 
+  // Primary text, notes and the Claude buttons: the same for a carousel and a video.
+  const textBlock = (
+    <>
+            <label className="field">
+              <span>Primary text (above the {mode === 'video' ? 'video' : 'carousel'})</span>
+              <textarea className="textarea" rows={3} value={message} onChange={(e) => { setMessage(e.target.value); setResult(null); }}
+                placeholder={'Write it yourself, or have Claude draft it from the ' + (mode === 'video' ? 'headline' : 'cards')} />
+            </label>
+            {message.length > 125 && (
+              <div className="ledger-note" style={{ marginTop: -8, marginBottom: 10 }}>
+                Meta shows about the first 125 characters before "See more": {message.slice(0, 125)}...
+              </div>
+            )}
+            <label className="field">
+              <span>Notes for this ad's text (optional)</span>
+              <input className="input" value={textNotes} onChange={(e) => setTextNotes(e.target.value)}
+                placeholder="e.g. lead with Halloween, mention the new hoodies" />
+            </label>
+            <div className="reply-actions" style={{ marginTop: -4, marginBottom: 12 }}>
+              <button className="btn btn-ghost" type="button" onClick={writeText} disabled={writing || !brand}>
+                {writing ? 'Writing...' : message.trim() ? '\u21bb Rewrite with Claude' : 'Write with Claude'}
+              </button>
+              <button className="btn btn-ghost" type="button" onClick={undoText} disabled={writing || !textHistory.length}>Undo</button>
+              {mode === 'carousel' && !cards.length && <span className="ledger-note">Pick the cards first and the text is written for those products.</span>}
+            </div>
+            <details className="mk-prompt" style={{ marginTop: 0, marginBottom: 12 }}>
+              <summary>Store notes for every {brandInfo ? brandInfo.name : ''} ad{(storeNotes[brand] || '').trim() ? ' (set)' : ''}</summary>
+              <textarea className="textarea" rows={3} style={{ marginTop: 8 }} value={storeNotes[brand] || ''}
+                onChange={(e) => { setStoreNotes((n) => ({ ...n, [brand]: e.target.value })); setStoreNotesMsg(''); }}
+                placeholder="Rules for every ad's text, e.g. never mention discounts; we ship worldwide" />
+              <div className="reply-actions" style={{ marginTop: 6 }}>
+                <button className="btn btn-ghost" type="button" onClick={saveStoreNotes}>Save store notes</button>
+                {storeNotesMsg && <span className="confidence">{storeNotesMsg}</span>}
+              </div>
+            </details>
+    </>
+  );
+
   const adsManager = brandInfo ? 'https://adsmanager.facebook.com/adsmanager/manage/ads?act=' + brandInfo.account : '';
 
   if (!config) {
@@ -262,11 +443,17 @@ export default function Ads() {
 
   return (
     <div className="pane mk-pane">
-      <div className="pane-head">Carousel ads</div>
+      <div className="pane-head">Ads</div>
       <p className="pane-sub">
-        Build a carousel from images already in the store's Meta ad account, such as the mockups you sent from the Mockups tab.
-        This creates the carousel only: it runs nowhere and spends nothing until you publish it in an ad set in Ads Manager.
+        Build a carousel from images already in the store's Meta ad account, or a video ad from a reel you made in Canva.
+        Nothing here runs or spends: ads are only ever added to an ad set paused, and you switch them on in Ads Manager.
       </p>
+      <div className="pf-chips" role="tablist" aria-label="Kind of ad">
+        {[['carousel', 'Carousel'], ['video', 'Video from Canva']].map(([k, label]) => (
+          <button key={k} type="button" role="tab" aria-selected={mode === k} className={'chip' + (mode === k ? ' active' : '')}
+            onClick={() => { setMode(k); setResult(null); setError(''); setAttach(null); setTextHistory([]); }}>{label}</button>
+        ))}
+      </div>
 
       {!config.tokenSet && (
         <div className="flag" style={{ marginBottom: 14 }}>
@@ -290,15 +477,24 @@ export default function Ads() {
                 {config.brands.map((b) => <option key={b.key} value={b.key}>{b.name}</option>)}
               </select>
             </label>
-            <label className="field">
-              <span>Search</span>
-              <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="product or file name" />
-            </label>
+            {mode === 'carousel' ? (
+              <label className="field">
+                <span>Search</span>
+                <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="product or file name" />
+              </label>
+            ) : (
+              <form className="field" onSubmit={(e) => { e.preventDefault(); loadDesigns(); }}>
+                <span>Search Canva</span>
+                <input className="input" value={designQuery} onChange={(e) => setDesignQuery(e.target.value)} placeholder="design title, then Enter" disabled={!canva.designs} />
+              </form>
+            )}
           </div>
-          <label className="check" style={{ marginTop: -4 }}>
-            <input type="checkbox" checked={onlyMockups} onChange={(e) => setOnlyMockups(e.target.checked)} />
-            Backstage mockups only
-          </label>
+          {mode === 'carousel' && (
+            <label className="check" style={{ marginTop: -4 }}>
+              <input type="checkbox" checked={onlyMockups} onChange={(e) => setOnlyMockups(e.target.checked)} />
+              Backstage mockups only
+            </label>
+          )}
           {brandInfo && (
             <div className="ledger-note" style={{ marginBottom: 8 }}>
               Ad account {brandInfo.account} · {brandInfo.page
@@ -315,6 +511,45 @@ export default function Ads() {
             </div>
           )}
 
+          {mode === 'video' && (
+            <>
+              <div className="mk-picker-head">
+                <span>Canva designs{canva.by ? ' in ' + canva.by + "'s account" : ''}</span>
+                <span className="acc-count">{designsLoading ? 'loading...' : designs ? designs.length + ' shown' : ''}</span>
+              </div>
+              {!canva.configured ? (
+                <div className="ledger-note">Canva is not set up: CANVA_CLIENT_ID and CANVA_CLIENT_SECRET are missing.</div>
+              ) : !canva.connected ? (
+                <div className="ledger-note">Canva is not connected. Connect it in Settings.</div>
+              ) : !canva.designs ? (
+                <div className="flag warn" style={{ marginTop: 0 }}>
+                  <span className="ico">&#9873;</span>
+                  <span>
+                    The Canva connection predates reading designs. In Canva's Developer Portal, tick <b>design:meta:read</b> and
+                    {' '}<b>design:content:read</b> on the integration, then press Reconnect under Canva in Settings.
+                  </span>
+                </div>
+              ) : (
+                <div className="mk-grid">
+                  {designs && designs.length === 0 && <div className="ledger-note">No designs found.</div>}
+                  {(designs || []).map((d) => (
+                    <button key={d.id} type="button" className={'mk-item' + (design && design.id === d.id ? ' picked' : '')}
+                      onClick={() => pickDesign(d)} title={d.title}>
+                      {d.thumb ? <img className="mk-thumb" src={d.thumb} alt="" loading="lazy" /> : <span className="mk-thumb" />}
+                      <span className="mk-title">{d.title}</span>
+                    </button>
+                  ))}
+                  {designsCont && (
+                    <button type="button" className="btn btn-ghost" onClick={() => loadDesigns({ more: true })} disabled={designsLoading}>
+                      {designsLoading ? 'Loading...' : 'Load more'}
+                    </button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {mode === 'carousel' && (<>
           <div className="mk-picker-head">
             <span>Image library</span>
             <span className="acc-count">
@@ -344,9 +579,11 @@ export default function Ads() {
               );
             })}
           </div>
+          </>)}
         </aside>
 
         <section className="mk-work">
+          {mode === 'carousel' && (
           <div className="card">
             <div className="card-label">Carousel</div>
             <div className="field-row">
@@ -361,38 +598,7 @@ export default function Ads() {
                 </select>
               </label>
             </div>
-            <label className="field">
-              <span>Primary text (above the carousel)</span>
-              <textarea className="textarea" rows={3} value={message} onChange={(e) => { setMessage(e.target.value); setResult(null); }}
-                placeholder="Write it yourself, or have Claude draft it from the cards" />
-            </label>
-            {message.length > 125 && (
-              <div className="ledger-note" style={{ marginTop: -8, marginBottom: 10 }}>
-                Meta shows about the first 125 characters before "See more": {message.slice(0, 125)}...
-              </div>
-            )}
-            <label className="field">
-              <span>Notes for this ad's text (optional)</span>
-              <input className="input" value={textNotes} onChange={(e) => setTextNotes(e.target.value)}
-                placeholder="e.g. lead with Halloween, mention the new hoodies" />
-            </label>
-            <div className="reply-actions" style={{ marginTop: -4, marginBottom: 12 }}>
-              <button className="btn btn-ghost" type="button" onClick={writeText} disabled={writing || !brand}>
-                {writing ? 'Writing...' : message.trim() ? '\u21bb Rewrite with Claude' : 'Write with Claude'}
-              </button>
-              <button className="btn btn-ghost" type="button" onClick={undoText} disabled={writing || !textHistory.length}>Undo</button>
-              {!cards.length && <span className="ledger-note">Pick the cards first and the text is written for those products.</span>}
-            </div>
-            <details className="mk-prompt" style={{ marginTop: 0, marginBottom: 12 }}>
-              <summary>Store notes for every {brandInfo ? brandInfo.name : ''} ad{(storeNotes[brand] || '').trim() ? ' (set)' : ''}</summary>
-              <textarea className="textarea" rows={3} style={{ marginTop: 8 }} value={storeNotes[brand] || ''}
-                onChange={(e) => { setStoreNotes((n) => ({ ...n, [brand]: e.target.value })); setStoreNotesMsg(''); }}
-                placeholder="Rules for every ad's text, e.g. never mention discounts; we ship worldwide" />
-              <div className="reply-actions" style={{ marginTop: 6 }}>
-                <button className="btn btn-ghost" type="button" onClick={saveStoreNotes}>Save store notes</button>
-                {storeNotesMsg && <span className="confidence">{storeNotesMsg}</span>}
-              </div>
-            </details>
+            {textBlock}
             <label className="check">
               <input type="checkbox" checked={reorder} onChange={(e) => setReorder(e.target.checked)} />
               Let Meta reorder the cards by performance
@@ -463,6 +669,125 @@ export default function Ads() {
               </div>
             )}
           </div>
+          )}
+
+          {mode === 'video' && (
+            <div className="card">
+              <div className="card-label">Video ad</div>
+              {!design ? (
+                <div className="ledger-note">Pick the reel you made in Canva from the list.</div>
+              ) : (
+                <>
+                  <div className="mk-job-head">
+                    {design.thumb && <img className="mk-job-thumb" src={design.thumb} alt="" />}
+                    <div className="mk-job-title">
+                      <div className="li-name">{design.title}</div>
+                      <div className="li-sub">
+                        {design.updated ? 'edited ' + fmtDay(design.updated) : ''}
+                        {design.editUrl && <> · <a href={design.editUrl} target="_blank" rel="noreferrer">Open in Canva</a></>}
+                      </div>
+                    </div>
+                  </div>
+                  {ratio && (ratio < 1.7 || ratio > 1.85) && (
+                    <div className="flag warn" style={{ marginTop: 0, marginBottom: 12 }}>
+                      <span className="ico">&#9873;</span>
+                      <span>This design is not 9:16, so it will not fill Reels and Stories. A Canva "Instagram Reel" design is the right size.</span>
+                    </div>
+                  )}
+
+                  <div className="reply-actions" style={{ marginBottom: 10 }}>
+                    <button className="btn btn-primary" type="button" onClick={sendVideo}
+                      disabled={vStage === 'exporting' || vStage === 'uploading' || vStage === 'processing'}>
+                      {vStage === 'ready' || vStage === 'failed' ? '\u21bb Send again' : vStage === 'idle' ? 'Send video to Meta' : 'Sending...'}
+                    </button>
+                    <span className="ledger-note">Exports the current version from Canva, so send again after editing it there.</span>
+                  </div>
+                  {vStage !== 'idle' && (
+                    <div className="mk-dests" style={{ marginTop: 0, marginBottom: 12 }}>
+                      {STAGES.map(([k, label], idx) => {
+                        const at = STAGES.findIndex(([x]) => x === vStage);
+                        const done = vStage === 'ready' || (at >= 0 && idx < at);
+                        const now = k === vStage && vStage !== 'ready';
+                        if (vStage === 'failed') return null;
+                        return (
+                          <div className="mk-dest" key={k}>
+                            <span className="mini-dot" style={{ background: done ? 'var(--green)' : now ? 'var(--amber)' : 'var(--faint)' }} />
+                            <span>{label}{now ? '...' + (k === 'processing' && vMsg ? ' ' + vMsg : '') : ''}</span>
+                          </div>
+                        );
+                      })}
+                      {vStage === 'failed' && (
+                        <div className="mk-dest"><span className="mini-dot" style={{ background: 'var(--red)' }} /><span>{vMsg}</span></div>
+                      )}
+                    </div>
+                  )}
+                  {exportUrl && (
+                    <video className="ad-video" src={exportUrl} controls playsInline muted preload="metadata" />
+                  )}
+
+                  <div className="field-row">
+                    <label className="field">
+                      <span>Name (for finding it in Ads Manager)</span>
+                      <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. October reel" />
+                    </label>
+                    <label className="field">
+                      <span>Button</span>
+                      <select className="input" value={cta} onChange={(e) => setCta(e.target.value)}>
+                        {(config.ctaTypes || []).map((t) => <option key={t} value={t}>{CTA_LABELS[t] || t}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                  {lib.products.length > 0 && (
+                    <label className="field">
+                      <span>Link to a product (or leave as the store)</span>
+                      <select className="input" value={vHandle} onChange={(e) => pickVideoProduct(e.target.value)}>
+                        <option value="">Fill from a product...</option>
+                        {lib.products.map((p) => <option key={p.handle} value={p.handle}>{p.title}</option>)}
+                      </select>
+                    </label>
+                  )}
+                  <div className="field-row">
+                    <label className="field">
+                      <span>Headline (under the video)</span>
+                      <input className="input" value={vHeadline} onChange={(e) => { setVHeadline(e.target.value); setResult(null); }} />
+                    </label>
+                    <label className="field">
+                      <span>Link</span>
+                      <input className="input" value={vLink} onChange={(e) => { setVLink(e.target.value); setResult(null); }} placeholder="https://..." />
+                    </label>
+                  </div>
+                  {textBlock}
+
+                  {vProblems.length > 0 && (
+                    <div className="mk-dests" style={{ marginTop: 4 }}>
+                      {vProblems.map((p) => (
+                        <div className="mk-dest" key={p}><span className="mini-dot" style={{ background: 'var(--amber)' }} /><span>{p}</span></div>
+                      ))}
+                    </div>
+                  )}
+                  {error && <div className="login-error">{error}</div>}
+                  <div className="reply-actions" style={{ marginTop: 14 }}>
+                    <button className="btn btn-primary" onClick={buildVideo} disabled={building || vProblems.length > 0}>
+                      {building ? 'Building...' : 'Build video ad'}
+                    </button>
+                  </div>
+                  {result && (
+                    <div className="flag ok ad-done" style={{ marginTop: 14 }}>
+                      <span className="ico">&#10003;</span>
+                      <span>
+                        Video ad built in ad account {result.accountId} (creative {result.id}{result.postId ? ', post ' + result.postId : ''}).
+                        {' '}Add it to an ad set below.
+                        {' '}{result.previewUrl && <a href={result.previewUrl} target="_blank" rel="noreferrer">Preview</a>}
+                        {result.previewUrl && ' · '}
+                        <a href={adsManager} target="_blank" rel="noreferrer">Open Ads Manager</a>
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+              {!design && error && <div className="login-error">{error}</div>}
+            </div>
+          )}
 
           {attach && (
             <div className="card">

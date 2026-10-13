@@ -1,5 +1,6 @@
 // The Ads tab: carousel ad creatives built from images already in a brand's Meta ad
-// account library (usually the mockups sent there from the Mockups tab).
+// account library (usually the mockups sent there from the Mockups tab), and video ads
+// from a reel made in Canva.
 //
 //   GET                               which stores have an ad account, and what is missing
 //   { action: 'library', brand }      the account's images, mapped to Shopify products
@@ -7,6 +8,14 @@
 //   { action: 'build', brand, ... }   create one carousel creative
 //   { action: 'write-text', brand, titles, notes, previous }  Claude drafts the primary text
 //   { action: 'save-text-notes', brand, notes }               standing copy notes per store
+//
+//   Video from Canva, one step per request so none waits on a long export or upload:
+//   { action: 'canva-designs', query, continuation }  the connected account's designs
+//   { action: 'video-export', designId, vertical }    start an MP4 export in Canva
+//   { action: 'video-export-status', exportId }       poll it; returns the download url
+//   { action: 'video-to-meta', brand, url, title }    Meta fetches the MP4 into the account
+//   { action: 'video-status', brand, videoId }        poll Meta's processing
+//   { action: 'build-video', brand, videoId, ... }    create the video ad creative
 //
 //   { action: 'adsets', brand }       campaigns and ad sets to choose from (read-only)
 //   { action: 'create-ad', brand, creativeId, adsetId, name }  a PAUSED ad in that ad set
@@ -22,7 +31,9 @@ import { writePrimaryText, adNotesFor, saveAdNotes } from '../../../lib/adcopy.j
 import {
   metaAccountFor, listAdImages, createCarouselCreative, listBuiltCreatives,
   resolveMetaPage, resolveInstagram, listAdSets, createPausedAd, CTA_TYPES,
+  uploadAdVideoFromUrl, adVideoStatus, createVideoCreative,
 } from '../../../lib/meta.js';
+import { canvaStatus, listDesigns, startVideoExport, exportStatus } from '../../../lib/canva.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -58,6 +69,18 @@ function pageFor(brand) {
   return resolveMetaPage(brand, { brandName: BRANDS[brand].name, shared });
 }
 
+// The Page and Instagram account a creative posts as, or an error naming the fix.
+async function identity(brand) {
+  const { page, candidates } = await pageFor(brand);
+  if (!page) {
+    throw new Error('Could not tell which Facebook Page ' + BRANDS[brand].name + ' ads post as' +
+      (candidates.length ? ' (found: ' + candidates.map((p) => p.name + ' ' + p.id).join(', ') + ')' : '') +
+      '. Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel.');
+  }
+  const instagram = await resolveInstagram(brand, page.id).catch(() => null);
+  return { pageId: page.id, instagramId: instagram && instagram.id };
+}
+
 const isUrl = (u) => /^https?:\/\/\S+$/i.test(String(u || ''));
 
 export async function GET(req) {
@@ -84,6 +107,7 @@ export async function GET(req) {
   }));
   return NextResponse.json({
     brands, tokenSet, ctaTypes: CTA_TYPES, minCards: MIN_CARDS, maxCards: MAX_CARDS,
+    canva: await canvaStatus().catch(() => ({ configured: false, connected: false, designs: false })),
   });
 }
 
@@ -139,6 +163,63 @@ export async function POST(req) {
       return NextResponse.json({ ok: true });
     }
 
+    // ---- video from Canva ----
+    if (body.action === 'canva-designs') {
+      return NextResponse.json(await listDesigns({
+        query: typeof body.query === 'string' ? body.query.trim() : '',
+        continuation: typeof body.continuation === 'string' ? body.continuation : '',
+      }));
+    }
+
+    if (body.action === 'video-export') {
+      return NextResponse.json(await startVideoExport(String(body.designId || ''), { vertical: body.vertical !== false }));
+    }
+
+    if (body.action === 'video-export-status') {
+      return NextResponse.json(await exportStatus(String(body.exportId || '')));
+    }
+
+    if (body.action === 'video-to-meta') {
+      const brand = checkBrand(body.brand);
+      // Only Canva's own export links, so this cannot be pointed at an arbitrary URL.
+      let host = '';
+      try { host = new URL(String(body.url || '')).hostname; } catch { /* rejected below */ }
+      if (!/(^|\.)canva(-[a-z0-9]+)?\.com$|amazonaws\.com$/i.test(host)) throw new Error('That is not a Canva export link.');
+      const slug = String(body.title || 'reel').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'reel';
+      return NextResponse.json(await uploadAdVideoFromUrl(brand, { url: body.url, name: brand + '-canva-' + slug + '.mp4' }));
+    }
+
+    if (body.action === 'video-status') {
+      const brand = checkBrand(body.brand);
+      if (!/^\d+$/.test(String(body.videoId || ''))) throw new Error('No video to check.');
+      return NextResponse.json(await adVideoStatus(brand, String(body.videoId)));
+    }
+
+    if (body.action === 'build-video') {
+      const brand = checkBrand(body.brand);
+      const videoId = String(body.videoId || '');
+      if (!/^\d+$/.test(videoId)) throw new Error('Send the video to Meta first.');
+      const link = String(body.link || '').trim();
+      if (!isUrl(link)) throw new Error('The ad needs a link starting with https://.');
+      // Re-read rather than trusting a thumbnail URL from the client.
+      const status = await adVideoStatus(brand, videoId);
+      if (status.status !== 'ready') throw new Error('Meta is still processing the video. Try again in a moment.');
+      const who = await identity(brand);
+      const label = String(body.name || '').trim() || new Date().toISOString().slice(0, 10);
+      const creativeName = namePrefix(brand) + label;
+      const result = await createVideoCreative(brand, {
+        ...who,
+        name: creativeName,
+        videoId,
+        thumbnail: status.thumbnail,
+        message: String(body.message || '').trim(),
+        headline: String(body.headline || '').trim(),
+        link,
+        cta: body.cta,
+      });
+      return NextResponse.json({ ...result, name: creativeName });
+    }
+
     if (body.action === 'adsets') {
       const brand = checkBrand(body.brand);
       return NextResponse.json({ adsets: await listAdSets(brand) });
@@ -174,19 +255,12 @@ export async function POST(req) {
         if (!isUrl(link)) throw new Error('Card ' + (i + 1) + ' needs a link starting with https://.');
         return { hash, headline, link, description: String(c.description || '').trim() };
       });
-      const { page, candidates } = await pageFor(brand);
-      if (!page) {
-        throw new Error('Could not tell which Facebook Page ' + BRANDS[brand].name + ' ads post as' +
-          (candidates.length ? ' (found: ' + candidates.map((p) => p.name + ' ' + p.id).join(', ') + ')' : '') +
-          '. Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel.');
-      }
+      const who = await identity(brand);
       const shopUrl = await shopPrimaryUrl(brand).catch(() => '');
       const label = String(body.name || '').trim() || new Date().toISOString().slice(0, 10);
       const creativeName = namePrefix(brand) + label;
-      const instagram = await resolveInstagram(brand, page.id).catch(() => null);
       const result = await createCarouselCreative(brand, {
-        pageId: page.id,
-        instagramId: instagram && instagram.id,
+        ...who,
         name: creativeName,
         message: String(body.message || '').trim(),
         link: isUrl(shopUrl) ? shopUrl : clean[0].link,

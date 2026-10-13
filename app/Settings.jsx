@@ -156,7 +156,8 @@ export default function Settings() {
         <p className="pane-sub" style={{ marginTop: 0 }}>
           Send to Canva on the Mockups tab uploads an approved shot into a folder per brand
           (Backstage · Elder Emo mockups and so on) in the connected Canva account, ready to
-          build a reel from. It only uploads: it never creates, edits or posts a design.
+          build a reel from. The Ads tab reads that account's designs and exports a finished
+          reel as a video ad. It never creates, edits or posts a design.
         </p>
         {!canva ? <p className="pane-sub">Loading...</p>
           : !canva.configured ? (
@@ -179,6 +180,12 @@ export default function Settings() {
           ) : (
             <a className="btn btn-primary" style={{ alignSelf: 'flex-start' }} href="/api/canva/connect">Connect Canva</a>
           )}
+        {canva && canva.connected && !canva.designs && (
+          <div className="ledger-note" style={{ marginTop: 8 }}>
+            Video ads on the Ads tab need this connection to read designs. In Canva's Developer Portal, tick
+            design:meta:read and design:content:read on the integration, then press Reconnect.
+          </div>
+        )}
         {canvaMsg && <div className="ledger-note" style={{ marginTop: 8 }}>{canvaMsg}</div>}
       </div>
 
