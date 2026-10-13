@@ -1,0 +1,58 @@
+{%- comment -%}
+  "You might also like" under a Backstage landing collection. The collection to show
+  is read from collection.metafields.custom.also_like, which Backstage sets when it
+  creates the landing collection from the Ads tab, so nothing has to be wired up in
+  the theme editor per page. Renders nothing when the field is empty.
+
+  Products already on this page are skipped, so the row never repeats the ad's
+  products. Cards use the theme's own product-card snippet, and the 4-up grid comes
+  from main-collection's .template-collection .tile-grid rule.
+{%- endcomment -%}
+
+{%- assign also = collection.metafields.custom.also_like.value -%}
+{%- if also != blank and also.products_count > 0 -%}
+  {%- assign here = collection.products | map: 'handle' | join: ',' -%}
+  {%- assign here = ',' | append: here | append: ',' -%}
+
+  <section class="section wsal">
+    <div class="container">
+      <div class="wsal__head">
+        <h2 class="display h2 wsal__title">{{ section.settings.heading }}</h2>
+        {%- if section.settings.show_view_all -%}
+          <a class="wsal__all" href="{{ also.url }}">View all&nbsp;&rarr;</a>
+        {%- endif -%}
+      </div>
+      <div class="tile-grid" style="grid-template-columns:repeat(2,1fr);">
+        {%- assign shown = 0 -%}
+        {%- for product in also.products -%}
+          {%- if shown >= section.settings.limit -%}{%- break -%}{%- endif -%}
+          {%- assign key = ',' | append: product.handle | append: ',' -%}
+          {%- unless here contains key -%}
+            {% render 'product-card', product: product %}
+            {%- assign shown = shown | plus: 1 -%}
+          {%- endunless -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .wsal{padding-top:0}
+    .wsal .container{border-top:1px solid var(--border-soft);padding-top:clamp(28px,4vw,48px)}
+    .wsal__head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:var(--space-5)}
+    .wsal__title{font-size:var(--text-xl);margin:0}
+    .wsal__all{font-size:var(--text-sm);color:var(--brand);white-space:nowrap}
+    .wsal__all:hover{text-decoration:underline}
+  </style>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "You might also like",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "You might also like" },
+    { "type": "range", "id": "limit", "min": 2, "max": 12, "step": 1, "label": "Products to show", "default": 8 },
+    { "type": "checkbox", "id": "show_view_all", "label": "Show \"View all\" link", "default": true }
+  ]
+}
+{% endschema %}

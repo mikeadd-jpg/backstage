@@ -1,0 +1,20 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-collection",
+      "settings": {}
+    },
+    "also-like": {
+      "type": "also-like",
+      "settings": {
+        "heading": "You might also like",
+        "limit": 8,
+        "show_view_all": true
+      }
+    }
+  },
+  "order": [
+    "main",
+    "also-like"
+  ]
+}

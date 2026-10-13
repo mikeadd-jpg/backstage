@@ -520,6 +520,17 @@ metafield. A store without the template falls back to the default one, so nothin
 Backstage does not write theme files: themes differ per store, and editing a live theme
 from code is not worth the risk.
 
+`themes/<brand>/` holds the theme files for this, written against each store's own theme
+and **pasted in by hand** (like `sheets/`, a record, not deployed from here). Wallspoke's
+theme is custom (no Featured collection section), so it gets `sections/also-like.liquid`,
+which reads the metafield directly and needs no dynamic-source wiring, plus
+`templates/collection.landing.json`. Elder Emo runs Shopify's Horizon, whose own Product list
+section takes the collection as a dynamic source
+(`{{ collection.metafields.custom.also_like.value }}`), so it needs only
+`templates/collection.landing.json`: the store's collection template plus that section,
+with the main grid's product card copied in so the two rows match. Both were written into
+unpublished duplicate themes (2026-10-12) for a human to preview and publish.
+
 **Publishing needs `read_publications` and `write_publications`** on each brand's Shopify
 app (then a redeploy for a fresh token). Without them the collection is still created,
 unpublished, and the tab says so with a link to it in Shopify rather than failing.

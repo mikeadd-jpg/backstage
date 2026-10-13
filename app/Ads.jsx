@@ -350,12 +350,20 @@ export default function Ads() {
       {alsoLike[mode] && (
         <details className="mk-prompt" style={{ marginTop: -2, marginBottom: 10 }}>
           <summary>One-time theme setup per store, or the row will not show</summary>
+          {brand === 'wallspoke' ? (
+            <ol className="mk-varlist">
+              <li>Shopify admin: Online Store, Themes, then the three dots on the live theme, Edit code.</li>
+              <li>Sections, Add a new section named <b>also-like</b>; paste themes/wallspoke/sections/also-like.liquid from the repo. Save.</li>
+              <li>Templates, Add a new template: collection, JSON, named <b>landing</b>; paste themes/wallspoke/templates/collection.landing.json. Save.</li>
+            </ol>
+          ) : (
           <ol className="mk-varlist">
             <li>Shopify admin: Online Store, Themes, Customize.</li>
             <li>In the page picker at the top choose Collections, then Create template. Name it <b>landing</b>, based on the default collection template.</li>
             <li>Add section: Featured collection. Set its heading to "You might also like".</li>
             <li>On its Collection setting, click the dynamic source (database) icon and choose <b>You might also like</b>. Save.</li>
           </ol>
+          )}
           <div className="ledger-note">Backstage creates the "You might also like" field the first time you use it, so it appears in step 4 after one landing page has been made with it.</div>
         </details>
       )}
