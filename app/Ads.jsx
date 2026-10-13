@@ -66,6 +66,14 @@ export default function Ads() {
   const [vHandle, setVHandle] = useState('');
   const run = useRef(0);                                  // bumps to abandon a stale send
 
+  // Landing page: a Shopify collection of the ad's products, one per mode.
+  const [lp, setLp] = useState({});                       // mode -> created collection
+  const [lpTitle, setLpTitle] = useState({});             // mode -> title being typed
+  const [lpBusy, setLpBusy] = useState(false);
+  const [lpError, setLpError] = useState('');
+  const [vPicked, setVPicked] = useState([]);             // product handles in the reel, in order
+  const [lpSearch, setLpSearch] = useState('');
+
   useEffect(() => {
     fetch('/api/ads').then((r) => r.json()).then((d) => {
       if (d.error) return setError(d.error);
@@ -122,6 +130,7 @@ export default function Ads() {
     if (cards.length && !window.confirm('Switching store clears the ' + cards.length + ' card' + (cards.length === 1 ? '' : 's') + ' you have picked. Carry on?')) return;
     setCards([]); setResult(null); setError(''); setSearch(''); setTextHistory([]); setStoreNotesMsg(''); setAttach(null); setAdsetId('');
     resetVideo();   // a sent video belongs to the old store's ad account
+    setLp({}); setLpTitle({}); setVPicked([]); setLpError('');
     setBrand(b);
   }
 
@@ -225,6 +234,39 @@ export default function Ads() {
   if (!/^https?:\/\/\S+$/i.test(vLink.trim())) vProblems.push('The ad needs a link starting with https://.');
   if (brandInfo && !brandInfo.page) vProblems.push('No Facebook Page found for ' + brandInfo.name + '. Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel.');
 
+  // ---- landing page ----
+
+  // The products the page will hold, in ad order: the cards' products for a carousel
+  // (cards with no product are left out), the picked list for a video.
+  const lpHandles = mode === 'video'
+    ? vPicked
+    : [...new Set(cards.map((c) => c.handle).filter(Boolean))];
+  const titleOf = (h) => (lib.products.find((p) => p.handle === h) || {}).title || h;
+  const lpFound = lp[mode] || null;
+
+  function toggleVPicked(handle) {
+    setVPicked((list) => (list.includes(handle) ? list.filter((h) => h !== handle) : [...list, handle]));
+  }
+
+  async function createLanding() {
+    setLpError(''); setLpBusy(true);
+    const m = mode;
+    const title = (lpTitle[m] || '').trim() || (m === 'video' && design ? design.title : name.trim());
+    try {
+      const { ok, d } = await post({ action: 'landing-page', brand, title, handles: lpHandles });
+      if (!ok) return setLpError(d.error || 'Shopify would not create the landing page.');
+      setLp((x) => ({ ...x, [m]: d }));
+      setResult(null);
+      // A video ad has one link, so it goes straight there. A carousel keeps its card
+      // links and uses the page as its main link at build time.
+      if (m === 'video' && d.published && d.url) { setVLink(d.url); setVHandle(''); }
+    } catch {
+      setLpError('Request failed.');
+    } finally {
+      setLpBusy(false);
+    }
+  }
+
   async function buildVideo() {
     setError(''); setResult(null); setBuilding(true);
     try {
@@ -242,6 +284,78 @@ export default function Ads() {
   }
 
   const ratio = design && design.width && design.height ? design.height / design.width : null;
+  const lpFilteredProducts = useMemo(() => {
+    const q = lpSearch.trim().toLowerCase();
+    return (lib.products || []).filter((p) => !q || p.title.toLowerCase().includes(q)).slice(0, 200);
+  }, [lib, lpSearch]);
+
+  const landingSection = (
+    <div className="ad-landing">
+      <div className="li-name">Landing page{mode === 'carousel' ? ' (optional)' : ''}</div>
+      <div className="ledger-note" style={{ marginBottom: 10 }}>
+        {mode === 'carousel'
+          ? 'A Shopify collection of the carousel\'s products, in card order. Taps on the text, end card and "See more" go there instead of the homepage; each card still links to its own product.'
+          : 'A Shopify collection of the products in this reel, in the order you tick them. The ad links to it, so every product in the reel is one tap away.'}
+      </div>
+
+      {mode === 'video' && (
+        <>
+          <input className="input" value={lpSearch} onChange={(e) => setLpSearch(e.target.value)} placeholder="Find products in the reel" style={{ marginBottom: 6 }} />
+          <div className="ad-lp-list">
+            {lpFilteredProducts.map((p) => {
+              const at = vPicked.indexOf(p.handle);
+              return (
+                <label key={p.handle} className={'ad-lp-row' + (at >= 0 ? ' on' : '')}>
+                  <input type="checkbox" checked={at >= 0} onChange={() => { toggleVPicked(p.handle); setLp((x) => ({ ...x, video: null })); }} />
+                  {p.image && <img src={p.image} alt="" />}
+                  <span>{p.title}</span>
+                  {at >= 0 && <span className="ad-pos static ad-lp-pos">{at + 1}</span>}
+                </label>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {lpHandles.length > 0 ? (
+        <div className="ledger-note" style={{ margin: '8px 0' }}>
+          {lpHandles.length} product{lpHandles.length === 1 ? '' : 's'}: {lpHandles.map(titleOf).join(', ')}
+          {mode === 'carousel' && cards.some((c) => !c.handle) && '. Cards without a product are left out.'}
+        </div>
+      ) : (
+        <div className="ledger-note" style={{ margin: '8px 0' }}>
+          {mode === 'carousel' ? 'Pick cards that are linked to products first.' : 'Tick the products that appear in the reel.'}
+        </div>
+      )}
+
+      <div className="field-row" style={{ alignItems: 'flex-end' }}>
+        <label className="field">
+          <span>Page title (the heading shoppers see)</span>
+          <input className="input" value={lpTitle[mode] || ''} onChange={(e) => setLpTitle((t) => ({ ...t, [mode]: e.target.value }))}
+            placeholder={(mode === 'video' && design ? design.title : name) || 'e.g. The Fall Lifestyle Drop'} />
+        </label>
+        <div className="field" style={{ flex: '0 0 auto', minWidth: 0 }}>
+          <button className="btn btn-ghost" type="button" onClick={createLanding}
+            disabled={lpBusy || !lpHandles.length || !((lpTitle[mode] || '').trim() || (mode === 'video' && design ? design.title : name.trim()))}>
+            {lpBusy ? 'Creating...' : lpFound ? 'Create another' : 'Create landing page'}
+          </button>
+        </div>
+      </div>
+      {lpError && <div className="login-error">{lpError}</div>}
+      {lpFound && (
+        <div className={'flag ' + (lpFound.published ? 'ok' : 'warn')} style={{ marginTop: 4 }}>
+          <span className="ico">{lpFound.published ? '\u2713' : '\u2691'}</span>
+          <span>
+            {lpFound.published
+              ? <>Landing page live: <a href={lpFound.url} target="_blank" rel="noreferrer">{lpFound.url}</a>. {mode === 'video' ? 'Set as the ad\'s link.' : 'Used as the carousel\'s main link when you build.'}</>
+              : lpFound.publishError}
+            {' '}<a href={lpFound.adminUrl} target="_blank" rel="noreferrer">Open in Shopify</a>
+          </span>
+        </div>
+      )}
+    </div>
+  );
+
   const STAGES = [['exporting', 'Exporting from Canva'], ['uploading', 'Sending to Meta'], ['processing', 'Meta is processing'], ['ready', 'Ready']];
 
   function toggle(img) {
@@ -294,7 +408,7 @@ export default function Ads() {
       const { ok, d } = await post({
         action: 'write-text', brand, notes: textNotes, previous,
         titles: mode === 'video'
-          ? [vHeadline, design && design.title].filter(Boolean)
+          ? [vHeadline, ...vPicked.map((h) => (lib.products.find((p) => p.handle === h) || {}).title), design && design.title].filter(Boolean)
           : cards.map((c) => c.headline).filter(Boolean),
       });
       if (!ok) return setError(d.error || 'Could not write the text.');
@@ -383,6 +497,7 @@ export default function Ads() {
     try {
       const { ok, d } = await post({
         action: 'build', brand, name, message, cta, reorder, endCard,
+        mainLink: lp.carousel && lp.carousel.published ? lp.carousel.url : '',
         cards: cards.map((c) => ({ hash: c.hash, headline: c.headline, link: c.link })),
       });
       if (!ok) setError(d.error || 'Meta would not create the carousel.');
@@ -640,6 +755,8 @@ export default function Ads() {
               ))}
             </div>
 
+            {cards.length > 0 && landingSection}
+
             {cards.length > 0 && problems.length > 0 && (
               <div className="mk-dests" style={{ marginTop: 12 }}>
                 {problems.map((p) => (
@@ -756,6 +873,7 @@ export default function Ads() {
                       <input className="input" value={vLink} onChange={(e) => { setVLink(e.target.value); setResult(null); }} placeholder="https://..." />
                     </label>
                   </div>
+                  {landingSection}
                   {textBlock}
 
                   {vProblems.length > 0 && (

@@ -48,7 +48,9 @@ card your team can read and copy.
   tab to build carousel creatives from that library. The Facebook Page each brand's ads
   post as, and the Instagram account linked to it, are found automatically;
   `<BRAND>_META_PAGE_ID` and `<BRAND>_META_INSTAGRAM_ID` override them. The tab can also
-  add a carousel to an existing ad set as a paused ad. Optional: `META_API_VERSION`, pinned to `v26.0` by default.
+  add a carousel to an existing ad set as a paused ad. Landing pages (Shopify collections
+  made from the Ads tab) need `read_publications` and `write_publications` on each brand's
+  Shopify app to publish themselves. Optional: `META_API_VERSION`, pinned to `v26.0` by default.
 - Canva: `CANVA_CLIENT_ID` and `CANVA_CLIENT_SECRET` from an integration created in Canva's
   Developer Portal (your Canva account needs two-factor sign-in on first). Tick the scopes
   `asset:read`, `asset:write`, `folder:read`, `folder:write`, and add

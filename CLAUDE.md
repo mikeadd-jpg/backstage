@@ -500,6 +500,20 @@ templates through the API on Enterprise, and Kittl has no public API.
 - `multi_share_optimized` (Meta reordering cards) is off by default: the person set the
   order. Meta shows carousel cards square, so non-square images are flagged as cropped.
 
+### Landing pages (Ads tab)
+
+A landing page is a **manual Shopify collection** of the ad's products in the ad's order
+(`createLandingCollection` in `lib/shopify.js`), published to the Online Store. It uses the
+theme's own collection template and stays out of menus unless someone adds it, so there is
+no theme work. For a video ad it becomes the ad's one link. For a carousel it is optional
+and only replaces the carousel's *main* link (text, end card, "See more"); each card keeps
+its own product link. Handles are resolved to product ids server side, so only the store's
+own active products can go in.
+
+**Publishing needs `read_publications` and `write_publications`** on each brand's Shopify
+app (then a redeploy for a fresh token). Without them the collection is still created,
+unpublished, and the tab says so with a link to it in Shopify rather than failing.
+
 ### Video ads from Canva (Ads tab, "Video from Canva")
 
 A reel made in Canva becomes a Meta video ad without downloading anything by hand.

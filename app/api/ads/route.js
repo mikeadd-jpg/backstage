@@ -17,6 +17,9 @@
 //   { action: 'video-status', brand, videoId }        poll Meta's processing
 //   { action: 'build-video', brand, videoId, ... }    create the video ad creative
 //
+//   { action: 'landing-page', brand, title, handles }  a manual Shopify collection of the
+//                                     ad's products, in order, published to the Online Store
+//
 //   { action: 'adsets', brand }       campaigns and ad sets to choose from (read-only)
 //   { action: 'create-ad', brand, creativeId, adsetId, name }  a PAUSED ad in that ad set
 //
@@ -26,7 +29,7 @@
 import { NextResponse } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
-import { listActiveProducts, shopPrimaryUrl } from '../../../lib/shopify.js';
+import { listActiveProducts, shopPrimaryUrl, createLandingCollection } from '../../../lib/shopify.js';
 import { writePrimaryText, adNotesFor, saveAdNotes } from '../../../lib/adcopy.js';
 import {
   metaAccountFor, listAdImages, createCarouselCreative, listBuiltCreatives,
@@ -129,7 +132,7 @@ export async function POST(req) {
       const byHandle = new Map(products.map((p) => [p.handle, p]));
       return NextResponse.json({
         shopUrl,
-        products: products.map((p) => ({ handle: p.handle, title: p.title })),
+        products: products.map((p) => ({ handle: p.handle, title: p.title, image: p.image })),
         images: images.map((img) => {
           const handle = handleFromName(brand, img.name);
           const product = handle ? byHandle.get(handle) : null;
@@ -220,6 +223,22 @@ export async function POST(req) {
       return NextResponse.json({ ...result, name: creativeName });
     }
 
+    if (body.action === 'landing-page') {
+      const brand = checkBrand(body.brand);
+      const title = String(body.title || '').trim().slice(0, 255);
+      const handles = Array.isArray(body.handles) ? [...new Set(body.handles.map(String))] : [];
+      if (!title) throw new Error('The landing page needs a title.');
+      if (!handles.length) throw new Error('Pick at least one product for the landing page.');
+      if (handles.length > 50) throw new Error('A landing page holds at most 50 products.');
+      // Resolve handles server side, so only this store's live products can go in.
+      const byHandle = new Map((await listActiveProducts(brand)).map((p) => [p.handle, p.id]));
+      const missing = handles.filter((h) => !byHandle.has(h));
+      if (missing.length) throw new Error('Not active products in this store: ' + missing.join(', '));
+      return NextResponse.json(await createLandingCollection(brand, {
+        title, productIds: handles.map((h) => byHandle.get(h)),
+      }));
+    }
+
     if (body.action === 'adsets') {
       const brand = checkBrand(body.brand);
       return NextResponse.json({ adsets: await listAdSets(brand) });
@@ -263,7 +282,9 @@ export async function POST(req) {
         ...who,
         name: creativeName,
         message: String(body.message || '').trim(),
-        link: isUrl(shopUrl) ? shopUrl : clean[0].link,
+        // The carousel's main link (primary text, end card, "See more"): its landing page
+        // when one was made, else the store. Each card keeps its own product link.
+        link: isUrl(body.mainLink) ? String(body.mainLink).trim() : isUrl(shopUrl) ? shopUrl : clean[0].link,
         cards: clean,
         cta: body.cta,
         reorder: body.reorder,
