@@ -304,13 +304,23 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   that can fill the slot (the toddler tee compares B+C 3001T and Rabbit Skins 3321
   printers together). Filters, relaxed only if nothing passes: stocks the garment's colour
   families (black and white always, dark grey and off-white when the defaults include
-  one), rated 8.0+. Then, by the owner's rule: **Printify Choice whenever it ships from
-  inside that market**; otherwise **price leads**:
-  the cheapest landed cost (base + first-item shipping), unless a printer costing at most
-  `UPGRADE_BAND` ($0.75) more is faster or better rated, in which case the best mix of
-  rating and delivery inside that band wins. Each pick carries a `why` the builder shows.
-  Every pick is overridable in the builder, which lists every printer with its extra cost
-  over the cheapest and why any were filtered out.
+  one), rated 8.0+. **Nothing is shipped into a market that has a printer inside it**, so
+  the candidates are cut to the local ones before anything else and the rest of the rule
+  runs inside that set; only a market with no printer of its own falls back. That outranks
+  price deliberately: going local costs up to $5.30 (Comfort Colors in Canada) and is
+  still right, since a 10-30 day import is a worse product than a dearer local parcel.
+  Inside the set: **Printify Choice first** where it is local (the US today), otherwise
+  **price leads**, the cheapest landed cost (base + first-item shipping), unless a printer
+  costing at most `UPGRADE_BAND` ($0.75) more is faster or better rated, in which case the
+  best mix of rating and delivery inside that band wins. Each pick carries a `why` the
+  builder shows. Every pick is overridable in the builder, which lists every printer with
+  its extra cost over the cheapest and why any were filtered out. Relaxing the colour
+  filter matters more now the set can be one printer: the only printer in the UK may lack
+  a dark grey, and losing that colour beats shipping from Nevada.
+- **11 of the 36 per-market listings have no printer in the market** and are imported, all
+  of them flagged in the builder: the Tank and Crop outside the US (only US printers exist
+  for blueprints 880 and 1393), the whole kids range in Australia, and the long-sleeve
+  bodysuit in the UK and Australia. Those are catalog facts, not settings.
 - **"Ships from inside the market" is read off the shipping lane, never the factory list.**
   A printer counts as local only where Printify quotes that market its own rate (not the
   REST_OF_THE_WORLD catch-all) *and* the lane is `DOMESTIC_MAX_DAYS` (7) or faster. This
