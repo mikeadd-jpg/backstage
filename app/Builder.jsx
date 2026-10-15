@@ -132,13 +132,14 @@ function ListingRow({ product, listing, sel, onSel, open, setOpen, onCopy }) {
   const blanks = new Set(listing.candidates.map((c) => c.blank));
 
   return (
-    <div className={'rg' + (sel.on ? '' : ' rg-off') + (isGlobal ? ' rg-global' : '')}>
+    <div className={'rg' + (sel.on ? '' : ' rg-off') + (isGlobal ? ' rg-global' : '') + (listing.imported ? ' rg-import' : '')}>
       <div className="rg-head">
         <label className="check acc-region">
           <input type="checkbox" checked={sel.on} onChange={() => onSel({ ...sel, on: !sel.on })} />
           {isGlobal ? 'Global' : listing.market}
         </label>
         <span className="rg-tags">{listing.tags.map((t) => <span className="ctry" key={t}>{t}</span>)}</span>
+        {listing.imported && <span className="rg-imported">imported</span>}
         {cand && (
           <span className="rg-actions">
             {!isGlobal && (
@@ -464,6 +465,12 @@ export default function Builder() {
                       <div className="acc-note acc-indent">Global Fulfillment could not be confirmed with Printify right now, so per-market listings are ticked instead.</div>
                     )}
                     {p.partial && <div className="acc-note acc-indent">Some printers did not answer; the list may be incomplete. Reload to retry.</div>}
+                    {p.listings.some((l) => l.imported) && (
+                      <div className="acc-note acc-indent">
+                        No printer in {p.listings.filter((l) => l.imported).map((l) => l.market).join(', ')}.
+                        Those ship in from abroad, so they start unticked.
+                      </div>
+                    )}
                     <div className="acc-regions">
                       {p.listings.map((l, i) => (
                         <div key={l.market} style={{ width: '100%' }}>

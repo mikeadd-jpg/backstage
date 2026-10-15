@@ -317,10 +317,12 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   its extra cost over the cheapest and why any were filtered out. Relaxing the colour
   filter matters more now the set can be one printer: the only printer in the UK may lack
   a dark grey, and losing that colour beats shipping from Nevada.
-- **11 of the 36 per-market listings have no printer in the market** and are imported, all
-  of them flagged in the builder: the Tank and Crop outside the US (only US printers exist
-  for blueprints 880 and 1393), the whole kids range in Australia, and the long-sleeve
-  bodysuit in the UK and Australia. Those are catalog facts, not settings.
+- **11 of the 36 per-market listings have no printer in the market**, so they import and
+  **start unticked**, flagged `imported` in the builder: the Tank and Crop outside the US
+  (only US printers exist for blueprints 880 and 1393), the whole kids range in Australia,
+  and the long-sleeve bodysuit in the UK and Australia. Those are catalog facts, not
+  settings. With the Global garments' own markets also unticked, a default adult build is
+  8 listings and a kids build 15.
 - **"Ships from inside the market" is read off the shipping lane, never the factory list.**
   A printer counts as local only where Printify quotes that market its own rate (not the
   REST_OF_THE_WORLD catch-all) *and* the lane is `DOMESTIC_MAX_DAYS` (7) or faster. This
