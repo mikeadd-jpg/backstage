@@ -334,12 +334,25 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   Today only the US has a genuinely domestic Choice lane ($4.95, 2-5 days).
 - **Data comes from two places.** The API gives in-stock variants and the v2 shipping
   table (cost and days per destination; markets only listed under REST_OF_THE_WORLD use
-  that row). Base price, rating, production days, factory countries and the per-colour
-  Global Fulfillment flag (`fulfillment: internationally_optimized`) exist only on
-  Printify's own catalog pages, read from the undocumented
-  `printify.com/product-catalog-service/api/v2/blueprints/<id>/print-providers`. If that
-  stops answering, ranking runs on shipping alone and Global Fulfillment is reported as
-  unconfirmed (its markets get ticked instead); nothing is guessed.
+  that row). Everything else is on Printify's own catalog pages, read from the undocumented
+  `printify.com/product-catalog-service/api/v2/blueprints/<id>/print-providers`: rating,
+  production days, factory countries, the per-colour Global Fulfillment flag
+  (`fulfillment: internationally_optimized`), the cost ranges and `regional_shipping`. If
+  that stops answering, ranking runs on shipping alone and Global Fulfillment is reported
+  as unconfirmed (its markets get ticked instead); nothing is guessed.
+- **Cost is the Premium price and a range, never one number.** These shops are on Printify
+  Premium, a different and ~24% lower price list, so `min_price_subscription` is the real
+  cost and `min_price` is only the list price. Both are the SMALLEST size with ONE print
+  area, so the builder shows `cost_ranges_by_decoration_method_subscription` min to max
+  (the Gildan is $7.40-$10.30, not "from $9.68"). A back print adds about $5 on top, which
+  no catalog field carries: measured against live products, Comfort Colors front-only is
+  $10.93-$15.85 and front+back is $15.97-$20.88.
+- **Global Fulfillment shipping is its own rate and is not in the v2 shipping table.** It
+  is `regional_shipping[].global_fulfillment.min_shipping_rate`, $2.99 in every region,
+  against $4.95 US / $9.69 CA / $12.99 AU / $10.39 rest-of-world for a regular Choice
+  listing. Pricing the Global listing off the v2 table (which has no UK row at all) made it
+  look $7.40 dearer in the UK than it is. `regional_shipping` also gives the local and
+  imported rates per region, which is the clearest statement of what each route costs.
 - **Saved weekly, not loaded live.** Prices barely move, so the whole builder catalog is
   saved in `insights_cache` (`printify_catalog_<group>`) and rebuilt every Monday 05:00
   UTC by the `/api/printers-refresh` cron, which re-reads every printer (a few hundred

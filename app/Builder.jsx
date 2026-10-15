@@ -10,6 +10,12 @@ import { useEffect, useState } from 'react';
 
 const money = (cents) => (cents == null ? '?' : '$' + (cents / 100).toFixed(2));
 
+// Printify quotes the smallest size with one print area. Cost rises with size and a back
+// print adds about $5, so a single figure would read as the price of every shirt.
+const range = (lo, hi) => (hi && hi > lo ? money(lo) + '–' + money(hi) : money(lo));
+const landedRange = (c) => range((c.base || 0) + (c.ship ? c.ship.cost : 0),
+  c.baseMax ? c.baseMax + (c.ship ? c.ship.cost : 0) : null);
+
 // A candidate's colours: inline on the Global listing, else shared per product.
 const colorsOf = (product, c) => (c ? c.colors || (product.printers && product.printers[c.id]) || [] : []);
 
@@ -103,8 +109,10 @@ function PrinterList({ product, candidates, pick, onPick, showBlank, onDone }) {
               {c.rating != null && <> &middot; &#9733; {c.rating.toFixed(1)}</>}
             </span>
             <span className="pr-meta">
-              {money(c.base)} + {c.ship ? money(c.ship.cost) : '?'} ship = <b>{money(c.landed)}</b>
-              {' · '}{deliveryText(c)} &middot; {c.colorCount ?? colorsOf(product, c).length} colours
+              {range(c.base, c.baseMax)} unit + {c.ship ? money(c.ship.cost) : '?'} ship = <b>{landedRange(c)}</b>
+            </span>
+            <span className="pr-meta">
+              {deliveryText(c)} &middot; {c.colorCount ?? colorsOf(product, c).length} colours
             </span>
             {c.picked && c.why && <span className="pr-why">{c.why}</span>}
             {c.reason && <span className="pr-reason">{c.reason}</span>}
@@ -162,8 +170,8 @@ function ListingRow({ product, listing, sel, onSel, open, setOpen, onCopy }) {
             ? <> &middot; made and shipped locally in US, CA, UK, AU and EU</>
             : <> &middot; {cand.local ? 'ships from inside ' + listing.market : 'ships in from ' + cand.madeIn.join('/')}</>}
           {cand.rating != null && <> &middot; &#9733; {cand.rating.toFixed(1)}</>}
-          {!isGlobal && <> &middot; {money(cand.landed)} landed &middot; {deliveryText(cand)}</>}
-          {isGlobal && <> &middot; from {money(cand.base)}</>}
+          {' · '}{landedRange(cand)} landed ({range(cand.base, cand.baseMax)} unit + {cand.ship ? money(cand.ship.cost) : '?'} ship)
+          {' · '}{deliveryText(cand)}
           {blanks.size > 1 && <> &middot; {cand.blank}</>}
           {!isGlobal && cand.picked && cand.why && <span className="rg-why">{cand.why}</span>}
         </div>
@@ -386,7 +394,9 @@ export default function Builder() {
       <p className="pane-sub">
         Upload one design and Backstage builds every listing as a Printify draft. Global
         Fulfillment products get one listing that ships locally everywhere; the rest get one
-        listing per market on the best-ranked printer, tagged us, ca, uk or au for Shopify Markets.
+        listing per market on the best printer in that market, tagged us, ca, uk or au for
+        Shopify Markets. Costs are your Printify Premium rates, smallest to largest size,
+        for a front print; a back print adds about $5.
       </p>
 
       <div className="card">
