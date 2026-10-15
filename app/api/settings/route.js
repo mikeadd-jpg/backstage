@@ -6,8 +6,7 @@ import {
   getStores, upsertStore, getAllProductConfig, upsertProductConfig,
   getAllVoices, upsertVoice, getSetting, setSetting, copyBrandConfig,
 } from '../../../lib/db.js';
-import { garmentList } from '../../../lib/builder.js';
-import { kidsGarmentList } from '../../../lib/kids.js';
+import { configRows } from '../../../lib/printers.js';
 import { REPLY_STRUCTURE, BRANDS } from '../../../lib/brands.js';
 import { notesFor, saveNotes } from '../../../lib/mockups.js';
 
@@ -24,7 +23,7 @@ export async function GET(req) {
     ]);
     const mockupNotes = Object.fromEntries(brandKeys.map((b, i) => [b, notes[i]]));
     return NextResponse.json({
-      stores, config, voices, garments: [...garmentList(), ...kidsGarmentList()],
+      stores, config, voices, garments: configRows(),
       replyStructure: structure || REPLY_STRUCTURE,
       mockupNotes,
     });

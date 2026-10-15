@@ -278,40 +278,72 @@ Two consequences to keep in mind:
 - `sharp` is declared in `package.json` rather than leaned on as a Next.js transitive
   dep. Next treats it as a server-external package by default, so no bundler config.
 
-## Kids builder (`lib/kids.js`)
+## Product builder: markets and printers (`lib/printers.js`, `/api/builder`)
 
-Separate from the adult builder because Printify Choice (provider 99) cannot fulfil the
-kids blueprints for UK and Canada, so **every region names its own print provider**. One
-design produces 14 draft products. `KIDS_CATALOG` is the single source of truth; it was
-verified against the live catalog on 2026-08-28.
+One upload builds every listing, adults and kids alike (`group`), as Printify drafts.
+`lib/printers.js` owns the market list, the printer ranking, the catalog data and the
+build; `lib/builder.js` and `lib/kids.js` keep only their garment lists, image upload and
+descriptions. Markets are US, CA, UK, AU (`MARKETS`).
 
-Unlike `lib/builder.js`, variant ids are **not** hardcoded. A kids garment has a
-different variant set per provider (the toddler tee is 18 colors in the US, 8 in the UK),
-so the catalog stores colour *names* and `resolveVariants()` maps them to ids at build
-time. That self-heals when Printify changes stock. The palettes are the intersection
-across each garment's regions, so listings look the same worldwide.
+- **Global Fulfillment** (Printify Choice) is for garments with `global: true` in
+  `VARIANTS` (Gildan 5000, Comfort Colors 1717): ONE listing, no market suffix, tagged
+  `us ca uk au`, which Printify makes and ships locally in the US, CA, UK, AU and EU at
+  local rates. **It is all or nothing per listing**: one ineligible colour drops the whole
+  product to regular Choice, where international buyers pay international shipping. So
+  the picker offers only eligible colours and `buildProduct` re-checks eligibility at
+  build time, dropping (with a warning) any colour that lost it. Only 6 of Printify's
+  ~1,275 Choice blueprints had eligible colours on 2026-10-14 (also B+C 3001, Gildan
+  64000, 18000, 18500); none of the kids, tank, women's tee or crop blanks do.
+- **Per-market listings** are one product per market, titled `<design> Tee (UK)` and
+  tagged with that market alone, for bulk-adding to its Shopify market. Printify does
+  not restrict where a product ships; the tag and title are the whole mechanism. On a
+  Global Fulfillment garment they exist too but start unticked, for a market-specific
+  design (build that design with only that market ticked).
+- **Printer ranking (`rankCandidates`)**, per market, over every printer of every blueprint
+  that can fill the slot (the toddler tee compares B+C 3001T and Rabbit Skins 3321
+  printers together). Filters, each relaxed only if nothing passes: delivers in 15
+  shipping days or fewer, stocks the garment's colour families (black and white always,
+  dark grey and off-white when the defaults include one), rated 8.0+. Then scored 35%
+  rating, 30% landed cost (base + first-item shipping), 20% delivery, 15% coverage of the
+  default colours. The order of the filters matters and was tuned on real picks: putting
+  colours first sent markets to 10-30 day lanes; checking all four colour families on
+  every garment cost kids their local printers. Every pick is overridable in the builder,
+  which shows the whole ranked list with why a printer was filtered out.
+- **Data comes from two places.** The API gives in-stock variants and the v2 shipping
+  table (cost and days per destination; markets only listed under REST_OF_THE_WORLD use
+  that row). Base price, rating, production days, factory countries and the per-colour
+  Global Fulfillment flag (`fulfillment: internationally_optimized`) exist only on
+  Printify's own catalog pages, read from the undocumented
+  `printify.com/product-catalog-service/api/v2/blueprints/<id>/print-providers`. If that
+  stops answering, ranking runs on shipping alone and Global Fulfillment is reported as
+  unconfirmed (its markets get ticked instead); nothing is guessed.
+- **Rate limits.** A cold load reads every printer (a few hundred calls); Printify's
+  catalog throttles per minute, so `apiGet` waits out 429s. Results are cached in
+  `insights_cache` for 12 hours per blueprint and per printer, so a load that ran short
+  keeps its progress. `/api/builder` asks for `maxDuration = 300` for the cold load.
+- **Prices and tags** come from `product_config`: adults one row per garment shared by
+  Global and every market, kids one row per market (`onesie_uk`, ...), listed by
+  `configRows()`. The AU kids rows, and UK for the long-sleeve bodysuit, are new: until a
+  price is set in Settings they build at $24.99 with a warning. The market tag is added
+  on top of the configured tags; adults still get `upsellprod` (not the Gildan).
+- **Colours** are names resolved to variant ids at build time, never hardcoded ids, since
+  each printer stocks a different set. Sizes are every in-stock size of a picked colour.
+  Swatch hex comes from the catalog pages, falling back to the fixed map in
+  `lib/colors.js`. The catalog payload sends each printer's colours once per product, not
+  once per market, to stay small on a phone.
+- **Never assume a back print area.** Some printers (Print Geek on the infant blanks) have
+  none; the build leaves the back off with a warning.
 
-Four irregularities that are real, not bugs:
+## Kids garments (`lib/kids.js`)
 
-- **No long-sleeve infant bodysuit on Printify has a UK provider** (blueprints 31, 974,
-  2336 all lack one), so `ls_bodysuit` is US and CA only. Its US provider is SwiftPOD
-  (39) because Printify Choice does not carry blueprint 31.
-- **Bella+Canvas 3001T (blueprint 580) is US-only**, so the UK and CA toddler tee falls
-  back to Rabbit Skins 3321 (blueprint 32). One slot, two blueprints.
-- **`ls_bodysuit` uses Duplium (41) in Canada, not Print Geek (27)** like the others,
-  because Print Geek stocks only 4 variants of it (Navy and Red, no black or white).
-- **Print Geek exposes no back print area** on blueprints 33, 34 and 32, so a back design
-  is silently dropped for those three CA products, with a warning. `resolveVariants`
-  returns the available positions for exactly this reason: never assume `back` exists.
-
-The builder runs in two steps via `/api/kids` (`action: 'prepare'` then one
-`action: 'build'` per garment group) because the Vercel Hobby plan caps functions at 60
-seconds and 14 sequential creates will not fit in one request. Adding a garment or region
-means editing `KIDS_CATALOG` only; Settings picks up the new `garmentKey` automatically
-through `kidsGarmentList()`, and `product_config` needs no schema change.
-
-Note the adult builder auto-appends the `upsellprod` tag; the kids builder does not. Kids
-tags come entirely from `product_config`.
+`KIDS_CATALOG` lists the kids garments, their default palettes and every blueprint that
+can fill each slot (`blueprints`); the printer per market is ranked like any other. Two
+irregularities that are real, not bugs: **no long-sleeve infant bodysuit has a UK or
+Australian printer** (blueprints 31, 974, 2336), so those markets get one shipping in from
+Canada; and **Bella+Canvas 3001T is US-only**, which is why the toddler slot also lists
+Rabbit Skins 3321. Adding a garment means editing `KIDS_CATALOG`; Settings picks up its
+per-market rows through `configRows()`. Kids tags come entirely from `product_config` plus
+the market tag; no `upsellprod`.
 
 ## Lifestyle mockups (`lib/mockups.js`, `app/Mockups.jsx`)
 
@@ -888,11 +920,9 @@ made to work around limits that do not apply:
 the three: it has no batching and no time budget at all, so hitting a ceiling loses the
 entire run rather than degrading.
 
-Still on 60, and free headroom whenever they want it: `/api/builder`, `/api/kids`,
-`/api/mcp`. Note the two-step prepare/build split in `lib/kids.js` was introduced because
-14 sequential creates "will not fit in one request". At 300s they very likely do, but the
-split has independent value (progress, and one failed group not killing the rest), so
-keep it on those grounds rather than removing it on the old ones.
+`/api/builder` asks for 300 too, for the cold printer catalog load. Still on 60: `/api/mcp`.
+The builder's prepare-then-one-build-per-product split predates the 300s limit, but it has
+independent value (progress, and one failed product not killing the rest), so keep it.
 
 ## Database
 

@@ -269,9 +269,87 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .acc-group:first-child { border-top: none; }
 .acc-group-head { margin: 0; }
 .acc-blurb { display: inline; color: var(--faint); font-size: 11px; margin-left: 8px; }
-.acc-regions { display: flex; flex-wrap: wrap; gap: 16px; padding-left: 26px; margin-top: 2px; }
+.acc-regions { display: flex; flex-wrap: wrap; gap: 2px 16px; padding-left: 26px; margin-top: 2px; }
 .acc-region { margin: 2px 0; font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
 .acc-note { font-size: 11px; color: var(--faint); align-self: center; }
+
+/* Listings in the product builder: one row per listing (Global or a market) with its
+   printer, its picked colours as a strip, and a printer list or palette when opened.
+   Swatches and printers are buttons so a tap works on a phone. */
+.rg { width: 100%; padding: 8px 0; }
+.rg + .rg { border-top: 1px dashed var(--line); }
+.rg-global { background: var(--green-bg); margin: 4px 0; padding: 8px 10px; border-radius: 8px; }
+.rg-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 28px; }
+.rg-head .acc-region { margin: 0; min-width: 64px; font-weight: 600; color: var(--text); }
+.rg-tags { display: inline-flex; gap: 3px; }
+.rg-actions { margin-left: auto; display: inline-flex; gap: 6px; }
+.rg-line { font-size: 12px; color: var(--muted); line-height: 1.5; padding: 2px 0 2px 26px; }
+.rg-line b { color: var(--text); font-weight: 600; }
+.rg-count { font-size: 11px; color: var(--faint); font-family: 'Space Mono', monospace; margin-left: 6px; align-self: center; }
+.rg-warn { color: var(--red); }
+.rg-off .rg-strip, .rg-off .rg-line { opacity: 0.45; }
+.rg-strip { display: flex; flex-wrap: wrap; gap: 3px; padding: 2px 0 2px 26px; background: none; border: none;
+  cursor: pointer; text-align: left; width: 100%; align-items: center; }
+.rg-dot { display: inline-flex; }
+.rg-dot .sw-dot { width: 14px; height: 14px; }
+.rg-divider { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: var(--faint);
+  margin: 10px 0 2px; }
+.acc-indent { padding-left: 26px; margin: 2px 0; }
+.ctry { font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--muted); background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.pal { margin: 6px 0 4px 26px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+.pal-note { font-size: 11.5px; color: var(--muted); line-height: 1.45; margin-bottom: 8px; }
+.pal-name { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); min-height: 20px; margin-bottom: 6px; }
+.pal-name b { color: var(--text); font-weight: 600; }
+.pal-name .sw-dot { width: 14px; height: 14px; }
+.sw-list { display: flex; flex-wrap: wrap; gap: 2px; }
+.sw { width: 26px; height: 26px; padding: 0; border: none; background: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; position: relative; }
+.sw-dot { width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--line-strong); flex-shrink: 0; display: inline-block; }
+.sw:focus-visible { outline: 2px solid var(--action); outline-offset: 1px; }
+.sw-unknown { background: repeating-linear-gradient(45deg, var(--surface-2) 0 3px, var(--line-strong) 3px 6px); }
+.sw-pick .sw-dot { transition: transform 0.1s; }
+.sw-pick:hover .sw-dot { transform: scale(1.12); }
+.sw-on { box-shadow: 0 0 0 2px var(--action); }
+.sw-on::after { content: '\2713'; position: absolute; top: -3px; right: -3px; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--action); color: #fff; font-size: 8px; line-height: 12px; text-align: center;
+  font-weight: 700; }
+.pal-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.pal-btn { font-size: 11.5px; font-weight: 600; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: 'Inter', sans-serif; }
+.pal-btn:hover { background: var(--hover); }
+.pal-done { margin-left: auto; background: var(--text); color: var(--surface); border-color: var(--text); }
+.pal-done:hover { background: var(--text); opacity: 0.9; }
+.pr-list { display: flex; flex-direction: column; gap: 6px; }
+.pr { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-family: 'Inter', sans-serif; }
+.pr:hover { border-color: var(--line-strong); }
+.pr:disabled { cursor: default; opacity: 0.4; }
+.pr-on { border-color: var(--action); box-shadow: 0 0 0 1px var(--action); }
+.pr-out:not(.pr-on) { opacity: 0.6; }
+.pr-top { display: flex; align-items: center; gap: 8px; }
+.pr-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.pr-score { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted);
+  background: var(--surface-2); border-radius: 4px; padding: 0 6px; }
+.pr-meta { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+.pr-meta b { color: var(--text); }
+.pr-reason { font-size: 11px; color: var(--amber); }
+@media (max-width: 680px) {
+  .acc-body { padding: 4px 12px 10px; }
+  .acc-blurb { display: block; margin: 2px 0 0 0; }
+  .acc-group-head { flex-wrap: wrap; }
+  .acc-regions { padding-left: 0; gap: 0; }
+  .rg-global { margin: 4px -6px; padding: 8px 6px; }
+  .rg-line, .rg-strip, .acc-indent { padding-left: 0; }
+  .rg-actions { gap: 4px; }
+  .pal { margin-left: 0; padding: 10px; }
+  /* Finger-sized targets: 34px button, 24px dot. */
+  .sw { width: 34px; height: 34px; }
+  .sw-dot { width: 24px; height: 24px; }
+  .pal-btn { padding: 7px 12px; font-size: 12.5px; }
+  .pal-done { margin-left: 0; flex-basis: 100%; padding: 9px 12px; }
+  .pr { padding: 10px; }
+}
 
 /* Google sign-in button */
 .google-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px;
