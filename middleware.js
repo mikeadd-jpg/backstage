@@ -7,8 +7,9 @@
 //
 // Allowed through without a session:
 //   - /login and the /api/auth/* routes, or you could never sign in
-//   - /api/ingest, /api/scan and /api/email-snapshot, the cron endpoints, which
-//     authenticate with their own secret headers (x-ingest-key or the Vercel Bearer token)
+//   - /api/ingest, /api/scan, /api/email-snapshot and /api/printers-refresh, the cron
+//     endpoints, which authenticate with their own secret headers (x-ingest-key or the
+//     Vercel Bearer token)
 //   - /api/mcp, which authenticates with MCP_TOKEN or an OAuth access token
 //   - /api/oauth/* and /.well-known/*, the OAuth flow Claude uses to reach /api/mcp. Its
 //     consent screen does its own session check, so approval is still gated.
@@ -17,7 +18,7 @@ import { readSession, SESSION_COOKIE } from './lib/session.js';
 
 const PUBLIC_PATHS = [
   '/login', '/api/auth',
-  '/api/ingest', '/api/scan', '/api/email-snapshot',
+  '/api/ingest', '/api/scan', '/api/email-snapshot', '/api/printers-refresh',
   '/api/mcp', '/api/oauth', '/.well-known',
 ];
 

@@ -113,7 +113,7 @@ while typing. Shared brand and status display constants are in `app/ui.js`.
 
 ## Entry points
 
-Three crons in `vercel.json`, all exempt from the sign-in gate because they carry
+Four crons in `vercel.json`, all exempt from the sign-in gate because they carry
 their own auth:
 
 | Route | Schedule | Auth |
@@ -121,6 +121,7 @@ their own auth:
 | `/api/ingest` | every 20 min | GET: `x-vercel-cron` header or `Authorization: Bearer $CRON_SECRET`. POST: `x-ingest-key: $INGEST_SECRET` |
 | `/api/scan` | every 4 hours | same |
 | `/api/email-snapshot` | daily 04:30 UTC | same |
+| `/api/printers-refresh` | Mondays 05:00 UTC | same |
 
 Both accept either GET form on purpose: Vercel only sends the Bearer token when a
 `CRON_SECRET` env var exists, so checking it alone would 401 every scheduled run.
@@ -299,16 +300,20 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   not restrict where a product ships; the tag and title are the whole mechanism. On a
   Global Fulfillment garment they exist too but start unticked, for a market-specific
   design (build that design with only that market ticked).
-- **Printer ranking (`rankCandidates`)**, per market, over every printer of every blueprint
+- **Printer pick (`rankCandidates`)**, per market, over every printer of every blueprint
   that can fill the slot (the toddler tee compares B+C 3001T and Rabbit Skins 3321
-  printers together). Filters, each relaxed only if nothing passes: delivers in 15
-  shipping days or fewer, stocks the garment's colour families (black and white always,
-  dark grey and off-white when the defaults include one), rated 8.0+. Then scored 35%
-  rating, 30% landed cost (base + first-item shipping), 20% delivery, 15% coverage of the
-  default colours. The order of the filters matters and was tuned on real picks: putting
-  colours first sent markets to 10-30 day lanes; checking all four colour families on
-  every garment cost kids their local printers. Every pick is overridable in the builder,
-  which shows the whole ranked list with why a printer was filtered out.
+  printers together). Filters, relaxed only if nothing passes: stocks the garment's colour
+  families (black and white always, dark grey and off-white when the defaults include
+  one), rated 8.0+. Then, by the owner's rule: **Printify Choice whenever it prints in
+  that market** (its facility list, not just "ships there"); otherwise **price leads**:
+  the cheapest landed cost (base + first-item shipping), unless a printer costing at most
+  `UPGRADE_BAND` ($0.75) more is faster or better rated, in which case the best mix of
+  rating and delivery inside that band wins. Each pick carries a `why` the builder shows.
+  Known consequence: on the Gildan and Comfort Colors *per-market* listings, Choice wins
+  UK and AU even when a local printer is several dollars cheaper landed, because regular
+  Choice bills international shipping there (only Global Fulfillment gets local rates).
+  Every pick is overridable in the builder, which lists every printer with its extra cost
+  over the cheapest and why any were filtered out.
 - **Data comes from two places.** The API gives in-stock variants and the v2 shipping
   table (cost and days per destination; markets only listed under REST_OF_THE_WORLD use
   that row). Base price, rating, production days, factory countries and the per-colour
@@ -317,10 +322,13 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   `printify.com/product-catalog-service/api/v2/blueprints/<id>/print-providers`. If that
   stops answering, ranking runs on shipping alone and Global Fulfillment is reported as
   unconfirmed (its markets get ticked instead); nothing is guessed.
-- **Rate limits.** A cold load reads every printer (a few hundred calls); Printify's
-  catalog throttles per minute, so `apiGet` waits out 429s. Results are cached in
-  `insights_cache` for 12 hours per blueprint and per printer, so a load that ran short
-  keeps its progress. `/api/builder` asks for `maxDuration = 300` for the cold load.
+- **Saved weekly, not loaded live.** Prices barely move, so the whole builder catalog is
+  saved in `insights_cache` (`printify_catalog_<group>`) and rebuilt every Monday 05:00
+  UTC by the `/api/printers-refresh` cron, which re-reads every printer (a few hundred
+  Printify calls; `apiGet` waits out the per-minute catalog rate limit). The builder reads
+  the saved copy in one query and shows its date. Copies are kept 8 days, so a missed cron
+  run turns into one slow rebuild on the next load rather than ever-older prices; a copy
+  where any printer failed to answer is not saved. Stock is re-checked live at build time.
 - **Prices and tags** come from `product_config`: adults one row per garment shared by
   Global and every market, kids one row per market (`onesie_uk`, ...), listed by
   `configRows()`. The AU kids rows, and UK for the long-sleeve bodysuit, are new: until a
@@ -920,7 +928,8 @@ made to work around limits that do not apply:
 the three: it has no batching and no time budget at all, so hitting a ceiling loses the
 entire run rather than degrading.
 
-`/api/builder` asks for 300 too, for the cold printer catalog load. Still on 60: `/api/mcp`.
+`/api/builder` and `/api/printers-refresh` ask for 300 too, for the printer catalog rebuild.
+Still on 60: `/api/mcp`.
 The builder's prepare-then-one-build-per-product split predates the 300s limit, but it has
 independent value (progress, and one failed product not killing the rest), so keep it.
 

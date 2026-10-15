@@ -334,6 +334,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .pr-meta { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
 .pr-meta b { color: var(--text); }
 .pr-reason { font-size: 11px; color: var(--amber); }
+.pr-why { font-size: 11px; color: var(--green); }
+.rg-why { display: block; font-size: 11px; color: var(--green); }
 @media (max-width: 680px) {
   .acc-body { padding: 4px 12px 10px; }
   .acc-blurb { display: block; margin: 2px 0 0 0; }

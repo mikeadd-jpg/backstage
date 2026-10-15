@@ -80,8 +80,9 @@ function PrinterList({ product, candidates, pick, onPick, showBlank, onDone }) {
   return (
     <div className="pal">
       <div className="pal-note">
-        Ranked on rating, landed cost (base + shipping), delivery time and colour range.
-        Greyed printers were filtered out; you can still pick one.
+        Printify Choice when it prints in this market; otherwise the cheapest landed cost
+        (base + shipping), unless one within $0.75 is faster or better rated. Greyed printers
+        were filtered out; you can still pick any of them.
       </div>
       <div className="pr-list">
         {candidates.map((c) => (
@@ -93,7 +94,8 @@ function PrinterList({ product, candidates, pick, onPick, showBlank, onDone }) {
           >
             <span className="pr-top">
               <span className="pr-name">{c.name}</span>
-              {c.score != null && <span className="pr-score">{c.score}</span>}
+              {c.picked && <span className="pr-score">recommended</span>}
+              {!c.picked && c.delta != null && <span className="pr-score">{c.delta > 0 ? '+' + money(c.delta) : 'cheapest'}</span>}
             </span>
             <span className="pr-meta">
               {showBlank && <>{c.blank} &middot; </>}
@@ -104,6 +106,7 @@ function PrinterList({ product, candidates, pick, onPick, showBlank, onDone }) {
               {money(c.base)} + {c.ship ? money(c.ship.cost) : '?'} ship = <b>{money(c.landed)}</b>
               {' · '}{deliveryText(c)} &middot; {c.colorCount ?? colorsOf(product, c).length} colours
             </span>
+            {c.picked && c.why && <span className="pr-why">{c.why}</span>}
             {c.reason && <span className="pr-reason">{c.reason}</span>}
           </button>
         ))}
@@ -161,6 +164,7 @@ function ListingRow({ product, listing, sel, onSel, open, setOpen, onCopy }) {
           {!isGlobal && <> &middot; {money(cand.landed)} landed &middot; {deliveryText(cand)}</>}
           {isGlobal && <> &middot; from {money(cand.base)}</>}
           {blanks.size > 1 && <> &middot; {cand.blank}</>}
+          {!isGlobal && cand.picked && cand.why && <span className="rg-why">{cand.why}</span>}
         </div>
       )}
       {cand && (
@@ -241,6 +245,7 @@ export default function Builder() {
   const [openAcc, setOpenAcc] = useState(true);
   const [progress, setProgress] = useState('');
   const [rows, setRows] = useState([]);
+  const [checkedAt, setCheckedAt] = useState({ adults: null, kids: null });
 
   useEffect(() => {
     fetch('/api/settings').then((r) => r.json()).then((d) => {
@@ -250,12 +255,13 @@ export default function Builder() {
       if (def) setShopId(def.printify_shop_id);
     }).catch(() => {});
 
-    // Printers, prices and colours come from Printify. The first load of the day reads
-    // every printer and can take a minute; after that it is cached.
+    // Printers, prices and colours come from the weekly saved copy (lib/printers.js), so
+    // this is one quick request. Stock is checked again at build time.
     for (const g of ['adults', 'kids']) {
       fetch('/api/builder?group=' + g).then((r) => r.json()).then((d) => {
         if (d.error) return setLoadError((e) => ({ ...e, [g]: d.error }));
         setCatalog((c) => ({ ...c, [g]: d.products || [] }));
+        setCheckedAt((c) => ({ ...c, [g]: d.checkedAt || null }));
         setSel((s) => ({ ...s, [g]: initialSelection(d.products || []) }));
       }).catch(() => setLoadError((e) => ({ ...e, [g]: 'Could not load printers from Printify.' })));
     }
@@ -427,9 +433,14 @@ export default function Builder() {
           {openAcc && (
             <div className="acc-body">
               {!catalog[mode] && !loadError[mode] && (
-                <div className="ledger-note">Loading printers, prices and colours from Printify. The first load of the day can take a minute...</div>
+                <div className="ledger-note">Loading printers...</div>
               )}
               {loadError[mode] && <div className="login-error">{loadError[mode]}</div>}
+              {checkedAt[mode] && (
+                <div className="acc-note">
+                  Printer prices from {new Date(checkedAt[mode]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}, refreshed every Monday.
+                </div>
+              )}
               {products.map((p) => {
                 if (p.error) {
                   return <div className="acc-group" key={p.key}><span className="li-name">{p.label}</span> <span className="acc-note">Could not load: {p.error}</span></div>;
