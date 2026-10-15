@@ -159,7 +159,7 @@ function ListingRow({ product, listing, sel, onSel, open, setOpen, onCopy }) {
           <b>{cand.name}</b>
           {isGlobal
             ? <> &middot; made and shipped locally in US, CA, UK, AU and EU</>
-            : <> &middot; {cand.local ? 'made in ' + listing.market : 'ships from ' + cand.madeIn.join('/')}</>}
+            : <> &middot; {cand.local ? 'ships from inside ' + listing.market : 'ships in from ' + cand.madeIn.join('/')}</>}
           {cand.rating != null && <> &middot; &#9733; {cand.rating.toFixed(1)}</>}
           {!isGlobal && <> &middot; {money(cand.landed)} landed &middot; {deliveryText(cand)}</>}
           {isGlobal && <> &middot; from {money(cand.base)}</>}

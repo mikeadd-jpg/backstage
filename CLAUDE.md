@@ -304,16 +304,22 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   that can fill the slot (the toddler tee compares B+C 3001T and Rabbit Skins 3321
   printers together). Filters, relaxed only if nothing passes: stocks the garment's colour
   families (black and white always, dark grey and off-white when the defaults include
-  one), rated 8.0+. Then, by the owner's rule: **Printify Choice whenever it prints in
-  that market** (its facility list, not just "ships there"); otherwise **price leads**:
+  one), rated 8.0+. Then, by the owner's rule: **Printify Choice whenever it ships from
+  inside that market**; otherwise **price leads**:
   the cheapest landed cost (base + first-item shipping), unless a printer costing at most
   `UPGRADE_BAND` ($0.75) more is faster or better rated, in which case the best mix of
   rating and delivery inside that band wins. Each pick carries a `why` the builder shows.
-  Known consequence: on the Gildan and Comfort Colors *per-market* listings, Choice wins
-  UK and AU even when a local printer is several dollars cheaper landed, because regular
-  Choice bills international shipping there (only Global Fulfillment gets local rates).
   Every pick is overridable in the builder, which lists every printer with its extra cost
   over the cheapest and why any were filtered out.
+- **"Ships from inside the market" is read off the shipping lane, never the factory list.**
+  A printer counts as local only where Printify quotes that market its own rate (not the
+  REST_OF_THE_WORLD catch-all) *and* the lane is `DOMESTIC_MAX_DAYS` (7) or faster. This
+  distinction cost real money once: Choice lists UK, AU, CA and DE factories, but on a
+  regular listing it quotes the UK no rate at all (rest-of-world, $10.39, 10-30 days) and
+  quotes CA and AU 10-30 day cross-border lanes. Picking Choice on the facility list made
+  the UK Gildan $20.07 landed against Shirt Monkey's $12.95, printed locally in 2-3 days.
+  Those factories are reachable only through Global Fulfillment, which is its own listing.
+  Today only the US has a genuinely domestic Choice lane ($4.95, 2-5 days).
 - **Data comes from two places.** The API gives in-stock variants and the v2 shipping
   table (cost and days per destination; markets only listed under REST_OF_THE_WORLD use
   that row). Base price, rating, production days, factory countries and the per-colour
