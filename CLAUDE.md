@@ -317,12 +317,17 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   its extra cost over the cheapest and why any were filtered out. Relaxing the colour
   filter matters more now the set can be one printer: the only printer in the UK may lack
   a dark grey, and losing that colour beats shipping from Nevada.
-- **11 of the 36 per-market listings have no printer in the market**, so they import and
-  **start unticked**, flagged `imported` in the builder: the Tank and Crop outside the US
-  (only US printers exist for blueprints 880 and 1393), the whole kids range in Australia,
-  and the long-sleeve bodysuit in the UK and Australia. Those are catalog facts, not
-  settings. With the Global garments' own markets also unticked, a default adult build is
-  8 listings and a kids build 15.
+- **A slot can hold several blueprints, and the ranking picks one per market.** Gildan
+  5200 has no printer outside the US, so the Tank slot also carries Gildan GD12 (bp 100,
+  T Shirt and Sons, UK) and AS Colour 5025 Barnard (bp 500, The Print Bar, AU); the Crop
+  slot carries AS Colour 4062 (bp 659, The Print Bar, AU) beside Comfort Colors 3023CL.
+  The owner chose those blanks. Note they are genuinely different garments market to
+  market, and the AU tank stocks only black and white.
+- **8 of the 36 per-market listings have no printer in the market**, so they import and
+  **start unticked**, flagged `imported` in the builder: Tank and Crop in Canada, Crop in
+  the UK, the whole kids range in Australia, and the long-sleeve bodysuit in the UK and
+  Australia. Those are catalog facts, not settings. With the Global garments' own markets
+  also unticked, a default adult build is 11 listings and a kids build 15.
 - **"Ships from inside the market" is read off the shipping lane, never the factory list.**
   A printer counts as local only where Printify quotes that market its own rate (not the
   REST_OF_THE_WORLD catch-all) *and* the lane is `DOMESTIC_MAX_DAYS` (7) or faster. This
