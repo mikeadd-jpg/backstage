@@ -339,21 +339,25 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .rg-imported { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
   color: var(--amber); background: var(--amber-bg); border-radius: 4px; padding: 1px 6px; }
 .rg-import .rg-why { color: var(--amber); }
+
+/* Cost comparison: every route to every market, so a pick can be checked. Rows reflow
+   rather than scroll sideways, because landed cost is the column that matters on a phone. */
+.acc-costs { margin: 2px 0 4px 26px; }
+.ctm { margin-bottom: 10px; }
+.ctm-head { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700;
+  color: var(--faint); margin-bottom: 2px; }
+.ctm-row { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 5px 8px;
+  border-radius: 6px; align-items: baseline; }
+.ctm-win { background: var(--green-bg); }
+.ctm-route { font-size: 12.5px; color: var(--text); font-weight: 600; }
+.ctm-note { font-weight: 400; color: var(--amber); }
+.ctm-landed { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text); text-align: right; }
+.ctm-win .ctm-landed, .ctm-win .ctm-route { color: var(--green); }
+.ctm-detail { grid-column: 1 / -1; font-size: 11px; color: var(--muted); margin-top: 1px; }
+.ct-foot { margin-top: 8px; margin-bottom: 0; }
 @media (max-width: 680px) {
-  .acc-body { padding: 4px 12px 10px; }
-  .acc-blurb { display: block; margin: 2px 0 0 0; }
-  .acc-group-head { flex-wrap: wrap; }
-  .acc-regions { padding-left: 0; gap: 0; }
-  .rg-global { margin: 4px -6px; padding: 8px 6px; }
-  .rg-line, .rg-strip, .acc-indent { padding-left: 0; }
-  .rg-actions { gap: 4px; }
-  .pal { margin-left: 0; padding: 10px; }
-  /* Finger-sized targets: 34px button, 24px dot. */
-  .sw { width: 34px; height: 34px; }
-  .sw-dot { width: 24px; height: 24px; }
-  .pal-btn { padding: 7px 12px; font-size: 12.5px; }
-  .pal-done { margin-left: 0; flex-basis: 100%; padding: 9px 12px; }
-  .pr { padding: 10px; }
+  .acc-costs { margin-left: 0; }
+  .ctm-row { padding: 6px; }
 }
 
 /* Google sign-in button */

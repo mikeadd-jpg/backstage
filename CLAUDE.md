@@ -370,6 +370,12 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   Swatch hex comes from the catalog pages, falling back to the fixed map in
   `lib/colors.js`. The catalog payload sends each printer's colours once per product, not
   once per market, to stay small on a phone.
+- **"Compare costs" on each product** shows every route to every market as unit + shipping
+  = landed, with the Global Fulfillment row repeated per market and highlighted where it
+  wins. It exists so a pick can be checked rather than trusted, after Choice's factory list
+  and Printify's list prices both made the builder state costs that were wrong. It reflows
+  into stacked rows rather than scrolling sideways: landed cost is the column that matters
+  on a phone. Everything in it is already in the catalog payload, so it costs no request.
 - **Never assume a back print area.** Some printers (Print Geek on the infant blanks) have
   none; the build leaves the back off with a warning.
 

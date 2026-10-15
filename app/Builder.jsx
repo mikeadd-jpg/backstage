@@ -126,6 +126,68 @@ function PrinterList({ product, candidates, pick, onPick, showBlank, onDone }) {
   );
 }
 
+// What every route to each market actually costs, so the pick can be checked rather than
+// trusted. The Global Fulfillment row repeats per market on purpose: it is one listing,
+// but the point is that its landed cost holds in each market while the alternatives do not.
+function CostTable({ product, sel, onDone }) {
+  const globalListing = product.listings.find((l) => l.market === 'GLOBAL');
+  const gf = globalListing ? globalListing.candidates.find((c) => c.id === globalListing.pick) : null;
+  const markets = product.listings.filter((l) => l.market !== 'GLOBAL');
+  const gfLanded = gf ? (gf.base || 0) + (gf.ship ? gf.ship.cost : 0) : null;
+  const gfDays = gf && gf.ship
+    ? Math.ceil(gf.prodDays || 2) + gf.ship.from + '\u2013' + (Math.ceil(gf.prodDays || 2) + gf.ship.to) + ' days'
+    : null;
+
+  const Route = ({ label, c, landed, days, win, note }) => (
+    <div className={'ctm-row' + (win ? ' ctm-win' : '')}>
+      <span className="ctm-route">{label}{note && <span className="ctm-note"> {note}</span>}</span>
+      <span className="ctm-landed">{landed}</span>
+      <span className="ctm-detail">
+        {c ? <>{range(c.base, c.baseMax)} unit + {c.ship ? money(c.ship.cost) : '?'} ship &middot; {days}</> : 'nothing ships here'}
+      </span>
+    </div>
+  );
+
+  return (
+    <div className="pal">
+      <div className="pal-note">
+        Your Printify Premium cost, smallest to largest size, front print only. A back print
+        adds about $5. Shipping is Printify's standard rate for one item.
+      </div>
+      {markets.map((l) => {
+        const c = l.candidates.find((x) => x.id === (sel[l.market] || {}).pick);
+        const mine = c ? (c.base || 0) + (c.ship ? c.ship.cost : 0) : null;
+        const win = gfLanded != null && mine != null && gfLanded < mine;
+        return (
+          <div className="ctm" key={l.market}>
+            <div className="ctm-head">{l.label}</div>
+            {gf && (
+              <Route label={'Global, printed in ' + l.market} c={gf} landed={landedRange(gf)} days={gfDays} win={win} />
+            )}
+            <Route
+              label={c ? c.name : 'No printer'}
+              c={c}
+              landed={c ? landedRange(c) : '\u2014'}
+              days={c ? Math.round(c.delivery) + ' days' : ''}
+              win={gf && !win && mine != null}
+              note={c && !c.local ? 'imported' : null}
+            />
+          </div>
+        );
+      })}
+      {gf && (
+        <div className="pal-note ct-foot">
+          Global Fulfillment is one listing covering every market. The second row of each pair
+          is that market's own listing, only needed for a design meant just for that market.
+        </div>
+      )}
+      <div className="pal-actions">
+        <button type="button" className="pal-btn pal-done" onClick={onDone}>Done</button>
+      </div>
+    </div>
+  );
+}
+
 // One listing of one product: Global, or one market.
 function ListingRow({ product, listing, sel, onSel, open, setOpen, onCopy }) {
   const isGlobal = listing.market === 'GLOBAL';
@@ -471,6 +533,16 @@ export default function Builder() {
                       <span className="li-name">{p.label}</span>
                       {p.blurb && <span className="li-sub acc-blurb">{p.blurb}</span>}
                     </label>
+                    <button
+                      type="button" className="pal-btn acc-costs"
+                      onClick={() => setOpen(open === p.key + '::costs' ? null : p.key + '::costs')}
+                      aria-expanded={open === p.key + '::costs'}
+                    >
+                      {open === p.key + '::costs' ? 'Hide costs' : 'Compare costs'}
+                    </button>
+                    {open === p.key + '::costs' && (
+                      <CostTable product={p} sel={cur} onDone={() => setOpen(null)} />
+                    )}
                     {p.globalMissing && (
                       <div className="acc-note acc-indent">Global Fulfillment could not be confirmed with Printify right now, so per-market listings are ticked instead.</div>
                     )}
