@@ -126,8 +126,8 @@
    ]
   }
  },
- "ukPrinterAvailable": 85,
- "noUKPrinterForThatBlank": 44,
+ "ukPrinterAvailable": 47,
+ "noUKPrinterForThatBlank": 82,
  "falsePositiveNote": "An earlier pass of this scan reported 2 products as printed in the UK but charged rest-of-world. That was wrong and came from reading the catalog page's FACILITY list, which lists a GB facility for Printify Choice. CLAUDE.md already warns about exactly this: locality must be read off the shipping lane, never the factory list, because Choice's GB facility is reachable only through Global Fulfillment and a regular Choice listing is quoted no GB rate at all. Both products (customizable-warped-tour-themed-adult-tee, work-sucks-tee-on-comfort-colors) are regular Choice listings, so rest-of-world is correct for them. They are also the two that never got a Global Fulfillment duplicate.",
  "usNote": "24 products show a US fall-through, all of them Shopify Collective items (Loog guitars, hearing protection) whose profile carries no rates at all. Collective dropship items price shipping through the supplier rather than a local profile, so this is probably not a fault, but it was not verified.",
  "worstCases": [
@@ -142,5 +142,58 @@
    "handling": "10-30 days now vs 2-3 days",
    "note": "Named -uk and tagged uk, but built on Choice rather than a UK printer. The clearest single case."
   }
- ]
+ ],
+ "correction": "An earlier version of this report said 85 rebuildable and 44 not. That was wrong: the per-printer summary aggregated \"UK printer available\" across every product sharing a printer, so all 84 Printify Choice products inherited the flag from the subset whose blank actually has a UK option. Counting per product gives 47 rebuildable and 82 not, which is the split used here.",
+ "rebuildableByBlank": {
+  "88": {
+   "n": 18,
+   "uk": [
+    "Printful",
+    "T Shirt and Sons"
+   ]
+  },
+  "439": {
+   "n": 13,
+   "uk": [
+    "T Shirt and Sons"
+   ]
+  },
+  "1447": {
+   "n": 6,
+   "uk": [
+    "Printful"
+   ]
+  },
+  "33": {
+   "n": 4,
+   "uk": [
+    "T Shirt and Sons"
+   ]
+  },
+  "157": {
+   "n": 3,
+   "uk": [
+    "Shirt Monkey",
+    "Print Clever"
+   ]
+  },
+  "9": {
+   "n": 1,
+   "uk": [
+    "T Shirt and Sons"
+   ]
+  },
+  "420": {
+   "n": 1,
+   "uk": [
+    "T Shirt and Sons"
+   ]
+  },
+  "1220": {
+   "n": 1,
+   "uk": [
+    "Jondo"
+   ]
+  }
+ }
 }
