@@ -1552,5 +1552,14 @@
     "9291804442678"
    ]
   }
+ },
+ "swap": {
+  "done": "All 98 -int listings were published to the Online Store channel and the UK, Canada and Australia market catalogs on 2026-10-16. The US catalog was deliberately left out: the original serves the US.",
+  "notDone": "The 98 originals have NOT been removed from the UK, Canada and Australia catalogs. Doing that while the -int listings are still DRAFT would take 97 products off sale in the UK and Canada with nothing replacing them, and the UK is 8.4% of orders (80 of 956 in the 60 days to 2026-10-16). The removal belongs in the same pass as setting the -int listings ACTIVE.",
+  "gotchas": [
+   "A DRAFT product is absent from publication.products and from resourcePublications, so catalog membership cannot be read back while it is a draft. It is recorded all the same and appears the moment the product goes ACTIVE. Verified by setting one product ACTIVE and re-reading.",
+   "The US catalog has autoPublish true, so activating an -int listing adds it to the US catalog by itself. That puts two versions of the same product in the US market, which is exactly the duplicate that breaks Shopify hreflang. Activation must either unpublish each -int from the US catalog straight after, or US autoPublish must be turned off first.",
+   "Canada and UK also autoPublish, which is harmless here since those catalogs are where the -int listings belong."
+  ]
  }
 }
