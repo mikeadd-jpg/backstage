@@ -975,6 +975,13 @@ Still on 60: `/api/mcp`.
 The builder's prepare-then-one-build-per-product split predates the 300s limit, but it has
 independent value (progress, and one failed product not killing the rest), so keep it.
 
+## `reports/`
+
+Dated records of things read out of Shopify or Printify, like `sheets/` and `themes/`:
+**not deployed, not read by the app**, and they go stale. Today it holds Elder Emo's
+delivery profile audit and the backup taken before 38 empty profiles were deleted. See
+`reports/README.md`.
+
 ## Database
 
 `db/schema.sql` is applied by hand and there are no migrations. Any column change needs
