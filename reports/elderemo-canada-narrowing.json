@@ -7,7 +7,7 @@
  "before": 492,
  "kept": 98,
  "removed": 394,
- "warning": "The Canada catalog has autoPublish TRUE. Every product created from now on joins it automatically, so this narrowing will erode unless autoPublish is turned off or each new US-only product is removed from Canada by hand.",
+ "warning": "The Canada catalog still has autoPublish TRUE, and that now works against this. It is what the owner wants for Canada-specific products, which join automatically, but it also means every US-only product created from here on joins Canada by itself and quietly undoes this narrowing. The US catalog was set to autoPublish false during the international swap for the same reason. Turning Canada off and publishing Canadian products to it explicitly is the consistent setting; left on, the catalog needs pruning after every build.",
  "removedProducts": [
   {
    "id": "7583728697398",
@@ -2373,5 +2373,26 @@
    "type": "Hoodie",
    "status": "ACTIVE"
   }
- ]
+ ],
+ "completed": "2026-10-16. Canada now holds exactly the 98 Global Fulfillment -int listings, the same shape as Australia. 394 removed, 0 failed.",
+ "after": {
+  "AU": {
+   "total": 98,
+   "int": 98
+  },
+  "CA": {
+   "total": 98,
+   "int": 98
+  },
+  "UK": {
+   "total": 401,
+   "int": 98
+  },
+  "US": {
+   "total": 521,
+   "int": 0,
+   "originals": 98
+  }
+ },
+ "nextStep": "Canada-specific products are to be built from here. Each one has to be published to publication 117448409142 to appear for Canadian buyers."
 }
