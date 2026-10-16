@@ -1560,6 +1560,39 @@
    "A DRAFT product is absent from publication.products and from resourcePublications, so catalog membership cannot be read back while it is a draft. It is recorded all the same and appears the moment the product goes ACTIVE. Verified by setting one product ACTIVE and re-reading.",
    "The US catalog has autoPublish true, so activating an -int listing adds it to the US catalog by itself. That puts two versions of the same product in the US market, which is exactly the duplicate that breaks Shopify hreflang. Activation must either unpublish each -int from the US catalog straight after, or US autoPublish must be turned off first.",
    "Canada and UK also autoPublish, which is harmless here since those catalogs are where the -int listings belong."
-  ]
+  ],
+  "completed": "2026-10-16, in one pass: US catalog autoPublish turned off, all 98 -int listings set ACTIVE and force-unpublished from the US catalog, then all 98 originals removed from the UK, Canada and Australia catalogs. The US catalog and the Online Store channel were not touched for the originals.",
+  "after": {
+   "AU": {
+    "total": 99,
+    "intListings": 98,
+    "originals": 0
+   },
+   "CA": {
+    "total": 492,
+    "intListings": 98,
+    "originals": 0
+   },
+   "UK": {
+    "total": 401,
+    "intListings": 98,
+    "originals": 0
+   },
+   "US": {
+    "total": 521,
+    "intListings": 0,
+    "originals": 98,
+    "note": "unchanged"
+   }
+  },
+  "oneVersionPerMarket": "Holds: every one of the 98 products now has exactly one version in each market catalog, the -int listing in UK/CA/AU and the original in the US. That is the condition Shopify needs to generate hreflang correctly.",
+  "openItem": "\"Customizable Warped Tour Themed Adult Tee\" (9229204848950, handle customizable-warped-tour-themed-adult-tee) is the one product left in the Australia catalog that is not an -int listing. It is one of the two that never duplicated, it sits on the US-facility profile, and an Australian buyer therefore pays import shipping on it. It is tagged bestseller, so whether to pull it from Australia is a trade-off rather than an obvious yes.",
+  "autoPublishNow": {
+   "AU": false,
+   "CA": true,
+   "UK": true,
+   "US": false,
+   "warning": "US was turned off during this swap and left off. Any product created from now on will NOT appear in the US market catalog by itself and has to be published there explicitly, the builder included. Canada and the UK still autoPublish, so a new US-only product will land in those two catalogs unless it is removed."
+  }
  }
 }
