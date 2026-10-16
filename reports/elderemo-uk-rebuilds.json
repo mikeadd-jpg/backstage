@@ -1,0 +1,534 @@
+{
+ "generated": "2026-10-16",
+ "store": "Elder Emo (9e2273-43)",
+ "what": "UK rebuilds: products that were sold in the UK but printed abroad, duplicated onto a UK printer, handle <source>-uk, published to the UK market catalog only. The source keeps the US catalog and was removed from the UK catalog in the same pass, so nothing was unbuyable in between.",
+ "built": 46,
+ "live": 45,
+ "variants": 312,
+ "byPrinter": {
+  "Printful": 24,
+  "T Shirt and Sons": 18,
+  "Print Clever": 3
+ },
+ "colourLoss": "5 products lost one colour each (White on three hoodies, Dark Heather on two women's tees) because the UK printer does not stock it. 26 more kept every colour but lost sizes. The rest came across whole.",
+ "deleted": [
+  {
+   "handle": "elder-emo-club-hoodie-uk-1",
+   "why": "Redundant. elder-emo-club-hoodie-uk already existed on T Shirt and Sons with the same 10 variants, so the US listing only needed removing from the UK catalog, not duplicating. Deleted in Printify, which removed it from Shopify too."
+  }
+ ],
+ "renamed": [
+  {
+   "from": "we-got-older-hoodie-uk",
+   "to": "we-got-older-hoodie-uk-retired",
+   "why": "The old Choice-built listing. Set to DRAFT and left in no catalog; its replacement on T Shirt and Sons took the clean handle."
+  }
+ ],
+ "lesson": "The scan that produced this list asked \"is this product sold in the UK and printed abroad?\", which is right but not sufficient: it does not notice when a correct UK twin already exists under a -uk handle. One of 46 was redundant for that reason. A future run should check for an existing UK twin by title before duplicating, and remove the source from the UK catalog instead.",
+ "remaining": "82 UK-sold products are still printed abroad because no UK printer exists for the blank (hats, pet bandanas, yard signs, doormats, balloons, stickers). One more, customizable-warped-tour-themed-lineup-poster, was skipped because it has no colour option and the matcher could not handle it.",
+ "products": [
+  {
+   "handle": "skiba-andriano-2024-womens-tee-uk",
+   "shopify": "9521026662454",
+   "printify": "6ad26af8f124a2c13f09b609",
+   "printer": "T Shirt and Sons",
+   "variants": 7,
+   "sourceVariants": 10,
+   "sourceHandle": "skiba-andriano-2024-womens-tee",
+   "sourceShopify": "7621722210358",
+   "lostColours": []
+  },
+  {
+   "handle": "waiting-for-my-fangs-to-come-in-onesie-uk",
+   "shopify": "9521026859062",
+   "printify": "6ad26afaa79415976f0ecce7",
+   "printer": "T Shirt and Sons",
+   "variants": 3,
+   "sourceVariants": 4,
+   "sourceHandle": "waiting-for-my-fangs-to-come-in-onesie",
+   "sourceShopify": "7627007623222",
+   "lostColours": []
+  },
+  {
+   "handle": "fall-out-boo-onesie-uk",
+   "shopify": "9521027678262",
+   "printify": "6ad26afcbe99720e8e0bb008",
+   "printer": "T Shirt and Sons",
+   "variants": 3,
+   "sourceVariants": 4,
+   "sourceHandle": "fall-out-boo-onesie",
+   "sourceShopify": "7627007754294",
+   "lostColours": []
+  },
+  {
+   "handle": "wake-me-up-when-september-ends-onesie-uk",
+   "shopify": "9521027907638",
+   "printify": "6ad26afebea953863301de4c",
+   "printer": "T Shirt and Sons",
+   "variants": 3,
+   "sourceVariants": 4,
+   "sourceHandle": "wake-me-up-when-september-ends-onesie",
+   "sourceShopify": "7627007852598",
+   "lostColours": []
+  },
+  {
+   "handle": "sk8er-boo-onesie-uk",
+   "shopify": "9521028268086",
+   "printify": "6ad26aff824c87e1e7020223",
+   "printer": "T Shirt and Sons",
+   "variants": 3,
+   "sourceVariants": 4,
+   "sourceHandle": "sk8er-boo-onesie",
+   "sourceShopify": "7627007950902",
+   "lostColours": []
+  },
+  {
+   "handle": "delonge-hoppus-2024-campaign-hoodie-uk",
+   "shopify": "9521028464694",
+   "printify": "6ad26b01f124a2c13f09b60c",
+   "printer": "T Shirt and Sons",
+   "variants": 10,
+   "sourceVariants": 12,
+   "sourceHandle": "delonge-hoppus-2024-campaign-hoodie",
+   "sourceShopify": "7630327447606",
+   "lostColours": []
+  },
+  {
+   "handle": "jack-sally-youth-shirt-uk",
+   "shopify": "9521028726838",
+   "printify": "6ad26b03824c87e1e7020227",
+   "printer": "Print Clever",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceHandle": "jack-sally-youth-shirt",
+   "sourceShopify": "7630922317878",
+   "lostColours": []
+  },
+  {
+   "handle": "2nd-generation-emo-kid-youth-tee-uk",
+   "shopify": "9521029152822",
+   "printify": "6ad26b059fb513ab880f498d",
+   "printer": "Print Clever",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceHandle": "2nd-generation-emo-kid-youth-tee",
+   "sourceShopify": "7649228488758",
+   "lostColours": []
+  },
+  {
+   "handle": "invented-screamo-youth-tee-uk",
+   "shopify": "9521029513270",
+   "printify": "6ad26b07824c87e1e702022a",
+   "printer": "Print Clever",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceHandle": "invented-screamo-youth-tee",
+   "sourceShopify": "7649228750902",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-emo-again-hat-uk",
+   "shopify": "9521029939254",
+   "printify": "6ad26b09ee6ea7f8bc012e09",
+   "printer": "Printful",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceHandle": "make-america-emo-again-hat",
+   "sourceShopify": "7757390053430",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-pop-punk-again-hat-1-uk",
+   "shopify": "9521030365238",
+   "printify": "6ad26b0a9fb513ab880f4990",
+   "printer": "Printful",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceHandle": "make-america-pop-punk-again-hat-1",
+   "sourceShopify": "7757390643254",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-punk-again-hat-1-uk",
+   "shopify": "9521030692918",
+   "printify": "6ad26b0ca79415976f0eccee",
+   "printer": "Printful",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceHandle": "make-america-punk-again-hat-1",
+   "sourceShopify": "7757392445494",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-dad-cap-uk",
+   "shopify": "9521031086134",
+   "printify": "6ad26b0da79415976f0eccef",
+   "printer": "Printful",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceHandle": "still-emo-dad-cap",
+   "sourceShopify": "7853776666678",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-dad-cap-uk",
+   "shopify": "9521031348278",
+   "printify": "6ad26b10a79415976f0eccf2",
+   "printer": "Printful",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceHandle": "elder-emo-dad-cap",
+   "sourceShopify": "7853776928822",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-emo-again-hoodie-uk",
+   "shopify": "9521031675958",
+   "printify": "6ad26b11416b4aca9e0fa203",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 7,
+   "sourceHandle": "make-america-emo-again-hoodie",
+   "sourceShopify": "7911804731446",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-pop-punk-again-hoodie-uk",
+   "shopify": "9521032003638",
+   "printify": "6ad26b13be99720e8e0bb018",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 7,
+   "sourceHandle": "make-america-pop-punk-again-hoodie",
+   "sourceShopify": "7911805976630",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-punk-again-hoodie-uk",
+   "shopify": "9521032658998",
+   "printify": "6ad26b15824c87e1e702022d",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 7,
+   "sourceHandle": "make-america-punk-again-hoodie",
+   "sourceShopify": "7911806795830",
+   "lostColours": []
+  },
+  {
+   "handle": "punkin-around-youth-tee-uk",
+   "shopify": "9521033150518",
+   "printify": "6ad26b17a79415976f0eccf9",
+   "printer": "T Shirt and Sons",
+   "variants": 2,
+   "sourceVariants": 4,
+   "sourceHandle": "punkin-around-youth-tee",
+   "sourceShopify": "7918380646454",
+   "lostColours": []
+  },
+  {
+   "handle": "we-got-older-hoodie-uk",
+   "shopify": "9521033773110",
+   "printify": "6ad26b18416b4aca9e0fa205",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceHandle": "we-got-older-hoodie-uk",
+   "sourceShopify": "8002880438326",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-balcony-womens-tee-uk",
+   "shopify": "9521034428470",
+   "printify": "6ad26b1cbea953863301de66",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceHandle": "heart-says-pit-knees-say-balcony-womens-tee",
+   "sourceShopify": "8251229110326",
+   "lostColours": []
+  },
+  {
+   "handle": "from-mosh-pits-to-mezzanines-womens-tee-uk",
+   "shopify": "9521034756150",
+   "printify": "6ad26b1ebea953863301de67",
+   "printer": "Printful",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceHandle": "from-mosh-pits-to-mezzanines-womens-tee",
+   "sourceShopify": "8251664629814",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-balcony-neon-edition-womens-tee-uk",
+   "shopify": "9521035051062",
+   "printify": "6ad26b1fbea953863301de68",
+   "printer": "Printful",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceHandle": "heart-says-pit-knees-say-balcony-neon-edition-womens-tee",
+   "sourceShopify": "8251863760950",
+   "lostColours": []
+  },
+  {
+   "handle": "girl-at-the-rock-show-womens-tee-uk",
+   "shopify": "9521035411510",
+   "printify": "6ad26b21a79415976f0ecd04",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceHandle": "girl-at-the-rock-show-womens-tee",
+   "sourceShopify": "8255138758710",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-womens-fitted-tee-uk",
+   "shopify": "9521035640886",
+   "printify": "6ad26b23f124a2c13f09b621",
+   "printer": "Printful",
+   "variants": 15,
+   "sourceVariants": 16,
+   "sourceHandle": "punk-rock-princess-womens-fitted-tee",
+   "sourceShopify": "8259260710966",
+   "lostColours": []
+  },
+  {
+   "handle": "emo-music-therapy-womens-fitted-tee-uk",
+   "shopify": "9521036034102",
+   "printify": "6ad26b25be99720e8e0bb029",
+   "printer": "Printful",
+   "variants": 5,
+   "sourceVariants": 9,
+   "sourceHandle": "emo-music-therapy-womens-fitted-tee",
+   "sourceShopify": "8330628857910",
+   "lostColours": []
+  },
+  {
+   "handle": "1776-was-cool-womens-tee-uk",
+   "shopify": "9521036099638",
+   "printify": "6ad26b27f3b2ab4a880cd546",
+   "printer": "Printful",
+   "variants": 20,
+   "sourceVariants": 20,
+   "sourceHandle": "1776-was-cool-womens-tee",
+   "sourceShopify": "8695235510326",
+   "lostColours": []
+  },
+  {
+   "handle": "emodad-dad-cap-uk",
+   "shopify": "9521036525622",
+   "printify": "6ad26b3dbe99720e8e0bb041",
+   "printer": "Printful",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceHandle": "emodad-dad-cap",
+   "sourceShopify": "8699976286262",
+   "lostColours": []
+  },
+  {
+   "handle": "dept-of-elder-emo-affairs-womens-tee-uk",
+   "shopify": "9521036754998",
+   "printify": "6ad26b3f416b4aca9e0fa221",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceHandle": "dept-of-elder-emo-affairs-womens-tee",
+   "sourceShopify": "8705107984438",
+   "lostColours": []
+  },
+  {
+   "handle": "emomom-womens-tee-uk",
+   "shopify": "9521037049910",
+   "printify": "6ad26b41a79415976f0ecd1d",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceHandle": "emomom-womens-tee",
+   "sourceShopify": "8707541303350",
+   "lostColours": []
+  },
+  {
+   "handle": "in-the-early-2000s-womens-tee-uk",
+   "shopify": "9521037279286",
+   "printify": "6ad26b425731cf6156010daf",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceHandle": "in-the-early-2000s-womens-tee",
+   "sourceShopify": "8752815374390",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-beach-club-womens-tee-uk",
+   "shopify": "9521037541430",
+   "printify": "6ad26b445731cf6156010db3",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceHandle": "still-emo-beach-club-womens-tee",
+   "sourceShopify": "8876897435702",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-skull-womens-tee-uk",
+   "shopify": "9521037770806",
+   "printify": "6ad26b46217a738666100b0f",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceHandle": "still-emo-skull-womens-tee",
+   "sourceShopify": "8876913459254",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-sit-womens-tee-uk",
+   "shopify": "9521038032950",
+   "printify": "6ad26b48217a738666100b17",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 15,
+   "sourceHandle": "heart-says-pit-knees-say-sit-womens-tee",
+   "sourceShopify": "8992625098806",
+   "lostColours": [
+    "Dark Heather"
+   ]
+  },
+  {
+   "handle": "hearts-says-pit-back-says-balcony-womens-tee-uk",
+   "shopify": "9521038229558",
+   "printify": "6ad26b4bbea953863301de9a",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceHandle": "hearts-says-pit-back-says-balcony-womens-tee",
+   "sourceShopify": "8992629751862",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-eyeball-womens-tee-uk",
+   "shopify": "9521038491702",
+   "printify": "6ad26b4ea79415976f0ecd35",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceHandle": "still-emo-eyeball-womens-tee",
+   "sourceShopify": "8992638795830",
+   "lostColours": []
+  },
+  {
+   "handle": "still-not-okay-womens-tee-uk",
+   "shopify": "9521038753846",
+   "printify": "6ad26b50f3b2ab4a880cd577",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 15,
+   "sourceHandle": "still-not-okay-womens-tee",
+   "sourceShopify": "8992640827446",
+   "lostColours": [
+    "Dark Heather"
+   ]
+  },
+  {
+   "handle": "emo-music-therapy-byw-womens-tee-uk",
+   "shopify": "9521039048758",
+   "printify": "6ad26b52217a738666100b24",
+   "printer": "Printful",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceHandle": "emo-music-therapy-byw-womens-tee",
+   "sourceShopify": "8994686828598",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-flower-womens-tee-uk",
+   "shopify": "9521039409206",
+   "printify": "6ad26b54bea953863301deac",
+   "printer": "Printful",
+   "variants": 15,
+   "sourceVariants": 19,
+   "sourceHandle": "still-emo-flower-womens-tee",
+   "sourceShopify": "9000372469814",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-rose-hoodie-uk",
+   "shopify": "9521039835190",
+   "printify": "6ad26b56824c87e1e7020272",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceHandle": "still-emo-rose-hoodie",
+   "sourceShopify": "9291631034422",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-flower-hoodie-uk",
+   "shopify": "9521040130102",
+   "printify": "6ad26b58f124a2c13f09b663",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 7,
+   "sourceHandle": "still-emo-flower-hoodie",
+   "sourceShopify": "9291781439542",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-never-a-phase-hoodie-uk",
+   "shopify": "9521040392246",
+   "printify": "6ad26b5a217a738666100b2f",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceHandle": "still-emo-never-a-phase-hoodie",
+   "sourceShopify": "9291782324278",
+   "lostColours": []
+  },
+  {
+   "handle": "still-not-okay-hoodie-uk",
+   "shopify": "9521040457782",
+   "printify": "6ad26b5bbea953863301deb0",
+   "printer": "T Shirt and Sons",
+   "variants": 10,
+   "sourceVariants": 21,
+   "sourceHandle": "still-not-okay-hoodie",
+   "sourceShopify": "9291784224822",
+   "lostColours": [
+    "White"
+   ]
+  },
+  {
+   "handle": "heart-says-pit-back-says-balcony-hoodie-uk",
+   "shopify": "9521040850998",
+   "printify": "6ad26b5dbea953863301deb2",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceHandle": "heart-says-pit-back-says-balcony-hoodie",
+   "sourceShopify": "9291789926454",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-skull-hoodie-uk",
+   "shopify": "9521041244214",
+   "printify": "6ad26b5f217a738666100b33",
+   "printer": "T Shirt and Sons",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceHandle": "still-emo-skull-hoodie",
+   "sourceShopify": "9291800281142",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-club-skull-dagger-hoodie-uk",
+   "shopify": "9521041506358",
+   "printify": "6ad26b61824c87e1e7020277",
+   "printer": "T Shirt and Sons",
+   "variants": 10,
+   "sourceVariants": 21,
+   "sourceHandle": "elder-emo-club-skull-dagger-hoodie",
+   "sourceShopify": "9291804442678",
+   "lostColours": [
+    "White"
+   ]
+  }
+ ]
+}
