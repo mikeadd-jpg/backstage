@@ -1,0 +1,146 @@
+{
+ "generated": "2026-10-16",
+ "store": "Elder Emo (9e2273-43)",
+ "question": "Which products are sold in a market whose Shopify delivery profile has no zone for that market, so the buyer falls through to the rest-of-world rate?",
+ "method": "Delivery profile NAMES are ignored: they are labels and do not track the printer. Profiles were read for the countries their zones actually cover, joined to market catalog membership, then joined to each product's real Printify print provider.",
+ "headline": "144 active products are sold in the UK on a profile with no UK zone. None of them is a profile fault: every one is genuinely printed outside the UK, so the rest-of-world rate is honest. The fix is a UK printer, not a profile change.",
+ "profileFaults": 0,
+ "ukFallThrough": {
+  "total": 144,
+  "matchedToPrintify": 131,
+  "printedOutsideUK": 129,
+  "notPrintify": 13
+ },
+ "byPrinter": {
+  "SwiftPOD": {
+   "count": 13,
+   "ukOptions": [],
+   "examples": [
+    "the-quiet-times-that-mom-will-never-know-toddler-tee-1",
+    "the-quiet-times-that-dad-will-never-know-toddler-tee-1",
+    "fall-out-boo-toddler-tee",
+    "sk8er-boo-toddler-tee",
+    "wake-me-up-when-september-ends-toddler-tee"
+   ]
+  },
+  "Printify Choice": {
+   "count": 84,
+   "ukOptions": [
+    "T Shirt and Sons",
+    "Shirt Monkey",
+    "Print Clever",
+    "Printful",
+    "Jondo"
+   ],
+   "examples": [
+    "skiba-andriano-2024-tote-bag",
+    "waiting-for-my-fangs-to-come-in-onesie",
+    "fall-out-boo-onesie",
+    "wake-me-up-when-september-ends-onesie",
+    "sk8er-boo-onesie"
+   ]
+  },
+  "Marco Fine Arts": {
+   "count": 1,
+   "ukOptions": [
+    "T Shirt and Sons"
+   ],
+   "examples": [
+    "skiba-andriano-2024-womens-tee"
+   ]
+  },
+  "Duplium": {
+   "count": 6,
+   "ukOptions": [],
+   "examples": [
+    "skiba-andriano-2024-campaign-hat",
+    "trucker-retro-hat",
+    "1776-was-cool-trucker-hat",
+    "make-america-emo-again-trucker-hat",
+    "make-america-pop-punk-again-trucker-hat"
+   ]
+  },
+  "SPOKE Custom Products": {
+   "count": 2,
+   "ukOptions": [],
+   "examples": [
+    "delonge-hoppus-2024-sticker",
+    "customizable-warped-tour-themed-2-buttons"
+   ]
+  },
+  "Sensaria": {
+   "count": 3,
+   "ukOptions": [],
+   "examples": [
+    "delonge-hoppus-2024-yard-sign",
+    "make-america-pop-punk-again-yard-sign",
+    "make-america-emo-again-yard-sign"
+   ]
+  },
+  "M.i.A Merchandise": {
+   "count": 1,
+   "ukOptions": [],
+   "examples": [
+    "pop-punk-doormat"
+   ]
+  },
+  "Photo Balloon Store": {
+   "count": 1,
+   "ukOptions": [],
+   "examples": [
+    "customizable-warped-tour-themed-mylar-balloon"
+   ]
+  },
+  "Printed Simply": {
+   "count": 3,
+   "ukOptions": [],
+   "examples": [
+    "ass-gas-or-grass-bumper-sticker",
+    "lil-emo-all-stars-sticker-pack",
+    "make-america-emo-again-flag"
+   ]
+  },
+  "Printed Mint": {
+   "count": 13,
+   "ukOptions": [],
+   "examples": [
+    "guitar-themed-pet-bandana-collar-fun-dog-accessory-for-music-lovers-pet-gift-for-birthdays-festivals-and-everyday-wear",
+    "bark-182-pet-bandana",
+    "cute-is-what-we-aim-fur-pet-bandana",
+    "alcanine-trio-pet-bandana",
+    "im-sorry-i-cant-be-purrrfect-pet-bandana"
+   ]
+  },
+  "Monster Digital": {
+   "count": 1,
+   "ukOptions": [],
+   "examples": [
+    "elder-emo-premium-embroidered-sweatshirt"
+   ]
+  },
+  "Taylor": {
+   "count": 1,
+   "ukOptions": [],
+   "examples": [
+    "bark-182-replacement"
+   ]
+  }
+ },
+ "ukPrinterAvailable": 85,
+ "noUKPrinterForThatBlank": 44,
+ "falsePositiveNote": "An earlier pass of this scan reported 2 products as printed in the UK but charged rest-of-world. That was wrong and came from reading the catalog page's FACILITY list, which lists a GB facility for Printify Choice. CLAUDE.md already warns about exactly this: locality must be read off the shipping lane, never the factory list, because Choice's GB facility is reachable only through Global Fulfillment and a regular Choice listing is quoted no GB rate at all. Both products (customizable-warped-tour-themed-adult-tee, work-sucks-tee-on-comfort-colors) are regular Choice listings, so rest-of-world is correct for them. They are also the two that never got a Global Fulfillment duplicate.",
+ "usNote": "24 products show a US fall-through, all of them Shopify Collective items (Loog guitars, hearing protection) whose profile carries no rates at all. Collective dropship items price shipping through the supplier rather than a local profile, so this is probably not a fault, but it was not verified.",
+ "worstCases": [
+  {
+   "handle": "we-got-older-hoodie-uk",
+   "price": ".00",
+   "printer": "Printify Choice",
+   "ukShippingNow": ".59",
+   "onTShirtAndSons": ".49",
+   "landedNow": ".59",
+   "landedFixed": ".49",
+   "handling": "10-30 days now vs 2-3 days",
+   "note": "Named -uk and tagged uk, but built on Choice rather than a UK printer. The clearest single case."
+  }
+ ]
+}
