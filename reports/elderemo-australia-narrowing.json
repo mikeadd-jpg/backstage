@@ -1,0 +1,3234 @@
+{
+ "takenAt": "2026-10-16T01:47:45.299Z",
+ "publication": "gid://shopify/Publication/214004400182",
+ "keep": [
+  {
+   "id": "gid://shopify/Product/7619607822390",
+   "title": "Make America Punk Again Sweatshirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7619609133110",
+   "title": "Make America Emo Again Sweatshirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7619612737590",
+   "title": "Make America Pop-Punk Again Sweatshirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7619705503798",
+   "title": "Make America Pop-Punk Again Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7619718840374",
+   "title": "Make America Emo Again Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7619719233590",
+   "title": "Make America Punk Again Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621716541494",
+   "title": "Skiba Andriano 2024 Campaign Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621718343734",
+   "title": "Skiba Andriano 2024 Campaign Sweatshirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621997822006",
+   "title": "Wake Me Up When September Ends Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621999132726",
+   "title": "I'm Empty Inside Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621999722550",
+   "title": "Jack & Sally Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7622000476214",
+   "title": "Wake Me Up When September Ends Sweatshirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630335344694",
+   "title": "Dead Inside Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630344028214",
+   "title": "Elder Emo Society Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7748079157302",
+   "title": "Still Emo Anatomical Heart Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7756315787318",
+   "title": "Still Emo Anatomical Heart Color Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7757064470582",
+   "title": "Still Emo Badge Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7757064863798",
+   "title": "Emo Dads Club Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7757065158710",
+   "title": "Emo Moms Club Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7757167788086",
+   "title": "Elder Emo Club Smiley Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828721696822",
+   "title": "Customizable Warped Tour Themed Adult Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7852970606646",
+   "title": "We Got Older on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7872712998966",
+   "title": "From Mosh Pits to Mezzanines Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7882438901814",
+   "title": "Still Emo Bleeding Heart Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7882498637878",
+   "title": "So What Happened Was John.... Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7908398202934",
+   "title": "WHERE ARE YOU Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7908399644726",
+   "title": "DeLonge / Hoppus 2024 Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7909727141942",
+   "title": "Jone Waste Your Toye Monme on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7909737136182",
+   "title": "What The Fuck Is Up Denny's? Tee Shirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7911920730166",
+   "title": "Heart Says Pit, Knees Say Balcony Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7911941537846",
+   "title": "Heart Says Pit, Knees Say Balcony Neon Edition Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7912505704502",
+   "title": "Elder Emo Rose Badge Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7914747527222",
+   "title": "Travis I'm Pregnant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7914749198390",
+   "title": "Blink Me! Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7920583147574",
+   "title": "Emo Moms Club Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7920586391606",
+   "title": "Emo Dads Club Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7927291904054",
+   "title": "I'm Too Old For This Pit Danny Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7927299932214",
+   "title": "I'm Too Old For This Pit Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7927300915254",
+   "title": "I'm Too Old For This Pit Danny Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7927301570614",
+   "title": "I'm Too Old For This Pit Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992185290806",
+   "title": "Elder Emo Cursive Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992186503222",
+   "title": "Elder Emo Cursive Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992244928566",
+   "title": "Elder Emo Gothic Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996869607478",
+   "title": "Elder Emo Rose Badge Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996869673014",
+   "title": "Elder Emo Rose Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996870688822",
+   "title": "Elder Emo Rose Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996881862710",
+   "title": "Elder Emo Club Smiley Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8174113456182",
+   "title": "From Mosh Pits To Mezzanines Varsity Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8174113718326",
+   "title": "From Mosh Pits To Mezzanines Varsity Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8174120140854",
+   "title": "I'm Too Old For This Pit Varsity Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8174120730678",
+   "title": "I'm Too Old For This Pit Varsity Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8251499053110",
+   "title": "Heart Says Pit, Knees Say Balcony Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8251672100918",
+   "title": "Heart Says Pit, Knees Say Balcony Neon Edition Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8251898888246",
+   "title": "From Mosh Pits to Mezzanines Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8259260219446",
+   "title": "Punk Rock Princess Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8259260284982",
+   "title": "Punk Rock Princess Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8295684046902",
+   "title": "Still Emo Rose Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8295687356470",
+   "title": "Still Emo Rose Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8295687946294",
+   "title": "Elder Emo Never A Phase Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8295688536118",
+   "title": "Elder Emo Never A Phase Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8295854080054",
+   "title": "Elder Emo Club Skull & Dagger Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8295854112822",
+   "title": "Elder Emo Club Skull & Dagger Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8295943143478",
+   "title": "Still Emo Never A Phase Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8296044068918",
+   "title": "Still Emo Never A Phase Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8296066187318",
+   "title": "Moshin' Since the 90s Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8296131067958",
+   "title": "Moshin' Since the 90s Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8309204516918",
+   "title": "All Panic No Disco Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8309206024246",
+   "title": "All Panic No Disco Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8330627907638",
+   "title": "Emo Music Therapy Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8330628464694",
+   "title": "Emo Music Therapy Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8369030430774",
+   "title": "One Armed Caesar Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8369030627382",
+   "title": "1776 was cool Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8695232790582",
+   "title": "1776 was cool - Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8699975139382",
+   "title": "emodad Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705092223030",
+   "title": "Dept of Elder Emo Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705096286262",
+   "title": "Dept of Elder Emo Affairs Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8707540647990",
+   "title": "emomom Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8707540975670",
+   "title": "emomom Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8752641802294",
+   "title": "In the Early 2000s Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8752719659062",
+   "title": "In the Early 2000s Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8876722683958",
+   "title": "Still Emo Beach Club Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8876900450358",
+   "title": "Still Emo Skull Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8876907855926",
+   "title": "Still Emo Skull Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8918892052534",
+   "title": "Hearts Says Pit, Back Says Balcony Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8989026582582",
+   "title": "Still Not Okay Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8989199073334",
+   "title": "Still Emo Eyeball Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8989210935350",
+   "title": "Still Not Okay Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8989211557942",
+   "title": "Still Emo Eyeball Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8994684928054",
+   "title": "Emo Music Therapy BYW Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8994687156278",
+   "title": "Emo Music Therapy BYW Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9229872431158",
+   "title": "So What Happened Was John... Tee on Comfort Colors",
+   "status": "ACTIVE"
+  }
+ ],
+ "added": [],
+ "removed": [
+  {
+   "id": "gid://shopify/Product/7583728697398",
+   "title": "The Quiet Times That Mom Will Never Know - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7583729188918",
+   "title": "The Quiet Times That Dad Will Never Know - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7583737511990",
+   "title": "The Quiet Times That Mom Will Never Know - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7583737839670",
+   "title": "The Quiet Times That Dad Will Never Know - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7583745015862",
+   "title": "The Quiet Times That Mom Will Never Know - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7583745572918",
+   "title": "The Quiet Times That Dad Will Never Know - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7593051324470",
+   "title": "Elder Emo Tote Bag",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7595148804150",
+   "title": "Armstrong / Dirnt - Campaign Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7596336513078",
+   "title": "The Quiet Times That Mom Will Never Know  - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7596338577462",
+   "title": "The Quiet Times That Dad Will Never Know  - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7596998164534",
+   "title": "DeLonge / Hoppus 2024 - Campaign Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7597002981430",
+   "title": "Armstrong / Dirnt - Campaign Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7597004750902",
+   "title": "Lazzara Nolan 2024 Shirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7597007732790",
+   "title": "Stump Wentz 2024 Campaign Tee Shirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7597011304502",
+   "title": "McCracken Way 2024 Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7597611483190",
+   "title": "DeLonge / Hoppus 2024 Mug",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7603141509174",
+   "title": "Hoppus / Barker - Campaign Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7613884956726",
+   "title": "DeLonge / Hoppus 2024 Tote",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7613903437878",
+   "title": "Hoppus / Skiba - Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7614930026550",
+   "title": "Hoppus / DeLonge - Campaign Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621720277046",
+   "title": "Skiba Andriano 2024 Campaign Tote Bag",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621722210358",
+   "title": "Skiba Andriano 2024 Womens Campaign Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621750489142",
+   "title": "Skiba Andriano 2024 Campaign Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621994217526",
+   "title": "Fall Out Boo Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621996183606",
+   "title": "Sk8er Boo Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621996576822",
+   "title": "Wake Me Up When September Ends Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621997396022",
+   "title": "Wake Me Up When September Ends Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621998280758",
+   "title": "Fall Out Boo Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621998772278",
+   "title": "Sk8er Boo Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621999362102",
+   "title": "Jack & Sally Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7621999558710",
+   "title": "Jack & Sally Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627006312502",
+   "title": "New Found Gory Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627006509110",
+   "title": "New Found Gory Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627006541878",
+   "title": "Paramourn Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627006640182",
+   "title": "Punkin' Around Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627007623222",
+   "title": "Waiting for my Fangs to Come In Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627007754294",
+   "title": "Fall Out Boo Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627007852598",
+   "title": "Wake Me Up When September Ends Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627007950902",
+   "title": "Sk8er Boo Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7627008114742",
+   "title": "Punkin' Around Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7628325519414",
+   "title": "DeLonge / Hoppus 2024 Sticker",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630235631670",
+   "title": "Stink-182 Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630259126326",
+   "title": "Scream Day Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630260535350",
+   "title": "The Quiet Times That Mom Will Never Know Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630263451702",
+   "title": "Crawl Out Boy Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630266859574",
+   "title": "The Quiet Times That Dad Will Never Know Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630271119414",
+   "title": "The All-American Recess Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630271971382",
+   "title": "All The Small Things Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630274461750",
+   "title": "Cute Is What I Aim For Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630275805238",
+   "title": "Cute With The \"E\" Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630277541942",
+   "title": "I Just Want To Break You Down So Badly Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630279376950",
+   "title": "Panic! At The Daycare Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630280785974",
+   "title": "Punk Rock Princess Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630282489910",
+   "title": "Raised By An Elder Emo Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630283931702",
+   "title": "So Long and Good Night Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630284849206",
+   "title": "The Get Up Kid Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630322106422",
+   "title": "The Snack Parade Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630322368566",
+   "title": "My Chemical Underpants Toddler Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630323351606",
+   "title": "Still Emo Badge Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630324039734",
+   "title": "Emo Dads Club Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630324990006",
+   "title": "Elder Emo Society Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630327447606",
+   "title": "DeLonge / Hoppus 2024 Campaign Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7630922317878",
+   "title": "Jack & Sally Youth Shirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7634733891638",
+   "title": "DeLonge Hoppus 2024 Yard Sign",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7635072450614",
+   "title": "Make America Pop-Punk Again Yard Sign",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7635076415542",
+   "title": "Make America Emo Again Yard Sign",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7635101974582",
+   "title": "Pop-Punk Doormat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7649228193846",
+   "title": "Punk Rock Princess Youth Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7649228324918",
+   "title": "Raised by an Elder Emo Youth Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7649228488758",
+   "title": "2nd Generation Emo Kid Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7649228750902",
+   "title": "Invented Screamo Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7752855322678",
+   "title": "The Quiet Times That Mom Will Never Know - Adult Size",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7752862335030",
+   "title": "Taking Dad's Sunday - Adult Size",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7757390053430",
+   "title": "Make America Emo Again Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7757390643254",
+   "title": "Make America Pop-Punk Again Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7757392445494",
+   "title": "Make America Punk Again Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7823380348982",
+   "title": "My Kids Over You Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828091011126",
+   "title": "Checkerboard Wrapping Paper",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828091568182",
+   "title": "Warped Tour Themed Party Welcome Banner",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828694564918",
+   "title": "Customizable Warped Tour Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828822294582",
+   "title": "Customizable Warped Tour Themed - Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828830945334",
+   "title": "Customizable Warped Tour Themed Mylar Balloon",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828883308598",
+   "title": "Customizable Warped Tour Themed Lineup Poster",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828891238454",
+   "title": "Customizable Warped Tour Themed 2\" Buttons",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7828938129462",
+   "title": "Warped Tour Themed Invitation Template",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7853776666678",
+   "title": "Still Emo Dad Cap",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7853776928822",
+   "title": "Elder Emo Dad Cap",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7855144960054",
+   "title": "Ass, Gas, or Grass Bumper Sticker",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7862115041334",
+   "title": "loog mini electric",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7862115139638",
+   "title": "loog pro acoustic",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7862115172406",
+   "title": "loog pro 6 acoustic",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7862115205174",
+   "title": "loog piano",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7862115237942",
+   "title": "loog mini acoustic",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7862115434550",
+   "title": "loog pro 6 electric",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7862115532854",
+   "title": "loog pro electric",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7863642587190",
+   "title": "Kids Hearing Protection Earmuffs - (Solid Colors)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7863642619958",
+   "title": "Baby Hearing Protection Earmuffs (Solid Colors)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7863642849334",
+   "title": "Kids Hearing Protection Earmuffs - (Prints)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7863643209782",
+   "title": "Baby Hearing Protection Earmuffs - (Prints)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7864633688118",
+   "title": "Lil’ Emo All-Stars Sticker Pack",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7866407747638",
+   "title": "Loog Mini Electric Guitar Bundle (up to 6 years)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7876200267830",
+   "title": "Loog Mini Acoustic Guitar Bundle (up to 6 years)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7876201906230",
+   "title": "Loog Piano Bundle (all ages)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7876204101686",
+   "title": "Loog Pro Acoustic Guitar Bundle (ages 6+)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7876209246262",
+   "title": "Loog Pro Electric Guitar Bundle (ages 6+)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7891580911670",
+   "title": "Your Hair Is Everywhere Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7902275960886",
+   "title": "2nd Generation Pop-Punk Kid - Adult Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7902279827510",
+   "title": "2nd Generation Emo Kid - Adult Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7902286807094",
+   "title": "2nd Generation Emo Kid Broken Heart - Adult Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7906713075766",
+   "title": "So what happened was John.... Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7906714878006",
+   "title": "From Mosh Pits to Mezzanines Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7906716254262",
+   "title": "We Got Older Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7909732220982",
+   "title": "Jone Waste Your Toye Monme Crop on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7909732515894",
+   "title": "Jone Waste Your Toye Monme Tote",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7909744050230",
+   "title": "Work Sucks Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7911804731446",
+   "title": "Make America Emo Again Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7911805976630",
+   "title": "Make America Pop-Punk Again Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7911806795830",
+   "title": "Make America Punk Again Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7912515239990",
+   "title": "Elder Emo Rose Crop on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7918380515382",
+   "title": "Punkin' Around Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7918380646454",
+   "title": "Punkin' Around Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922186616886",
+   "title": "Bark-182 Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922192121910",
+   "title": "Cute Is What We Aim Fur Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922193072182",
+   "title": "Alcanine Trio Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922194513974",
+   "title": "I'm Sorry I Can't Be Purrrfect Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922195136566",
+   "title": "Fur Out Boy Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922196643894",
+   "title": "Taking Bark Sunday Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922199363638",
+   "title": "Pawramore Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922203164726",
+   "title": "The Bark Parade Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922208374838",
+   "title": "Cut My Leash Into Pieces Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922213552182",
+   "title": "Motion Kitty Soundtrack Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922216992822",
+   "title": "Boys Like Squirrels Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7922221154358",
+   "title": "Panic! At The Litter Box Pet Bandana",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7929162858550",
+   "title": "We Got Older But We're Still Young Zip-up Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7929165348918",
+   "title": "Elder Emo Club Zip-up Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7929168429110",
+   "title": "From Mosh Pits to Mezzanines Zip-up Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7929168953398",
+   "title": "Elder Emo Society Zip-up Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7929225052214",
+   "title": "So what happened was John.... Zip-up Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992270389302",
+   "title": "Stink-182 - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992275173430",
+   "title": "I Just Want To Break You Down So Badly - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992278417462",
+   "title": "Punk Rock Princess - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992281366582",
+   "title": "Taking Dad's Sunday - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992287756342",
+   "title": "So Long and Good Night Long Sleeve Onesie - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992292769846",
+   "title": "All The Small Things - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992298635318",
+   "title": "Panic! At The Daycare - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992300273718",
+   "title": "Cute with the E - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992303910966",
+   "title": "Raised by an Elder Emo - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992308138038",
+   "title": "Second Generation Emo Kid - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992310267958",
+   "title": "Second Generation Pop-punk Kid - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992312791094",
+   "title": "Screaming Infant Melodies - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992314626102",
+   "title": "Crawl Out Boy - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992324587574",
+   "title": "My Chemical Underpants - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992325832758",
+   "title": "Alkawhine - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992327569462",
+   "title": "I'm Just A Kid - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992329207862",
+   "title": "Garage Band King - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992332484662",
+   "title": "Cute Is What I Aim For - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992334090294",
+   "title": "Hawthorne High Chair - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992335269942",
+   "title": "The Snack Parade - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992337072182",
+   "title": "Crumb 41 - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7992341364790",
+   "title": "Scream Day - Long Sleeve Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994717438006",
+   "title": "I Just Want to Break You Down So Badly - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994721140790",
+   "title": "Stink-182 - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994821869622",
+   "title": "Taking Dad's Sunday - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994822557750",
+   "title": "Punk Rock Princess - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994823245878",
+   "title": "Garage Band King - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994824228918",
+   "title": "There’s a Story at the Bottom of This Bottle - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994824589366",
+   "title": "All The Small Things Colorful - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994825703478",
+   "title": "My Chemical Underpants - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994829504566",
+   "title": "Second Generation Pop-Punk Kid - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994840973366",
+   "title": "Crawl Out Boy - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994853064758",
+   "title": "Alkawhine Trio - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994868629558",
+   "title": "Scream Day - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994880360502",
+   "title": "Panic! At The Daycare - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7994890354742",
+   "title": "Hawthorne High Chair - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995427717174",
+   "title": "Silverscream - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995429027894",
+   "title": "The Snack Parade - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995432239158",
+   "title": "Cute with the E - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995435057206",
+   "title": "The All-American Recess - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995436236854",
+   "title": "Screaming Infant Melodies - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995438497846",
+   "title": "So Long and Good Night - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995447050294",
+   "title": "Stained White T's - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995448098870",
+   "title": "The Get Up Kid - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995448492086",
+   "title": "Pierce the Veggies - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995450261558",
+   "title": "Bayslide - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995452981302",
+   "title": "Cute Is What I Aim For - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995455275062",
+   "title": "Boys Like Squirrels - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995456225334",
+   "title": "Whine-Thru Records - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995461599286",
+   "title": "Pop-Punk in Training - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995463172150",
+   "title": "Let It Enfold You - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995467628598",
+   "title": "It's Not A Phase, Dad - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995481030710",
+   "title": "2nd Generation Pop-Punk Kid - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995483160630",
+   "title": "2nd Generation Emo Kid Broken Heart - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995484307510",
+   "title": "Crumb41 - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995484962870",
+   "title": "SEE U L8R BOI - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995487158326",
+   "title": "Playosin - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995488960566",
+   "title": "Rock On - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995492696118",
+   "title": "Second Generation Emo Kid - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995495022646",
+   "title": "Raised by an Elder Emo - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995496497206",
+   "title": "I'm Just A Kid - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995499610166",
+   "title": "Do You Have The Time To Listen To Me Whine - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995500855350",
+   "title": "Invented Screamo - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995505803318",
+   "title": "Every Time I Cry - Onesie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7995520647222",
+   "title": "Stink-182 - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996089237558",
+   "title": "I Just Want To Break You Down So Badly - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996090679350",
+   "title": "Punk Rock Princess - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996091826230",
+   "title": "Cute with the E - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996092710966",
+   "title": "Screaming Infant Melodies - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996093202486",
+   "title": "Panic! At The Daycare - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996094185526",
+   "title": "All The Small Things Colorful - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996095004726",
+   "title": "All The Small Things - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996095987766",
+   "title": "There's a Story at the Bottom of this Bottle - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996096938038",
+   "title": "So Long and Good Night - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996097167414",
+   "title": "Raised by an Elder Emo - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996099133494",
+   "title": "My Chemical Underpants - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996104704054",
+   "title": "2nd Generation Pop-Punk Kid - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996125315126",
+   "title": "Taking Dad's Sunday - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996129837110",
+   "title": "SEE U L8R BOI - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996136783926",
+   "title": "Rock On - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996157067318",
+   "title": "Junior Emo - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996162342966",
+   "title": "I'm Just A Kid - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996167159862",
+   "title": "Hawthorne High Chair - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996179152950",
+   "title": "Cute Is What I Aim For - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996724281398",
+   "title": "Scream Day - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996726181942",
+   "title": "Playosin - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996730605622",
+   "title": "Garage Band King - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996731719734",
+   "title": "Do You Have The Time To Listen To Me Whine - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996732407862",
+   "title": "Bayslide - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996733915190",
+   "title": "Crawl Out Boy - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996734996534",
+   "title": "The Snack Parade - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996735553590",
+   "title": "The Get Up Kid - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996735946806",
+   "title": "Second Generation Pop-Punk Kid - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996737028150",
+   "title": "Second Generation Emo Kid- Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996738535478",
+   "title": "It's Not A Phase, Dad - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996739158070",
+   "title": "2nd Generation Emo Kid Broken Heart - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996740960310",
+   "title": "Alkawhine Trio - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996746432566",
+   "title": "Whine-Thru Records - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996747218998",
+   "title": "There’s a Story at the Bottom of This Bottle - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996747677750",
+   "title": "The All-American Recess - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996747972662",
+   "title": "Stained White T's - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996748431414",
+   "title": "Silverscream - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996749414454",
+   "title": "Pierce the Veggies - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996750954550",
+   "title": "Let It Enfold You - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996753444918",
+   "title": "Every Time I Cry - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996754034742",
+   "title": "Crumb41 - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996755050550",
+   "title": "Boys Like Squirrels - Infant Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996770254902",
+   "title": "I Just Want to Break You Down So Badly - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996781068342",
+   "title": "Taking Dad's Sunday - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996784115766",
+   "title": "Punk Rock Princess - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996784934966",
+   "title": "Cute with the E - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996786573366",
+   "title": "Do You Have The Time To Listen To Me Whine - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996786966582",
+   "title": "All The Small Things - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996790112310",
+   "title": "Panic! At The Daycare - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996790997046",
+   "title": "Stink-182 - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996791619638",
+   "title": "Alkawhine Trio - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996793585718",
+   "title": "Raised by an Elder Emo - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996793815094",
+   "title": "Bayslide - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996794503222",
+   "title": "Second Generation Emo Kid - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996795322422",
+   "title": "Screaming Infant Melodies - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996795748406",
+   "title": "Rock On - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996796731446",
+   "title": "Playosin - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996799615030",
+   "title": "There's a Story at the Bottom of this Bottle - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996804562998",
+   "title": "My Chemical Underpants - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996805087286",
+   "title": "Stained White T's - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996806889526",
+   "title": "I'm Just A Kid - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996807610422",
+   "title": "The Snack Parade - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996808757302",
+   "title": "SEE U L8R BOI - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996810887222",
+   "title": "Garage Band King - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996811083830",
+   "title": "Crumb41 - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996811509814",
+   "title": "It's Not A Phase, Dad - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996812165174",
+   "title": "Scream Day - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996812984374",
+   "title": "2nd Generation Pop-Punk Kid - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996813738038",
+   "title": "The Get Up Kid - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996815310902",
+   "title": "Cute Is What I Aim For - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996816654390",
+   "title": "Pierce the Veggies - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996817375286",
+   "title": "Invented Screamo - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996817735734",
+   "title": "So Long and Good Night - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996818554934",
+   "title": "The All-American Recess - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996819931190",
+   "title": "Every Time I Cry - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996820684854",
+   "title": "2nd Generation Emo Kid Broken Heart - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996821274678",
+   "title": "Junior Emo - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996821995574",
+   "title": "Second Generation Pop-Punk Kid - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996822585398",
+   "title": "Silverscream - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996823732278",
+   "title": "Whine-Thru Records - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996825894966",
+   "title": "Crawl Out Boy - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996825927734",
+   "title": "Let It Enfold You - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996828155958",
+   "title": "Boys Like Squirrels - Toddler Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996870623286",
+   "title": "Elder Emo Rose Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/7996886450230",
+   "title": "Elder Emo Premium Embroidered Sweatshirt",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000092078134",
+   "title": "I'm Just A Kid - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000093650998",
+   "title": "Raised by an Elder Emo - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000095354934",
+   "title": "Punk Rock Princess - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000095420470",
+   "title": "Pop-Punk in Training - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000096305206",
+   "title": "Taking Dad's Sunday - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000096567350",
+   "title": "Second Generation Pop-Punk Kid - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000096665654",
+   "title": "Garage Band King - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000096829494",
+   "title": "It's Not A Phase, Dad - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000097058870",
+   "title": "Stink-182 - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000097452086",
+   "title": "Junior Emo - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000097550390",
+   "title": "Rock On - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000097714230",
+   "title": "2nd Generation Pop-Punk Kid - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000097878070",
+   "title": "Second Generation Emo Kid - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000098172982",
+   "title": "My Chemical Underpants - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000099156022",
+   "title": "Motion City Swing Set - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000100237366",
+   "title": "SEE U L8R BOI - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000100270134",
+   "title": "Whine-Thru Records - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000100466742",
+   "title": "Pierce the Veggies - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000100794422",
+   "title": "Do You Have The Time To Listen To Me Whine - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000101089334",
+   "title": "Boys Like Squirrels - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000101318710",
+   "title": "Bayslide - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000101515318",
+   "title": "All American Recess - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000102236214",
+   "title": "Every Time I Cry - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000102268982",
+   "title": "2nd Generation Emo Kid Broken Heart - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000102531126",
+   "title": "Silverscream - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000102563894",
+   "title": "Alkawhine Trio - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000103448630",
+   "title": "Playosin - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000103481398",
+   "title": "Crumb41 - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000104136758",
+   "title": "The Snack Parade - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000104169526",
+   "title": "The Get Up Kid - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000104497206",
+   "title": "Stained White Tees - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000104693814",
+   "title": "Scream Day - Youth Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000154632246",
+   "title": "I'm Just A Kid - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000156598326",
+   "title": "Raised by an Elder Emo - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000159907894",
+   "title": "Punk Rock Princess - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000162857014",
+   "title": "Pop-Punk in Training - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000165740598",
+   "title": "Taking Dad's Sunday - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000166658102",
+   "title": "Second Generation Pop-Punk Kid - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000169017398",
+   "title": "Garage Band King - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000170950710",
+   "title": "It's Not A Phase, Dad - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171081782",
+   "title": "Stink-182 - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171147318",
+   "title": "Junior Emo - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171343926",
+   "title": "Rock On - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171409462",
+   "title": "2nd Generation Pop-Punk Kid - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171540534",
+   "title": "Second Generation Emo Kid - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171573302",
+   "title": "My Chemical Underpants - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171704374",
+   "title": "Motion City Swing Set - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171933750",
+   "title": "SEE U L8R BOI - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000171999286",
+   "title": "Whine-Thru Records - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000172163126",
+   "title": "Pierce the Veggies - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000172228662",
+   "title": "Boys Like Squirrels - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000172294198",
+   "title": "Do You Have The Time To Listen To Me Whine - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000172523574",
+   "title": "Bayslide - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000172982326",
+   "title": "All American Recess - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000173080630",
+   "title": "2nd Generation Emo Kid Broken Heart - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000173801526",
+   "title": "Silverscream - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000173932598",
+   "title": "Every Time I... sigh... - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000173998134",
+   "title": "Silverscream - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000174587958",
+   "title": "Alkawhine Trio - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000174915638",
+   "title": "Playosin - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000175046710",
+   "title": "Crumb41 - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000175898678",
+   "title": "The Snack Parade - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000176029750",
+   "title": "The Get Up Kid - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000176062518",
+   "title": "Stained White Tees - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000176357430",
+   "title": "Scream Day - Youth Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8000177799222",
+   "title": "Playosin - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002713190454",
+   "title": "The All-American Recess - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002713518134",
+   "title": "Boys Like Squirrels - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002714665014",
+   "title": "Whine-Thru Records - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002715680822",
+   "title": "Let It Enfold You - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002715877430",
+   "title": "It's Not A Phase, Dad - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002731704374",
+   "title": "2nd Generation Pop-Punk Kid - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002731900982",
+   "title": "2nd Generation Emo Kid Broken Heart - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002731933750",
+   "title": "Crumb41 - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002731966518",
+   "title": "SEE U L8R BOI - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002732097590",
+   "title": "Rock On - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002732326966",
+   "title": "Raised by an Elder Emo - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002748612662",
+   "title": "Second Generation Emo Kid - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002749595702",
+   "title": "I'm Just A Kid - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002749726774",
+   "title": "Do You Have The Time To Listen To Me Whine - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002757394486",
+   "title": "Invented Screamo - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002757656630",
+   "title": "Every Time I Cry - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002767487030",
+   "title": "I Just Want to Break You Down So Badly - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002767585334",
+   "title": "Taking Dad's Sunday - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002767683638",
+   "title": "Garage Band King - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002792914998",
+   "title": "There’s a Story at the Bottom of This Bottle - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002792947766",
+   "title": "All The Small Things Colorful - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002793046070",
+   "title": "My Chemical Underpants - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002793242678",
+   "title": "Second Generation Pop-Punk Kid - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002793275446",
+   "title": "Alkawhine Trio - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002794061878",
+   "title": "Crawl Out Boy - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002794324022",
+   "title": "Punk Rock Princess - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002794389558",
+   "title": "Scream Day - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002794487862",
+   "title": "Stink-182 - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002794520630",
+   "title": "Panic! At The Daycare - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002794618934",
+   "title": "Hawthorne High Chair - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002794815542",
+   "title": "Silverscream - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002795601974",
+   "title": "Cute with the E - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002795700278",
+   "title": "The Snack Parade - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002795831350",
+   "title": "So Long and Good Night - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002796421174",
+   "title": "Stained White T's - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002796519478",
+   "title": "The Get Up Kid - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002815623222",
+   "title": "Pierce the Veggies - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002815655990",
+   "title": "Bayslide - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002815721526",
+   "title": "Cute Is What I Aim For - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002815754294",
+   "title": "Screaming Infant Melodies - Onesie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002816507958",
+   "title": "I Just Want to Break You Down So Badly - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002817687606",
+   "title": "Taking Dad's Sunday - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002817982518",
+   "title": "Punk Rock Princess - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002818670646",
+   "title": "Cute with the E - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002820702262",
+   "title": "Do You Have The Time To Listen To Me Whine - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002822406198",
+   "title": "Alkawhine Trio - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002823290934",
+   "title": "Raised by an Elder Emo - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002824568886",
+   "title": "Bayslide - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002827386934",
+   "title": "Second Generation Emo Kid - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002827518006",
+   "title": "Screaming Infant Melodies - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002829058102",
+   "title": "Rock On - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002829090870",
+   "title": "Playosin - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002829156406",
+   "title": "There's a Story at the Bottom of this Bottle - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002830499894",
+   "title": "My Chemical Underpants - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002830565430",
+   "title": "Stained White T's - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002830663734",
+   "title": "I'm Just A Kid - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002832990262",
+   "title": "The Snack Parade - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002833023030",
+   "title": "SEE U L8R BOI - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002833088566",
+   "title": "Garage Band King - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002835742774",
+   "title": "Crumb41 - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002835841078",
+   "title": "It's Not A Phase, Dad - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002835972150",
+   "title": "Scream Day - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002836037686",
+   "title": "2nd Generation Pop-Punk Kid - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002838102070",
+   "title": "The Get Up Kid - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002839150646",
+   "title": "Cute Is What I Aim For - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002839838774",
+   "title": "Pierce the Veggies - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002839904310",
+   "title": "Invented Screamo - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002840068150",
+   "title": "So Long and Good Night - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002840166454",
+   "title": "The All-American Recess - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002841575478",
+   "title": "Every Time I Cry - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002841608246",
+   "title": "2nd Generation Emo Kid Broken Heart - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002841673782",
+   "title": "Junior Emo - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002842329142",
+   "title": "Second Generation Pop-Punk Kid - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002842361910",
+   "title": "Silverscream - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002842394678",
+   "title": "Whine-Thru Records - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002843639862",
+   "title": "Crawl Out Boy - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002843902006",
+   "title": "Let It Enfold You - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002844033078",
+   "title": "Boys Like Squirrels - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002844983350",
+   "title": "All The Small Things - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002845507638",
+   "title": "Panic! At The Daycare - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002845540406",
+   "title": "Stink-182 - Toddler Tee UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002851536950",
+   "title": "So what happened was John.... Zip-up Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002852257846",
+   "title": "Still Emo Badge Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002869198902",
+   "title": "Elder Emo Club Zip-up Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002869264438",
+   "title": "Emo Moms Club Zip-up Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002869362742",
+   "title": "We Got Older Zip-up Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002871066678",
+   "title": "Emo Dads Club Zip-up Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002871132214",
+   "title": "From Mosh Pits to Mezzanines Zip-up Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002871263286",
+   "title": "Elder Emo Society Zip-up Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002879520822",
+   "title": "Elder Emo Club Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002880438326",
+   "title": "We Got Older Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002885287990",
+   "title": "So what happened was John.... Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002887319606",
+   "title": "Elder Emo Society Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8002887811126",
+   "title": "From Moshpits to Mezzanines Hoodie UK",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8024161419318",
+   "title": "Make America Emo Again Flag",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8114244649014",
+   "title": "ElderEmo.com Gift Card",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8169952510006",
+   "title": "Elder Emo Club Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8178681217078",
+   "title": "Free Sticker for Followers",
+   "status": "UNLISTED"
+  },
+  {
+   "id": "gid://shopify/Product/8215917494326",
+   "title": "Baby On Board Sticker",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8225135099958",
+   "title": "Elder Emo Sticker",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8251229110326",
+   "title": "Heart Says Pit, Knees Say Balcony - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8251664629814",
+   "title": "From Mosh Pits to Mezzanines - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8251863760950",
+   "title": "Heart Says Pit, Knees Say Balcony Neon Edition - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8254793023542",
+   "title": "From Mosh Pits to Mezzanines Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8254962335798",
+   "title": "Elder Emo Club Smiley Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8255136858166",
+   "title": "I'm Too Old For This Pit Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8255138758710",
+   "title": "Girl At The Rock Show - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8255321440310",
+   "title": "I'm Too Old For This Pit Color Blast Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8259260710966",
+   "title": "Punk Rock Princess Women's Fitted Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8259401121846",
+   "title": "Punk Rock Princess Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8295854735414",
+   "title": "Elder Emo Club Skull & Dagger Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8296065105974",
+   "title": "Still Emo Embroidered Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8300600033334",
+   "title": "Elder Emo Club Heart Sticker",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8330628857910",
+   "title": "Emo Music Therapy Women's Fitted Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8330629251126",
+   "title": "Emo Music Therapy Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8332170297398",
+   "title": "EMO FOR LIFE Trucker Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8332344426550",
+   "title": "EMO FOR LIFE Color Blast Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8334875197494",
+   "title": "bark-182 (replacement)",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8407090724918",
+   "title": "Are You Even Emo? - Lyric Pack",
+   "status": "UNLISTED"
+  },
+  {
+   "id": "gid://shopify/Product/8447400673334",
+   "title": "Baddie and a Saddie Acrylic Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447402016822",
+   "title": "Keys to the Shitshow Acrylic Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447402049590",
+   "title": "Holographic Flame Heart Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447403229238",
+   "title": "Elder Emo Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447403687990",
+   "title": "Still Emo Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447403720758",
+   "title": "It Was Never A Phase Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447404638262",
+   "title": "Sad Songs to Cry to Mixtape Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447405457462",
+   "title": "Pop Punk is for Lovers Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447405883446",
+   "title": "You Have Stolen my Heart Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447406932022",
+   "title": "Emo is for Lovers Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447407751222",
+   "title": "The Ultimate Pop Punk Couple Keychains",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447408570422",
+   "title": "I'd Rather be at a Concert Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8447408865334",
+   "title": "Nostalgic S Thing Keychain",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8695107747894",
+   "title": "1776 was cool Trucker Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8695225647158",
+   "title": "1776 was cool Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8695235510326",
+   "title": "1776 was cool - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8699976286262",
+   "title": "emodad Dad Cap",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8700154216502",
+   "title": "1776 was cool Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705085210678",
+   "title": "Dept of Elder Emo Affairs Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705107984438",
+   "title": "Dept of Elder Emo Affairs - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705113587766",
+   "title": "Dept of Elder Emo Affairs Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705132167222",
+   "title": "Make America Emo Again Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705133871158",
+   "title": "Make America Emo Again Trucker Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705139179574",
+   "title": "Make America Pop-Punk Again Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705146454070",
+   "title": "Make America Punk Again Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705147142198",
+   "title": "Make America Pop-Punk Again Trucker Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8705162510390",
+   "title": "Make America Punk Again Trucker Hat",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8707536781366",
+   "title": "emomom Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8707537338422",
+   "title": "emomom Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8707541303350",
+   "title": "emomom - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8721517674550",
+   "title": "Lyrics Edition",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8752813408310",
+   "title": "In the Early 2000s Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8752815374390",
+   "title": "In the Early 2000s - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8756046725174",
+   "title": "Release Dates",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8756046757942",
+   "title": "Hometowns",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8756046823478",
+   "title": "Scene Lore & History",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8757274837046",
+   "title": "Are You Even Emo Bundle",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8876675072054",
+   "title": "Still Emo Beach Club Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8876726419510",
+   "title": "Still Emo Beach Club Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8876897435702",
+   "title": "Still Emo Beach Club - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8876908216374",
+   "title": "Still Emo Skull Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8876913459254",
+   "title": "Still Emo Skull - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8918900211766",
+   "title": "Hearts Says Pit, Back Says Balcony Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8935165231158",
+   "title": "Hearts Says Pit, Back Says Balcony Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8935166836790",
+   "title": "Still Emo Rose Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8935168639030",
+   "title": "Still Emo Never a Phase Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8988314927158",
+   "title": "Mike Goodrick 25x Lyric Packs",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8988339372086",
+   "title": "Lyrics Edition (Bundle)",
+   "status": "UNLISTED"
+  },
+  {
+   "id": "gid://shopify/Product/8989199859766",
+   "title": "Still Emo Eyeball Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8989212672054",
+   "title": "Still Not Okay Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992625066038",
+   "title": "Heart Says Pit, Knees Say Sit Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992625098806",
+   "title": "Heart Says Pit, Knees Say Sit - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992627818550",
+   "title": "Heart Says Pit, Knees Say Sit Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992628080694",
+   "title": "Heart Says Pit, Knees Say Sit Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992629260342",
+   "title": "Heart Says Pit, Knees Say Sit Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992629489718",
+   "title": "Still Emo Eyeball Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992629751862",
+   "title": "Hearts Says Pit, Back Says Balcony - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992638795830",
+   "title": "Still Emo Eyeball - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992640794678",
+   "title": "Still Not Okay Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992640827446",
+   "title": "Still Not Okay - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992844939318",
+   "title": "Still Emo Skull Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8992852574262",
+   "title": "Still Emo Beach Club Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8994672869430",
+   "title": "Emo Music Therapy BYW Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8994686828598",
+   "title": "Emo Music Therapy BYW - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8994686959670",
+   "title": "Emo Music Therapy BYW Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/8999904772150",
+   "title": "Scenester Vintage Cap",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9000370896950",
+   "title": "Still Emo Flower Crop",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9000372469814",
+   "title": "Still Emo Flower - Women's Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9000372502582",
+   "title": "Still Emo Flower Tank",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9000372535350",
+   "title": "Still Emo Flower Tee on Comfort Colors",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9000372568118",
+   "title": "Still Emo Flower Tee",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9051212578870",
+   "title": "Elder Emo Sticker Pack",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9114838597686",
+   "title": "Are You Even Emo? Bundle - TTS",
+   "status": "UNLISTED"
+  },
+  {
+   "id": "gid://shopify/Product/9250891857974",
+   "title": "Junior Emo Sticker Pack",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9291631034422",
+   "title": "Still Emo Rose Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9291781439542",
+   "title": "Still Emo Flower Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9291782324278",
+   "title": "Still Emo Never a Phase Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9291784224822",
+   "title": "Still Not Okay Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9291789926454",
+   "title": "Heart Says Pit Back Says Balcony Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9291800281142",
+   "title": "Still Emo Skull Hoodie",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "gid://shopify/Product/9291804442678",
+   "title": "Elder Emo Club Skull & Dagger Hoodie",
+   "status": "ACTIVE"
+  }
+ ]
+}
