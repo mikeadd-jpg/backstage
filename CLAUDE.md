@@ -300,6 +300,16 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   not restrict where a product ships; the tag and title are the whole mechanism. On a
   Global Fulfillment garment they exist too but start unticked, for a market-specific
   design (build that design with only that market ticked).
+- **Nothing the builder makes reaches a market on its own any more.** Every Elder Emo
+  market catalog (US, CA, UK, AU) was set to `autoPublish: false` on 2026-10-16, so a new
+  product lands in **no** market catalog and is invisible to every buyer until it is
+  published to the catalogs its tags name. Before that, US, CA and UK auto-published and
+  the manual step was *pruning*; now it is *adding*, which is the opposite habit. The tags
+  are still only a label: no code reads them to publish anything. The reason for the change
+  is that Elder Emo's CA and AU catalogs are deliberately narrow (only the 98 Global
+  Fulfillment `-int` listings, so an overseas buyer never meets import shipping), and
+  auto-publish would refill them from every US build. Publishing by tag would be a sensible
+  thing for the builder to learn; until it does, it is a step in the Shopify admin.
 - **Printer pick (`rankCandidates`)**, per market, over every printer of every blueprint
   that can fill the slot (the toddler tee compares B+C 3001T and Rabbit Skins 3321
   printers together). Filters, relaxed only if nothing passes: stocks the garment's colour

@@ -7,7 +7,7 @@
  "before": 492,
  "kept": 98,
  "removed": 394,
- "warning": "The Canada catalog still has autoPublish TRUE, and that now works against this. It is what the owner wants for Canada-specific products, which join automatically, but it also means every US-only product created from here on joins Canada by itself and quietly undoes this narrowing. The US catalog was set to autoPublish false during the international swap for the same reason. Turning Canada off and publishing Canadian products to it explicitly is the consistent setting; left on, the catalog needs pruning after every build.",
+ "warning": "Resolved: autoPublish was turned off for Canada, the UK and Australia on 2026-10-16 (the US was already off from the international swap). All four Elder Emo market catalogs are now manual.",
  "removedProducts": [
   {
    "id": "7583728697398",
@@ -2394,5 +2394,12 @@
    "originals": 98
   }
  },
- "nextStep": "Canada-specific products are to be built from here. Each one has to be published to publication 117448409142 to appear for Canadian buyers."
+ "nextStep": "Canada-specific products are to be built from here. Each one has to be published to publication 117448409142 to appear for Canadian buyers.",
+ "autoPublishNow": {
+  "AU": false,
+  "CA": false,
+  "UK": false,
+  "US": false,
+  "consequence": "A product created from here on, builder output included, joins NO market catalog and is invisible to every buyer until it is published to each catalog it belongs in. The habit inverts: it used to be pruning Canada, the UK and the US after a build, it is now adding."
+ }
 }
