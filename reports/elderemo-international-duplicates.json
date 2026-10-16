@@ -1,0 +1,910 @@
+{
+ "created": [
+  {
+   "sourceId": "6a8de88ef26098611c0468f3",
+   "sourceShopify": "9229872431158",
+   "title": "So What Happened Was John... Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 21,
+   "dropped": 0,
+   "newId": "6ad198f3eb958f0a3a00bc36"
+  },
+  {
+   "sourceId": "6a57de2c86fae9c7710ed12f",
+   "sourceShopify": "9000372535350",
+   "title": "Still Emo Flower Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 21,
+   "dropped": 7,
+   "newId": "6ad198f67e19d7a58801ec33"
+  },
+  {
+   "sourceId": "6a57de228c664d18b70d87f6",
+   "sourceShopify": "9000372568118",
+   "title": "Still Emo Flower Tee",
+   "blueprint": 6,
+   "kept": 24,
+   "dropped": 8,
+   "newId": "6ad198fa403458c5d3019fa3"
+  },
+  {
+   "sourceId": "6a56ef3913c5c5c21c0decd6",
+   "sourceShopify": "8994687156278",
+   "title": "Emo Music Therapy BYW Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 14,
+   "dropped": 0,
+   "newId": "6ad198fe403458c5d3019fa5"
+  },
+  {
+   "sourceId": "6a56ef2a5c9a36a4ee0100d0",
+   "sourceShopify": "8994684928054",
+   "title": "Emo Music Therapy BYW Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19901eb958f0a3a00bc3b"
+  },
+  {
+   "sourceId": "6a567a1eb0ad42fe8005a910",
+   "sourceShopify": "8992627818550",
+   "title": "Heart Says Pit, Knees Say Sit Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 21,
+   "dropped": 8,
+   "newId": "6ad19904403458c5d3019fac"
+  },
+  {
+   "sourceId": "6a567a1393623e00a9061e15",
+   "sourceShopify": "8992629260342",
+   "title": "Heart Says Pit, Knees Say Sit Tee",
+   "blueprint": 6,
+   "kept": 24,
+   "dropped": 8,
+   "newId": "6ad19908b4735632d4012a2c"
+  },
+  {
+   "sourceId": "6a5598301176721a3101c7e3",
+   "sourceShopify": "8989211557942",
+   "title": "Still Emo Eyeball Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 21,
+   "dropped": 0,
+   "newId": "6ad1990b2a7b57e9090d23c5"
+  },
+  {
+   "sourceId": "6a559825bb9b2baf8b0633d4",
+   "sourceShopify": "8989199073334",
+   "title": "Still Emo Eyeball Tee",
+   "blueprint": 6,
+   "kept": 32,
+   "dropped": 0,
+   "newId": "6ad1990feb958f0a3a00bc3f"
+  },
+  {
+   "sourceId": "6a55966ebb9b2baf8b063288",
+   "sourceShopify": "8989210935350",
+   "title": "Still Not Okay Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 21,
+   "dropped": 0,
+   "newId": "6ad19912b4735632d4012a34"
+  },
+  {
+   "sourceId": "6a559664bb9b2baf8b063280",
+   "sourceShopify": "8989026582582",
+   "title": "Still Not Okay Tee",
+   "blueprint": 6,
+   "kept": 24,
+   "dropped": 0,
+   "newId": "6ad19916025b92ff630cd04e"
+  },
+  {
+   "sourceId": "6a4554d851d2ed880c065f34",
+   "sourceShopify": "8918892052534",
+   "title": "Hearts Says Pit, Back Says Balcony Tee",
+   "blueprint": 6,
+   "kept": 24,
+   "dropped": 0,
+   "newId": "6ad19919b4735632d4012a37"
+  },
+  {
+   "sourceId": "6a3c0ec5f5f6fa3429048821",
+   "sourceShopify": "8876900450358",
+   "title": "Still Emo Skull Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 17,
+   "dropped": 0,
+   "newId": "6ad1991c7e19d7a58801ec45"
+  },
+  {
+   "sourceId": "6a3c0490cad86dee890bf6ea",
+   "sourceShopify": "8876675072054",
+   "title": "Still Emo Beach Club Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 13,
+   "dropped": 7,
+   "newId": "6ad1992147a196f8200d360a"
+  },
+  {
+   "sourceId": "6a1ce79cec6cc8a96c0bacb3",
+   "sourceShopify": "8752719659062",
+   "title": "In the Early 2000s Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 10,
+   "dropped": 0,
+   "newId": "6ad1992440bc883459066318"
+  },
+  {
+   "sourceId": "6a11a2f74a67803eff029510",
+   "sourceShopify": "8707540647990",
+   "title": "emomom Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad1992940bc88345906631a"
+  },
+  {
+   "sourceId": "6a11174347050f96a5063b77",
+   "sourceShopify": "8705146454070",
+   "title": "Make America Punk Again Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 14,
+   "dropped": 14,
+   "newId": "6ad1992d025b92ff630cd05b"
+  },
+  {
+   "sourceId": "6a1116e54a67803eff0220bc",
+   "sourceShopify": "8705139179574",
+   "title": "Make America Pop-Punk Again Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 14,
+   "dropped": 14,
+   "newId": "6ad199301cd34c0c300c8e0e"
+  },
+  {
+   "sourceId": "6a1115a5e82ca152bc03f646",
+   "sourceShopify": "8705132167222",
+   "title": "Make America Emo Again Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 14,
+   "dropped": 14,
+   "newId": "6ad1993340bc883459066329"
+  },
+  {
+   "sourceId": "6a110f5ac28f3f5d220c7af1",
+   "sourceShopify": "8705092223030",
+   "title": "Dept of Elder Emo Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad199361cd34c0c300c8e15"
+  },
+  {
+   "sourceId": "6a0fb454c543ee43b2071f35",
+   "sourceShopify": "8699975139382",
+   "title": "emodad Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 28,
+   "dropped": 0,
+   "newId": "6ad1993c16a1d5c8d6015c1e"
+  },
+  {
+   "sourceId": "69c747b6fd8faf05f0023448",
+   "sourceShopify": "8369030627382",
+   "title": "1776 was cool Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad1994016a1d5c8d6015c21"
+  },
+  {
+   "sourceId": "69bdf6c4f2799e1de1038879",
+   "sourceShopify": "8330627907638",
+   "title": "Emo Music Therapy Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 11,
+   "dropped": 0,
+   "newId": "6ad19944b4735632d4012a51"
+  },
+  {
+   "sourceId": "69b8c59cf6dcfcbcdb067269",
+   "sourceShopify": "8309206024246",
+   "title": "All Panic No Disco Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad19948025b92ff630cd076"
+  },
+  {
+   "sourceId": "69b62c4d8ccaa47bcd0af631",
+   "sourceShopify": "8296066187318",
+   "title": "Moshin' Since the 90s Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad1994d1cd34c0c300c8e2c"
+  },
+  {
+   "sourceId": "69b6196f8ae0f10c2f07cff1",
+   "sourceShopify": "8295943143478",
+   "title": "Still Emo Never A Phase Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad19950025b92ff630cd081"
+  },
+  {
+   "sourceId": "69b6130e8ccaa47bcd0af285",
+   "sourceShopify": "8295854080054",
+   "title": "Elder Emo Club Skull & Dagger Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 4,
+   "dropped": 0,
+   "newId": "6ad1995540bc88345906634d"
+  },
+  {
+   "sourceId": "69b60e97dc49b25f9c065e75",
+   "sourceShopify": "8295687946294",
+   "title": "Elder Emo Never A Phase Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad1995840bc883459066353"
+  },
+  {
+   "sourceId": "69b602db2ba8958ff8096f7b",
+   "sourceShopify": "8295684046902",
+   "title": "Still Emo Rose Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad1995d025b92ff630cd08a"
+  },
+  {
+   "sourceId": "69ac1fbd816648896c095544",
+   "sourceShopify": "8259260219446",
+   "title": "Punk Rock Princess Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 14,
+   "dropped": 0,
+   "newId": "6ad1996140bc88345906635e"
+  },
+  {
+   "sourceId": "69aa58ae641688aa5c062e2e",
+   "sourceShopify": "8251898888246",
+   "title": "From Mosh Pits to Mezzanines Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad19964b4735632d4012a63"
+  },
+  {
+   "sourceId": "69aa4b165f46f1e4950b30a9",
+   "sourceShopify": "8251672100918",
+   "title": "Heart Says Pit, Knees Say Balcony Neon Edition Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad1996740bc883459066363"
+  },
+  {
+   "sourceId": "69aa3ddaa3d5918a9e089e3a",
+   "sourceShopify": "8251499053110",
+   "title": "Heart Says Pit, Knees Say Balcony Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad1996a7e19d7a58801ec75"
+  },
+  {
+   "sourceId": "69840c16c51391efc00505e9",
+   "sourceShopify": "8174120140854",
+   "title": "I'm Too Old For This Pit Varsity Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 28,
+   "dropped": 0,
+   "newId": "6ad1996d7e19d7a58801ec79"
+  },
+  {
+   "sourceId": "6984001d2ec1aca18f004069",
+   "sourceShopify": "8174113718326",
+   "title": "From Mosh Pits To Mezzanines Varsity Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 28,
+   "dropped": 0,
+   "newId": "6ad19972817569e72f048fd3"
+  },
+  {
+   "sourceId": "6914eac935c1c4e2fb08dd20",
+   "sourceShopify": "7996881862710",
+   "title": "Elder Emo Club Smiley Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 26,
+   "dropped": 0,
+   "newId": "6ad19975817569e72f048fd4"
+  },
+  {
+   "sourceId": "6914e64c35c1c4e2fb08dbf2",
+   "sourceShopify": "7996869673014",
+   "title": "Elder Emo Rose Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 7,
+   "dropped": 0,
+   "newId": "6ad19979b4735632d4012a78"
+  },
+  {
+   "sourceId": "690e15e43b012637800c32ec",
+   "sourceShopify": "7992244928566",
+   "title": "Elder Emo Gothic Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 7,
+   "dropped": 0,
+   "newId": "6ad1997d40bc883459066373"
+  },
+  {
+   "sourceId": "690e0c9cfd2f3532fc0fbae0",
+   "sourceShopify": "7992186503222",
+   "title": "Elder Emo Cursive Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 7,
+   "dropped": 0,
+   "newId": "6ad19980b4735632d4012a7e"
+  },
+  {
+   "sourceId": "68b9d995c228f1955e0b4234",
+   "sourceShopify": "7927301570614",
+   "title": "I'm Too Old For This Pit Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 14,
+   "dropped": 0,
+   "newId": "6ad199bfb4735632d4012ae1"
+  },
+  {
+   "sourceId": "68b9d8bb87d88f6daf048c06",
+   "sourceShopify": "7927300915254",
+   "title": "I'm Too Old For This Pit Danny Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 7,
+   "dropped": 0,
+   "newId": "6ad199c216a1d5c8d6015c7c"
+  },
+  {
+   "sourceId": "689deb8c1b1542c54d0f3c37",
+   "sourceShopify": "7912505704502",
+   "title": "Elder Emo Rose Badge Tee on Comfort Colors",
+   "blueprint": 706,
+   "kept": 7,
+   "dropped": 0,
+   "newId": "6ad199cbb4735632d4012ae8"
+  },
+  {
+   "sourceId": "689ab532a69b60be28053bdc",
+   "sourceShopify": "7909727141942",
+   "title": "Jone Waste Your Toyme on Comfort Colors",
+   "blueprint": 706,
+   "kept": 28,
+   "dropped": 0,
+   "newId": "6ad199d22a7b57e9090d2462"
+  },
+  {
+   "sourceId": "6849129853576a8a950df90e",
+   "sourceShopify": "7852970606646",
+   "title": "We Got Older on Comfort Colors",
+   "blueprint": 706,
+   "kept": 14,
+   "dropped": 0,
+   "newId": "6ad199d97e19d7a58801eccd"
+  },
+  {
+   "sourceId": "66b6ba7e541339275d02deae",
+   "sourceShopify": "7630344028214",
+   "title": "Elder Emo Society Tee",
+   "blueprint": 12,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad199e42a7b57e9090d2475"
+  },
+  {
+   "sourceId": "66b6b2ebfa6ca51d210c2ede",
+   "sourceShopify": "7630335344694",
+   "title": "Dead Inside Tee",
+   "blueprint": 12,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad199e8817569e72f04902b"
+  },
+  {
+   "sourceId": "66a713c6c6058f10d40f2b44",
+   "sourceShopify": "7622000476214",
+   "title": "Wake Me Up When September Ends Sweatshirt",
+   "blueprint": 49,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad199ec16a1d5c8d6015c96"
+  },
+  {
+   "sourceId": "66a71315a614777ac70d9506",
+   "sourceShopify": "7621999722550",
+   "title": "Jack & Sally Tee",
+   "blueprint": 12,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad199ef1cd34c0c300c8ea4"
+  },
+  {
+   "sourceId": "66a712492e4233a3050cfb42",
+   "sourceShopify": "7621999132726",
+   "title": "I'm Empty Inside Tee",
+   "blueprint": 12,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad199f31cd34c0c300c8ea5"
+  },
+  {
+   "sourceId": "66a7116c12cda19ec000384a",
+   "sourceShopify": "7621997822006",
+   "title": "Wake Me Up When September Ends Tee",
+   "blueprint": 12,
+   "kept": 6,
+   "dropped": 0,
+   "newId": "6ad199f7b4735632d4012b0a"
+  },
+  {
+   "sourceId": "66a648d4d58442936509ae7a",
+   "sourceShopify": "7621718343734",
+   "title": "Skiba Andriano 2024 Campaign Sweatshirt",
+   "blueprint": 49,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad199fa40bc8834590663e8"
+  },
+  {
+   "sourceId": "66a647f522db0e02e5076a19",
+   "sourceShopify": "7621716541494",
+   "title": "Skiba Andriano 2024 Campaign Tee",
+   "blueprint": 12,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad199fe7e19d7a58801ece4"
+  },
+  {
+   "sourceId": "66a2f25ee9fe3a2a4b049fda",
+   "sourceShopify": "7619719233590",
+   "title": "Make America Punk Again Tee",
+   "blueprint": 12,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad19a022a7b57e9090d2493"
+  },
+  {
+   "sourceId": "66a2f1e6ea9e418f7d072d43",
+   "sourceShopify": "7619718840374",
+   "title": "Make America Emo Again Tee",
+   "blueprint": 12,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad19a052a7b57e9090d2496"
+  },
+  {
+   "sourceId": "66a2eaed2e4e51b7410ca42a",
+   "sourceShopify": "7619705503798",
+   "title": "Make America Pop-Punk Again Tee",
+   "blueprint": 12,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad19a0940bc8834590663fd"
+  },
+  {
+   "sourceId": "66a2ad160b7a6abb0609f2fb",
+   "sourceShopify": "7619612737590",
+   "title": "Make America Pop-Punk Again Sweatshirt",
+   "blueprint": 49,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad19a0c40bc883459066402"
+  },
+  {
+   "sourceId": "66a2ababd64fb142b60d7b2e",
+   "sourceShopify": "7619609133110",
+   "title": "Make America Emo Again Sweatshirt",
+   "blueprint": 49,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad19a0f40bc883459066404"
+  },
+  {
+   "sourceId": "66a2a99f1067a7f10800a020",
+   "sourceShopify": "7619607822390",
+   "title": "Make America Punk Again Sweatshirt",
+   "blueprint": 49,
+   "kept": 12,
+   "dropped": 0,
+   "newId": "6ad19a122a7b57e9090d24a3"
+  },
+  {
+   "sourceId": "6a3c0ec418552abd91064d67",
+   "sourceShopify": "8876907855926",
+   "title": "Copy of In the Early 2000s Tee",
+   "blueprint": 6,
+   "kept": 22,
+   "dropped": 0,
+   "newId": "6ad19b3e40bc88345906655d"
+  },
+  {
+   "sourceId": "6a3c048fa1a8c237ec05f81d",
+   "sourceShopify": "8876722683958",
+   "title": "Still Emo Beach Club Tee",
+   "blueprint": 6,
+   "kept": 22,
+   "dropped": 0,
+   "newId": "6ad19b4116a1d5c8d6015dfa"
+  },
+  {
+   "sourceId": "6a1ce4d5fa3ced58a40767e5",
+   "sourceShopify": "8752641802294",
+   "title": "In the Early 2000s Tee",
+   "blueprint": 6,
+   "kept": 14,
+   "dropped": 0,
+   "newId": "6ad19b452a7b57e9090d25f0"
+  },
+  {
+   "sourceId": "6a11a2f6298e626d210f0bb8",
+   "sourceShopify": "8707540975670",
+   "title": "emomom Tee",
+   "blueprint": 6,
+   "kept": 22,
+   "dropped": 0,
+   "newId": "6ad19b482a7b57e9090d25f4"
+  },
+  {
+   "sourceId": "6a110f59d4d1eee5d108229a",
+   "sourceShopify": "8705096286262",
+   "title": "Dept of Elder Emo Affairs Tee",
+   "blueprint": 6,
+   "kept": 22,
+   "dropped": 0,
+   "newId": "6ad19b4b2a7b57e9090d25f7"
+  },
+  {
+   "sourceId": "69d94b9d763f20053b02bd26",
+   "sourceShopify": "8695232790582",
+   "title": "1776 was cool Tee",
+   "blueprint": 6,
+   "kept": 30,
+   "dropped": 0,
+   "newId": "6ad19b4f40bc88345906656a"
+  },
+  {
+   "sourceId": "69c747b62beabaeb5b00d6d9",
+   "sourceShopify": "8369030430774",
+   "title": "One Armed Caesar Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b532a7b57e9090d25fd"
+  },
+  {
+   "sourceId": "69bdf6c34b0469dd130f052d",
+   "sourceShopify": "8330628464694",
+   "title": "Emo Music Therapy Tee",
+   "blueprint": 6,
+   "kept": 14,
+   "dropped": 0,
+   "newId": "6ad19b561cd34c0c300c8ffc"
+  },
+  {
+   "sourceId": "69b8bea3a7f5c79bd50b405f",
+   "sourceShopify": "8309204516918",
+   "title": "All Panic No Disco Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b5a40bc883459066572"
+  },
+  {
+   "sourceId": "69b62c4e8ccaa47bcd0af632",
+   "sourceShopify": "8296131067958",
+   "title": "Moshin' Since the 90s Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b5d2a7b57e9090d260d"
+  },
+  {
+   "sourceId": "69b6196e8ccaa47bcd0af379",
+   "sourceShopify": "8296044068918",
+   "title": "Still Emo Never A Phase Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b60025b92ff630cd2a4"
+  },
+  {
+   "sourceId": "69b6130e9da2f875360e7168",
+   "sourceShopify": "8295854112822",
+   "title": "Elder Emo Club Skull & Dagger Tee",
+   "blueprint": 6,
+   "kept": 4,
+   "dropped": 0,
+   "newId": "6ad19b6416a1d5c8d6015e19"
+  },
+  {
+   "sourceId": "69b60e979da2f875360e70a9",
+   "sourceShopify": "8295688536118",
+   "title": "Elder Emo Was Never A Phase Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b677e19d7a58801ee2e"
+  },
+  {
+   "sourceId": "69b6073b78eddb6edb02d2c4",
+   "sourceShopify": "8295687356470",
+   "title": "Still Emo Rose Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b6a40bc883459066582"
+  },
+  {
+   "sourceId": "69ac206d5ef4eca23b0381b2",
+   "sourceShopify": "8259260284982",
+   "title": "Punk Rock Princess Tee",
+   "blueprint": 6,
+   "kept": 21,
+   "dropped": 0,
+   "newId": "6ad19b6d2a7b57e9090d2627"
+  },
+  {
+   "sourceId": "69840c1571decb5a56038d3d",
+   "sourceShopify": "8174120730678",
+   "title": "I'm Too Old For This Pit Varsity Tee",
+   "blueprint": 6,
+   "kept": 28,
+   "dropped": 0,
+   "newId": "6ad19b7116a1d5c8d6015e26"
+  },
+  {
+   "sourceId": "6984001e50fa0e733f0bb741",
+   "sourceShopify": "8174113456182",
+   "title": "From Mosh Pits To Mezzanines Varsity Tee",
+   "blueprint": 6,
+   "kept": 28,
+   "dropped": 0,
+   "newId": "6ad19b747e19d7a58801ee3d"
+  },
+  {
+   "sourceId": "6914e7843b87c4464a08ccba",
+   "sourceShopify": "7996870688822",
+   "title": "Elder Emo Rose Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b78403458c5d301a1a6"
+  },
+  {
+   "sourceId": "6914e5a9ba4007b4f80de56a",
+   "sourceShopify": "7996869607478",
+   "title": "Elder Emo Rose Badge Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b7beb958f0a3a00be19"
+  },
+  {
+   "sourceId": "690e0babd0a3b9e5b1071823",
+   "sourceShopify": "7992185290806",
+   "title": "Elder Emo Cursive Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b7e47a196f8200d37e8"
+  },
+  {
+   "sourceId": "68b9d649c228f1955e0b415a",
+   "sourceShopify": "7927299932214",
+   "title": "I'm Too Old For This Pit Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19b812a7b57e9090d264a"
+  },
+  {
+   "sourceId": "68b9d43b04c2f7405e03b651",
+   "sourceShopify": "7927291904054",
+   "title": "I'm Too Old For This Pit Danny Tee",
+   "blueprint": 6,
+   "kept": 25,
+   "dropped": 0,
+   "newId": "6ad19b85eb958f0a3a00be29"
+  },
+  {
+   "sourceId": "68ae672fa2d0e504f809b098",
+   "sourceShopify": "7920586391606",
+   "title": "Emo Dads Club Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19b88817569e72f04919d"
+  },
+  {
+   "sourceId": "68ae6612a704adf3830f6c0c",
+   "sourceShopify": "7920583147574",
+   "title": "Emo Moms Club Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19b8b47a196f8200d37f0"
+  },
+  {
+   "sourceId": "68a22cc6d77ded0e000a8051",
+   "sourceShopify": "7914749198390",
+   "title": "Blink Me! Tee",
+   "blueprint": 6,
+   "kept": 32,
+   "dropped": 0,
+   "newId": "6ad19b8f40bc8834590665ac"
+  },
+  {
+   "sourceId": "68a22c07571c2c156d085f79",
+   "sourceShopify": "7914747527222",
+   "title": "Travis I'm Pregnant Tee",
+   "blueprint": 6,
+   "kept": 32,
+   "dropped": 0,
+   "newId": "6ad19b9216a1d5c8d6015e49"
+  },
+  {
+   "sourceId": "689d4e8a093d8a2c3304c624",
+   "sourceShopify": "7911941537846",
+   "title": "Heart Says Pit, Knees Say Balcony Neon Edition Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b972a7b57e9090d2657"
+  },
+  {
+   "sourceId": "689d4bb3b2ee81bd6c07f80a",
+   "sourceShopify": "7911920730166",
+   "title": "Heart Says Pit, Knees Say Balcony Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19b9b1cd34c0c300c9033"
+  },
+  {
+   "sourceId": "689abdb438c672ce0a04c302",
+   "sourceShopify": "7909737136182",
+   "title": "What The Fuck Is Up Denny's? Tee Shirt",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19b9f1cd34c0c300c9039"
+  },
+  {
+   "sourceId": "6898168050ed43fdee0783ae",
+   "sourceShopify": "7908399644726",
+   "title": "DeLonge / Hoppus 2024 Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19ba21cd34c0c300c903c"
+  },
+  {
+   "sourceId": "689812c050ed43fdee078315",
+   "sourceShopify": "7908398202934",
+   "title": "WHERE ARE YOU Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19ba616a1d5c8d6015e50"
+  },
+  {
+   "sourceId": "6871d3e34d320cae370e019e",
+   "sourceShopify": "7882498637878",
+   "title": "So What Happened Was John.... Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19ba9b4735632d4012c66"
+  },
+  {
+   "sourceId": "6871cdf203d78bc389082400",
+   "sourceShopify": "7882438901814",
+   "title": "Still Emo Bleeding Heart Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19bac1cd34c0c300c9044"
+  },
+  {
+   "sourceId": "6865f240bd126939d3010ede",
+   "sourceShopify": "7872712998966",
+   "title": "From Mosh Pits to Mezzanines Tee",
+   "blueprint": 6,
+   "kept": 8,
+   "dropped": 0,
+   "newId": "6ad19baf40bc8834590665c7"
+  },
+  {
+   "sourceId": "67b9df5ddeefa41dc30b8f2a",
+   "sourceShopify": "7757167788086",
+   "title": "Elder Emo Club Smiley Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19bb340bc8834590665cb"
+  },
+  {
+   "sourceId": "67b946e11f7bd7f1a700dec2",
+   "sourceShopify": "7757065158710",
+   "title": "Emo Moms Club Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19bb71cd34c0c300c9056"
+  },
+  {
+   "sourceId": "67b945c5dea9c62dc20829c3",
+   "sourceShopify": "7757064863798",
+   "title": "Emo Dads Club Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19bba817569e72f0491b5"
+  },
+  {
+   "sourceId": "67b942e834f8ca35b002fcc9",
+   "sourceShopify": "7757064470582",
+   "title": "Still Emo Badge Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19bbd1cd34c0c300c905b"
+  },
+  {
+   "sourceId": "67b7965e20b4073f2903244b",
+   "sourceShopify": "7756315787318",
+   "title": "Still Emo Anatomical Heart Color Tee",
+   "blueprint": 6,
+   "kept": 16,
+   "dropped": 0,
+   "newId": "6ad19bc1eb958f0a3a00be3d"
+  },
+  {
+   "sourceId": "67ad5936bb3a79d6790f8f1c",
+   "sourceShopify": "7748079157302",
+   "title": "Still Emo Anatomical Heart Tee",
+   "blueprint": 6,
+   "kept": 24,
+   "dropped": 0,
+   "newId": "6ad19bc440bc8834590665d6"
+  }
+ ],
+ "notCreated": [
+  {
+   "id": "689ac007a69b60be28053eb7",
+   "title": "Work Sucks Tee on Comfort Colors",
+   "bp": 706,
+   "ext": "7909744050230",
+   "tags": [
+    "blink"
+   ],
+   "nv": 7
+  },
+  {
+   "id": "681a6a457069ebd5a40668a5",
+   "title": "Customizable Warped Tour Themed Adult Tee",
+   "bp": 145,
+   "ext": "7828721696822",
+   "tags": [
+    "warped",
+    "party bundle",
+    "adult"
+   ],
+   "nv": 9
+  }
+ ]
+}
