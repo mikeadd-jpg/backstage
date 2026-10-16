@@ -1,0 +1,1150 @@
+{
+ "takenAt": "2026-10-16T00:53:45.161Z",
+ "all": [
+  {
+   "id": "gid://shopify/DeliveryProfile/84815249462",
+   "name": "General profile",
+   "default": true,
+   "productVariantsCount": {
+    "count": 500
+   },
+   "activeMethodDefinitionsCount": 7
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/85400453174",
+   "name": "Standard: SwiftPOD, Garments (shirts)",
+   "default": false,
+   "productVariantsCount": {
+    "count": 233
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/85712633910",
+   "name": "Standard: Duplium, Hats",
+   "default": false,
+   "productVariantsCount": {
+    "count": 10
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/85860188214",
+   "name": "Standard: Printify Choice, Sweatshirt, Hoodie",
+   "default": false,
+   "productVariantsCount": {
+    "count": 277
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/85863596086",
+   "name": "Standard: Printify Choice, T-Shirt, Tank Top, V-neck, Kids clothes, Long-sleeve, Bags",
+   "default": false,
+   "productVariantsCount": {
+    "count": 500
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/85908422710",
+   "name": "Standard: Marco Fine Arts, Garments (Shirts).",
+   "default": false,
+   "productVariantsCount": {
+    "count": 10
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/85977137206",
+   "name": "Printful: Hats, Bags, Pillowcases, All over prints, Socks, Aprons, Flip Flops, Camper mug (#PF-FRG42)",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 0
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/86088745014",
+   "name": "Standard: SPOKE Custom Products, Stickers",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/86263332918",
+   "name": "Standard: Sensaria, BP-1039 Yard Signs",
+   "default": false,
+   "productVariantsCount": {
+    "count": 3
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/86266413110",
+   "name": "Standard: M.i.A Merchandise, 1346- Door Mats",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90494926902",
+   "name": "Gelato: Small Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 3
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90494992438",
+   "name": "Gelato: Small Framed Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495025206",
+   "name": "Gelato: Medium Framed Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495090742",
+   "name": "Gelato: Small Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495123510",
+   "name": "Gelato: Medium Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495156278",
+   "name": "Gelato: Large Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495189046",
+   "name": "Gelato: Small Framed Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495254582",
+   "name": "Gelato: Medium Framed Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495287350",
+   "name": "Gelato: Large Framed Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495320118",
+   "name": "Gelato: Small Acrylic and metallic prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495352886",
+   "name": "Gelato: Medium Acrylic and metallic prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495385654",
+   "name": "Gelato: Large Acrylic and metallic prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495418422",
+   "name": "Gelato: Mugs",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495451190",
+   "name": "Gelato: Mugs - 11oz white, magic",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495483958",
+   "name": "Gelato: Mugs - 11oz colored",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495516726",
+   "name": "Gelato: T-Shirts",
+   "default": false,
+   "productVariantsCount": {
+    "count": 500
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495549494",
+   "name": "Gelato: Hoodies, Sweatshirts",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495615030",
+   "name": "Gelato: Tote Bags",
+   "default": false,
+   "productVariantsCount": {
+    "count": 3
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495647798",
+   "name": "Gelato: Baby Clothing",
+   "default": false,
+   "productVariantsCount": {
+    "count": 261
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495680566",
+   "name": "Gelato: Small and Medium Wall Hangers",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495713334",
+   "name": "Gelato: Large Wall Hangers",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495746102",
+   "name": "Gelato: Cards",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495778870",
+   "name": "Gelato: Small Foam Prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495811638",
+   "name": "Gelato: Medium Foam Prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495877174",
+   "name": "Gelato: Large Foam Prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495909942",
+   "name": "Gelato: Hardcover Photo Books",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495942710",
+   "name": "Gelato: Softcover Photo Books",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495975478",
+   "name": "Gelato: Small Wood Print - 10mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496008246",
+   "name": "Gelato: Medium Wood Print - 10mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496041014",
+   "name": "Gelato: Large Wood Print - 10mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496073782",
+   "name": "Gelato: Small Wood Print - 20mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496106550",
+   "name": "Gelato: Medium Wood Print - 20mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496139318",
+   "name": "Gelato: Large Wood Print - 20mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496172086",
+   "name": "Gelato: Small Poster+Hanger",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496204854",
+   "name": "Gelato: Large Poster+Hanger",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496237622",
+   "name": "Gelato: Wall Calendar",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496270390",
+   "name": "Gelato: Phone Cases",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496303158",
+   "name": "Gelato: Bottles",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496335926",
+   "name": "Gelato: Hats",
+   "default": false,
+   "productVariantsCount": {
+    "count": 2
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496368694",
+   "name": "Gelato: Small Fine Art Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496401462",
+   "name": "Gelato: Medium Fine Art Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496434230",
+   "name": "Gelato: Large Fine Art Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496466998",
+   "name": "Gelato: Small Fine Art Framed Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496499766",
+   "name": "Gelato: Medium Fine Art Framed Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496532534",
+   "name": "Gelato: Large Fine Art Framed Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90647396406",
+   "name": "Standard: Printify Choice, Hats",
+   "default": false,
+   "productVariantsCount": {
+    "count": 10
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92141912118",
+   "name": "Standard: SPOKE Custom Products, NEW Wrapping Papers - 30\" x 180\"",
+   "default": false,
+   "productVariantsCount": {
+    "count": 2
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92142010422",
+   "name": "Standard: MWW On Demand, Indoor Wall Tapestries - 36'' x 26''",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 720
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92142075958",
+   "name": "Standard: MWW On Demand, Indoor Wall Tapestries 50'' x 60''",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 720
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92142108726",
+   "name": "Standard: MWW On Demand, Indoor Wall Tapestries 68'' x 80''",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 720
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92162687030",
+   "name": "Standard: Printify Choice - US Facility, T-Shirt, Tank Top, V-neck, Kids clothes, Long-sleeve, Bags",
+   "default": false,
+   "productVariantsCount": {
+    "count": 500
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92165832758",
+   "name": "Standard: Photo Balloon Store, Balloons",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92166422582",
+   "name": "Standard: Printify Choice, 1220, 282, 97, 284, Poster, 8″ x 10″ , 7\" x 5\" , 5\" x 7\" , 24″ x 18″ , 20″ x 16″ , 23.4\" x 16.5\" ,...",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92166488118",
+   "name": "Standard: SPOKE Custom Products, Pin Buttons",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92852977718",
+   "name": "Standard: Printify Choice - International, T-Shirts",
+   "default": false,
+   "productVariantsCount": {
+    "count": 306
+   },
+   "activeMethodDefinitionsCount": 744
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92909404214",
+   "name": "Standard: SwiftPOD, Garments (shirts + shorts)",
+   "default": false,
+   "productVariantsCount": {
+    "count": 5
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92922314806",
+   "name": "Standard: Printed Simply, 476, 564, 598, 600, 794, 802, 803, 811, Paper products, 11\" × 3\", 15\" × 15\", 15\" × 3.75\", 2\" × 2\", ...",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92950298678",
+   "name": "Standard: Monster Digital, Garments (shirts)",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92950659126",
+   "name": "Standard: Printful, T-Shirt, Tank Top, V-neck, Kids clothes, Long-sleeve, Bags",
+   "default": false,
+   "productVariantsCount": {
+    "count": 20
+   },
+   "activeMethodDefinitionsCount": 756
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/93019013174",
+   "name": "Standard: Dimona Tee, Shirts",
+   "default": false,
+   "productVariantsCount": {
+    "count": 24
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/93066625078",
+   "name": "Standard: Taylor, 1672, 1677, 1678, Pets",
+   "default": false,
+   "productVariantsCount": {
+    "count": 53
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/93108535350",
+   "name": "Shopify Collective",
+   "default": false,
+   "productVariantsCount": {
+    "count": 104
+   },
+   "activeMethodDefinitionsCount": 3
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/93171679286",
+   "name": "Standard: Printed Simply, 661, Paper products, 11\" × 8.5\", 6\" × 4\"",
+   "default": false,
+   "productVariantsCount": {
+    "count": 1
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/93897621558",
+   "name": "Standard: Printed Mint, BP-562 Pet Bandana, Pet Bandana Collar",
+   "default": false,
+   "productVariantsCount": {
+    "count": 92
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/94471618614",
+   "name": "Standard: Printify Choice - International, Sweatshirt, Hoodie",
+   "default": false,
+   "productVariantsCount": {
+    "count": 30
+   },
+   "activeMethodDefinitionsCount": 744
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/94472110134",
+   "name": "Standard: Printify Choice - US Facility, Sweatshirt, Hoodie",
+   "default": false,
+   "productVariantsCount": {
+    "count": 12
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/95137988662",
+   "name": "Standard: Monster Digital, Hoodie, Sweatshirt",
+   "default": false,
+   "productVariantsCount": {
+    "count": 53
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/97051738166",
+   "name": "Standard: Printify Choice - International, T-Shirt, Tank Top, V-neck, Kids clothes, Long-sleeve, Bags",
+   "default": false,
+   "productVariantsCount": {
+    "count": 500
+   },
+   "activeMethodDefinitionsCount": 744
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/97054228534",
+   "name": "Standard: SwiftPOD, Kids clothes, Long-sleeve, T-Shirt, Tank Top, V-neck, Bags",
+   "default": false,
+   "productVariantsCount": {
+    "count": 148
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/97324367926",
+   "name": "Standard: Shirt Monkey, Kids clothes, T-Shirt",
+   "default": false,
+   "productVariantsCount": {
+    "count": 341
+   },
+   "activeMethodDefinitionsCount": 732
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/97325809718",
+   "name": "Standard: T Shirt and Sons, Kids clothes, Long-sleeve, T-Shirt, Tank Top, V-neck",
+   "default": false,
+   "productVariantsCount": {
+    "count": 500
+   },
+   "activeMethodDefinitionsCount": 432
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/97456324662",
+   "name": "Standard: T Shirt and Sons, Hoodie, Sweatshirt",
+   "default": false,
+   "productVariantsCount": {
+    "count": 75
+   },
+   "activeMethodDefinitionsCount": 420
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/97515470902",
+   "name": "Free Sticker",
+   "default": false,
+   "productVariantsCount": {
+    "count": 9
+   },
+   "activeMethodDefinitionsCount": 2
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/98341486646",
+   "name": "Standard: Printed Simply, 1643, Home Decor, 12'' × 18'', 24'' × 36''",
+   "default": false,
+   "productVariantsCount": {
+    "count": 2
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/98341519414",
+   "name": "Standard: Printed Simply, 1643, Home Decor, 30'' × 40'', 36'' × 60''",
+   "default": false,
+   "productVariantsCount": {
+    "count": 2
+   },
+   "activeMethodDefinitionsCount": 36
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/100646027318",
+   "name": "Standard: OPT OnDemand, Kids clothes, Long-sleeve, T-Shirt, V-neck",
+   "default": false,
+   "productVariantsCount": {
+    "count": 16
+   },
+   "activeMethodDefinitionsCount": 732
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/102731186230",
+   "name": "Mailed Stickers Paid",
+   "default": false,
+   "productVariantsCount": {
+    "count": 4
+   },
+   "activeMethodDefinitionsCount": 3
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/102842892342",
+   "name": "Standard: SwiftPOD, Kids clothes, Long-sleeve, T-Shirt, Tank Top, V-neck, Bags, Trousers",
+   "default": false,
+   "productVariantsCount": {
+    "count": 12
+   },
+   "activeMethodDefinitionsCount": 48
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/105873244214",
+   "name": "AYEE",
+   "default": false,
+   "productVariantsCount": {
+    "count": 5
+   },
+   "activeMethodDefinitionsCount": 1
+  }
+ ],
+ "toDelete": [
+  {
+   "id": "gid://shopify/DeliveryProfile/90495090742",
+   "name": "Gelato: Small Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495123510",
+   "name": "Gelato: Medium Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495156278",
+   "name": "Gelato: Large Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495189046",
+   "name": "Gelato: Small Framed Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495254582",
+   "name": "Gelato: Medium Framed Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495287350",
+   "name": "Gelato: Large Framed Canvas",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495320118",
+   "name": "Gelato: Small Acrylic and metallic prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495352886",
+   "name": "Gelato: Medium Acrylic and metallic prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495385654",
+   "name": "Gelato: Large Acrylic and metallic prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495418422",
+   "name": "Gelato: Mugs",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495483958",
+   "name": "Gelato: Mugs - 11oz colored",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495549494",
+   "name": "Gelato: Hoodies, Sweatshirts",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495680566",
+   "name": "Gelato: Small and Medium Wall Hangers",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495713334",
+   "name": "Gelato: Large Wall Hangers",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495746102",
+   "name": "Gelato: Cards",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495778870",
+   "name": "Gelato: Small Foam Prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495811638",
+   "name": "Gelato: Medium Foam Prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495877174",
+   "name": "Gelato: Large Foam Prints",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495909942",
+   "name": "Gelato: Hardcover Photo Books",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495942710",
+   "name": "Gelato: Softcover Photo Books",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90495975478",
+   "name": "Gelato: Small Wood Print - 10mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496008246",
+   "name": "Gelato: Medium Wood Print - 10mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496041014",
+   "name": "Gelato: Large Wood Print - 10mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496073782",
+   "name": "Gelato: Small Wood Print - 20mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496106550",
+   "name": "Gelato: Medium Wood Print - 20mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496139318",
+   "name": "Gelato: Large Wood Print - 20mm",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496172086",
+   "name": "Gelato: Small Poster+Hanger",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496204854",
+   "name": "Gelato: Large Poster+Hanger",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496237622",
+   "name": "Gelato: Wall Calendar",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496270390",
+   "name": "Gelato: Phone Cases",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496303158",
+   "name": "Gelato: Bottles",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496368694",
+   "name": "Gelato: Small Fine Art Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496401462",
+   "name": "Gelato: Medium Fine Art Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496434230",
+   "name": "Gelato: Large Fine Art Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496466998",
+   "name": "Gelato: Small Fine Art Framed Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496499766",
+   "name": "Gelato: Medium Fine Art Framed Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/90496532534",
+   "name": "Gelato: Large Fine Art Framed Posters",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 16
+  },
+  {
+   "id": "gid://shopify/DeliveryProfile/92950298678",
+   "name": "Standard: Monster Digital, Garments (shirts)",
+   "default": false,
+   "productVariantsCount": {
+    "count": 0
+   },
+   "activeMethodDefinitionsCount": 48
+  }
+ ]
+}
