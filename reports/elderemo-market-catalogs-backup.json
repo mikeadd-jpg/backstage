@@ -1564,9 +1564,10 @@
   "completed": "2026-10-16, in one pass: US catalog autoPublish turned off, all 98 -int listings set ACTIVE and force-unpublished from the US catalog, then all 98 originals removed from the UK, Canada and Australia catalogs. The US catalog and the Online Store channel were not touched for the originals.",
   "after": {
    "AU": {
-    "total": 99,
+    "total": 98,
     "intListings": 98,
-    "originals": 0
+    "originals": 0,
+    "note": "Fully locally fulfilled: every product in the Australia catalog is an -int listing on the Printify Choice International profile."
    },
    "CA": {
     "total": 492,
@@ -1586,7 +1587,7 @@
    }
   },
   "oneVersionPerMarket": "Holds: every one of the 98 products now has exactly one version in each market catalog, the -int listing in UK/CA/AU and the original in the US. That is the condition Shopify needs to generate hreflang correctly.",
-  "openItem": "\"Customizable Warped Tour Themed Adult Tee\" (9229204848950, handle customizable-warped-tour-themed-adult-tee) is the one product left in the Australia catalog that is not an -int listing. It is one of the two that never duplicated, it sits on the US-facility profile, and an Australian buyer therefore pays import shipping on it. It is tagged bestseller, so whether to pull it from Australia is a trade-off rather than an obvious yes.",
+  "openItem": "Resolved. \"Customizable Warped Tour Themed Adult Tee\" (7828721696822) was removed from the Australia catalog on 2026-10-16, so Australia now holds the 98 -int listings and nothing else. It stays live in the US, UK and Canada; it is one of the two products that never duplicated, so it has no Global Fulfillment version yet.",
   "autoPublishNow": {
    "AU": false,
    "CA": true,
