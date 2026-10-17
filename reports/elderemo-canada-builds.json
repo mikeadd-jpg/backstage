@@ -1,0 +1,3074 @@
+{
+ "generated": "2026-10-16",
+ "store": "Elder Emo (9e2273-43)",
+ "what": "Canadian versions of US-catalog products a Canadian printer can make. Handle <source>-ca, tagged ca, ACTIVE in the Canada market catalog and the Online Store only. Purely additive: the source keeps the US catalog and Canada did not sell these before, so nothing was swapped.",
+ "locality": "A printer counted as Canadian only where Printify quotes Canada its OWN shipping lane within 7 days, never from the factory list. CLAUDE.md records why: the factory list shows CA facilities for Printify Choice that a regular listing is never quoted.",
+ "candidates": 303,
+ "planned": 301,
+ "built": 297,
+ "failed": 4,
+ "variants": 3239,
+ "byPrinter": {
+  "Print Geek": 198,
+  "Duplium": 99
+ },
+ "colourLoss": "25 of the 301 lose a colour the Canadian printer does not stock, worst being the three Make America tees at 4 colours down to 2 (Red and Royal Caribe gone). Overall 3,531 source variants became 3,239.",
+ "marketsAfter": {
+  "AU": 98,
+  "CA": 395,
+  "UK": 399,
+  "US": 521
+ },
+ "notBuilt": [
+  {
+   "title": "Customizable Warped Tour Toddler Tee",
+   "shopify": "7828694564918",
+   "error": "400 {\"status\":\"error\",\"code\":8253,\"message\":\"Operation failed.\",\"errors\":{\"reason\":\"Provided images do not exist\",\"code\""
+  },
+  {
+   "title": "Customizable Warped Tour Themed Adult Tee",
+   "shopify": "7828721696822",
+   "error": "400 {\"status\":\"error\",\"code\":8253,\"message\":\"Operation failed.\",\"errors\":{\"reason\":\"Provided images do not exist\",\"code\""
+  },
+  {
+   "title": "Still Emo Embroidered Tee",
+   "shopify": "8296065105974",
+   "error": "422 {\"error\":\"Placeholder: front_left_chest is invalid\",\"request_id\":\"1792196085@bd0ea9a0-ac7a-4707-81a1-353c5099918b\"}"
+  },
+  {
+   "title": "Still Emo Rose Hoodie",
+   "shopify": "9291631034422",
+   "error": "no usable print areas"
+  }
+ ],
+ "alsoWorthKnowing": [
+  "86 of the 303 candidates are Gildan 5000 or Comfort Colors 1717, where Global Fulfillment serves Canada at .79 against the best Canadian lane at .09, and covers the UK and Australia in the same listing. They were built as Canada-only listings because they have no -int version; extending the -int work to them would be cheaper and wider.",
+  "Ten products flipped to DRAFT during the run and fell out of their catalogs: four -int listings, six -uk rebuilds. Two live US source products did the same and left the US catalog. All twelve were restored to ACTIVE and republished, and the US catalog is back to its backed-up 521. The cause was not identified. Creating and publishing a sibling product is the only thing that touched them, and nothing in the build writes to a source, so it is most likely something in how Printify syncs a shop to Shopify. Worth re-checking after any future bulk build.",
+  "Three -ca products were created and then vanished from both Shopify and Printify, leaving stale ids in the state file. They were rebuilt."
+ ],
+ "products": [
+  {
+   "handle": "still-emo-anatomical-heart-tee-ca",
+   "shopify": "9521249255478",
+   "printify": "6ad27c2f205a24e637020caa",
+   "printer": "Print Geek",
+   "variants": 24,
+   "sourceVariants": 24,
+   "sourceShopify": "7748079157302",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-anatomical-heart-color-tee-ca",
+   "shopify": "9521250172982",
+   "printify": "6ad27c3eeaf443955602145d",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7756315787318",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-badge-tee-ca",
+   "shopify": "9521250435126",
+   "printify": "6ad27c48eaf4439556021467",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7757064470582",
+   "lostColours": []
+  },
+  {
+   "handle": "emo-dads-club-tee-ca",
+   "shopify": "9521250730038",
+   "printify": "6ad27c5897824dc2420b2cd6",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7757064863798",
+   "lostColours": []
+  },
+  {
+   "handle": "emo-moms-club-tee-ca",
+   "shopify": "9521251352630",
+   "printify": "6ad27c67a79415976f0edbcf",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7757065158710",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-club-smiley-tee-ca",
+   "shopify": "9521252171830",
+   "printify": "6ad27c788e63605db603c219",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7757167788086",
+   "lostColours": []
+  },
+  {
+   "handle": "from-mosh-pits-to-mezzanines-tee-ca",
+   "shopify": "9521252565046",
+   "printify": "6ad27c88acb04294d707ec7a",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7872712998966",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-bleeding-heart-tee-ca",
+   "shopify": "9521252859958",
+   "printify": "6ad27c96a80cd3aa5906c18d",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7882438901814",
+   "lostColours": []
+  },
+  {
+   "handle": "so-what-happened-was-john-tee-ca",
+   "shopify": "9521253253174",
+   "printify": "6ad27ca5eaf443955602149f",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7882498637878",
+   "lostColours": []
+  },
+  {
+   "handle": "where-are-you-tee-ca",
+   "shopify": "9521253580854",
+   "printify": "6ad27cb4f3b2ab4a880ce351",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7908398202934",
+   "lostColours": []
+  },
+  {
+   "handle": "delonge-hoppus-2024-tee-ca",
+   "shopify": "9521253711926",
+   "printify": "6ad27cc3acb04294d707eca6",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7908399644726",
+   "lostColours": []
+  },
+  {
+   "handle": "what-the-fuck-is-up-dennys-tee-shirt-ca",
+   "shopify": "9521254039606",
+   "printify": "6ad27cd197824dc2420b2d1c",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7909737136182",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-balcony-tee-ca",
+   "shopify": "9521254400054",
+   "printify": "6ad27ce0acb04294d707ecca",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7911920730166",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-balcony-neon-edition-tee-ca",
+   "shopify": "9521254924342",
+   "printify": "6ad27cf0a80cd3aa5906c1ee",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7911941537846",
+   "lostColours": []
+  },
+  {
+   "handle": "travis-im-pregnant-tee-ca",
+   "shopify": "9521255284790",
+   "printify": "6ad27d00be99720e8e0bbe77",
+   "printer": "Print Geek",
+   "variants": 31,
+   "sourceVariants": 32,
+   "sourceShopify": "7914747527222",
+   "lostColours": []
+  },
+  {
+   "handle": "blink-me-tee-ca",
+   "shopify": "9521255809078",
+   "printify": "6ad27d0fbe99720e8e0bbe7f",
+   "printer": "Print Geek",
+   "variants": 31,
+   "sourceVariants": 32,
+   "sourceShopify": "7914749198390",
+   "lostColours": []
+  },
+  {
+   "handle": "emo-moms-club-tee-1-ca",
+   "shopify": "9521256136758",
+   "printify": "6ad27d25f124a2c13f09c476",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7920583147574",
+   "lostColours": []
+  },
+  {
+   "handle": "emo-dads-club-tee-1-ca",
+   "shopify": "9521256529974",
+   "printify": "6ad27d34eaf44395560214c7",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7920586391606",
+   "lostColours": []
+  },
+  {
+   "handle": "im-too-old-for-this-pit-danny-glover-tee-ca",
+   "shopify": "9521257021494",
+   "printify": "6ad27d43f124a2c13f09c495",
+   "printer": "Duplium",
+   "variants": 21,
+   "sourceVariants": 25,
+   "sourceShopify": "7927291904054",
+   "lostColours": []
+  },
+  {
+   "handle": "im-too-old-for-this-pit-tee-ca",
+   "shopify": "9521257611318",
+   "printify": "6ad27d5797824dc2420b2d53",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7927299932214",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-cursive-tee-ca",
+   "shopify": "9521258004534",
+   "printify": "6ad27d679fb513ab880f5814",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992185290806",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-rose-badge-tee-ca",
+   "shopify": "9521258168374",
+   "printify": "6ad27d71eaf44395560214ea",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996869607478",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-rose-tee-ca",
+   "shopify": "9521258430518",
+   "printify": "6ad27d809fb513ab880f5833",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996870688822",
+   "lostColours": []
+  },
+  {
+   "handle": "from-mosh-pits-to-mezzanines-varsity-tee-ca",
+   "shopify": "9521258889270",
+   "printify": "6ad27d8f824c87e1e7021065",
+   "printer": "Duplium",
+   "variants": 22,
+   "sourceVariants": 28,
+   "sourceShopify": "8174113456182",
+   "lostColours": []
+  },
+  {
+   "handle": "im-too-old-for-this-pit-varsity-tee-ca",
+   "shopify": "9521259315254",
+   "printify": "6ad27d9ea79415976f0edc7b",
+   "printer": "Duplium",
+   "variants": 22,
+   "sourceVariants": 28,
+   "sourceShopify": "8174120730678",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-tee-ca",
+   "shopify": "9521259839542",
+   "printify": "6ad27dadf3b2ab4a880ce3f2",
+   "printer": "Print Geek",
+   "variants": 21,
+   "sourceVariants": 21,
+   "sourceShopify": "8259260284982",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-rose-tee-ca",
+   "shopify": "9521260232758",
+   "printify": "6ad27dc197824dc2420b2db8",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "8295687356470",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-was-never-a-phase-tee-ca",
+   "shopify": "9521260625974",
+   "printify": "6ad27dd1a79415976f0edca0",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "8295688536118",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-club-skull-dagger-tee-ca",
+   "shopify": "9521261019190",
+   "printify": "6ad27de5acb04294d707ed53",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "8295854112822",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-never-a-phase-tee-ca",
+   "shopify": "9521261510710",
+   "printify": "6ad27df4824c87e1e70210dd",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "8296044068918",
+   "lostColours": []
+  },
+  {
+   "handle": "moshin-since-the-90s-tee-ca",
+   "shopify": "9521262034998",
+   "printify": "6ad27e08211ad3cefd069a2a",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "8296131067958",
+   "lostColours": []
+  },
+  {
+   "handle": "all-panic-no-disco-tee-ca",
+   "shopify": "9521262329910",
+   "printify": "6ad27e19be99720e8e0bbf3f",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "8309204516918",
+   "lostColours": []
+  },
+  {
+   "handle": "emo-music-therapy-tee-ca",
+   "shopify": "9521262592054",
+   "printify": "6ad27e29211ad3cefd069a54",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 14,
+   "sourceShopify": "8330628464694",
+   "lostColours": []
+  },
+  {
+   "handle": "one-armed-caesar-tee-ca",
+   "shopify": "9521262886966",
+   "printify": "6ad27e38211ad3cefd069a5d",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "8369030430774",
+   "lostColours": []
+  },
+  {
+   "handle": "1776-was-cool-tee-ca",
+   "shopify": "9521263181878",
+   "printify": "6ad27e43be99720e8e0bbf5c",
+   "printer": "Print Geek",
+   "variants": 30,
+   "sourceVariants": 30,
+   "sourceShopify": "8695232790582",
+   "lostColours": []
+  },
+  {
+   "handle": "dept-of-elder-emo-affairs-tee-ca",
+   "shopify": "9521263542326",
+   "printify": "6ad27e53211ad3cefd069a7a",
+   "printer": "Print Geek",
+   "variants": 22,
+   "sourceVariants": 22,
+   "sourceShopify": "8705096286262",
+   "lostColours": []
+  },
+  {
+   "handle": "emomom-tee-ca",
+   "shopify": "9521263935542",
+   "printify": "6ad27e6297824dc2420b2e45",
+   "printer": "Print Geek",
+   "variants": 22,
+   "sourceVariants": 22,
+   "sourceShopify": "8707540975670",
+   "lostColours": []
+  },
+  {
+   "handle": "in-the-early-2000s-tee-ca",
+   "shopify": "9521264295990",
+   "printify": "6ad27e71a79415976f0edd1f",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 14,
+   "sourceShopify": "8752641802294",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-beach-club-tee-ca",
+   "shopify": "9521264689206",
+   "printify": "6ad27e80a79415976f0edd3a",
+   "printer": "Print Geek",
+   "variants": 22,
+   "sourceVariants": 22,
+   "sourceShopify": "8876722683958",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-skull-tee-ca",
+   "shopify": "9521265082422",
+   "printify": "6ad27e968e63605db603c388",
+   "printer": "Print Geek",
+   "variants": 22,
+   "sourceVariants": 22,
+   "sourceShopify": "8876907855926",
+   "lostColours": []
+  },
+  {
+   "handle": "hearts-says-pit-back-says-balcony-tee-ca",
+   "shopify": "9521265377334",
+   "printify": "6ad27ea1f124a2c13f09c5b7",
+   "printer": "Print Geek",
+   "variants": 24,
+   "sourceVariants": 24,
+   "sourceShopify": "8918892052534",
+   "lostColours": []
+  },
+  {
+   "handle": "still-not-okay-tee-ca",
+   "shopify": "9521265737782",
+   "printify": "6ad27eb0824c87e1e7021166",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 24,
+   "sourceShopify": "8989026582582",
+   "lostColours": [
+    "Natural"
+   ]
+  },
+  {
+   "handle": "still-emo-eyeball-tee-ca",
+   "shopify": "9521266130998",
+   "printify": "6ad27ebff3b2ab4a880ce4aa",
+   "printer": "Print Geek",
+   "variants": 30,
+   "sourceVariants": 32,
+   "sourceShopify": "8989199073334",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-sit-tee-ca",
+   "shopify": "9521266458678",
+   "printify": "6ad27ece9fb513ab880f597b",
+   "printer": "Print Geek",
+   "variants": 24,
+   "sourceVariants": 32,
+   "sourceShopify": "8992629260342",
+   "lostColours": [
+    "Sapphire"
+   ]
+  },
+  {
+   "handle": "emo-music-therapy-byw-tee-ca",
+   "shopify": "9521266720822",
+   "printify": "6ad27eddbe99720e8e0bbfd3",
+   "printer": "Print Geek",
+   "variants": 15,
+   "sourceVariants": 16,
+   "sourceShopify": "8994684928054",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-flower-tee-ca",
+   "shopify": "9521267081270",
+   "printify": "6ad27eeda79415976f0edda4",
+   "printer": "Print Geek",
+   "variants": 24,
+   "sourceVariants": 32,
+   "sourceShopify": "9000372568118",
+   "lostColours": [
+    "Antique Cherry Red"
+   ]
+  },
+  {
+   "handle": "skiba-andriano-2024-womens-tee-ca",
+   "shopify": "9521463099446",
+   "printify": "6ad28464acb04294d707f281",
+   "printer": "Print Geek",
+   "variants": 7,
+   "sourceVariants": 10,
+   "sourceShopify": "7621722210358",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-pop-punk-again-tee-1-ca",
+   "shopify": "9521463525430",
+   "printify": "6ad284769fb513ab880f5ef9",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7619705503798",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-emo-again-tee-1-ca",
+   "shopify": "9521463918646",
+   "printify": "6ad28488a79415976f0ee268",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7619718840374",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-punk-again-tee-1-ca",
+   "shopify": "9521464279094",
+   "printify": "6ad2849aa80cd3aa5906c7b8",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7619719233590",
+   "lostColours": []
+  },
+  {
+   "handle": "skiba-andriano-2024-campaign-tee-ca",
+   "shopify": "9521464737846",
+   "printify": "6ad284acf3b2ab4a880ce9ba",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7621716541494",
+   "lostColours": []
+  },
+  {
+   "handle": "wake-me-up-when-september-ends-tee-ca",
+   "shopify": "9521465720886",
+   "printify": "6ad284bea80cd3aa5906c7fa",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "7621997822006",
+   "lostColours": []
+  },
+  {
+   "handle": "im-empty-inside-tee-ca",
+   "shopify": "9521466245174",
+   "printify": "6ad284d08e63605db603c938",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "7621999132726",
+   "lostColours": []
+  },
+  {
+   "handle": "copy-of-im-empty-inside-tee-ca",
+   "shopify": "9521466605622",
+   "printify": "6ad284e1eaf4439556021af3",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "7621999722550",
+   "lostColours": []
+  },
+  {
+   "handle": "dead-inside-tee-ca",
+   "shopify": "9521466933302",
+   "printify": "6ad284f2eaf4439556021b13",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "7630335344694",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-society-tee-ca",
+   "shopify": "9521467293750",
+   "printify": "6ad28504acb04294d707f324",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7630344028214",
+   "lostColours": []
+  },
+  {
+   "handle": "stink-182-long-sleeve-onesie-ca",
+   "shopify": "9521467818038",
+   "printify": "6ad28515205a24e637021357",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 12,
+   "sourceShopify": "7992270389302",
+   "lostColours": [
+    "Navy"
+   ]
+  },
+  {
+   "handle": "i-just-want-to-break-you-down-so-badly-long-sleeve-onesie-ca",
+   "shopify": "9521468145718",
+   "printify": "6ad28529824c87e1e70216cd",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992275173430",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-long-sleeve-onesie-ca",
+   "shopify": "9521468440630",
+   "printify": "6ad2853397824dc2420b3427",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7992278417462",
+   "lostColours": []
+  },
+  {
+   "handle": "taking-dads-sunday-long-sleeve-onesie-ca",
+   "shopify": "9521468866614",
+   "printify": "6ad285439fb513ab880f5fd4",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992281366582",
+   "lostColours": []
+  },
+  {
+   "handle": "so-long-and-good-night-long-sleeve-onesie-long-sleeve-onesie-ca",
+   "shopify": "9521469095990",
+   "printify": "6ad28553a79415976f0ee357",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7992287756342",
+   "lostColours": []
+  },
+  {
+   "handle": "all-the-small-things-long-sleeve-onesie-ca",
+   "shopify": "9521469685814",
+   "printify": "6ad2855e97824dc2420b344b",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992292769846",
+   "lostColours": []
+  },
+  {
+   "handle": "panic-at-the-daycare-long-sleeve-onesie-ca",
+   "shopify": "9521470046262",
+   "printify": "6ad28577be99720e8e0bc5af",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992298635318",
+   "lostColours": []
+  },
+  {
+   "handle": "cute-with-the-e-long-sleeve-onesie-ca",
+   "shopify": "9521470472246",
+   "printify": "6ad28581be99720e8e0bc5b9",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992300273718",
+   "lostColours": []
+  },
+  {
+   "handle": "raised-by-an-elder-emo-long-sleeve-onesie-ca",
+   "shopify": "9521470898230",
+   "printify": "6ad28591824c87e1e7021715",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992303910966",
+   "lostColours": []
+  },
+  {
+   "handle": "second-generation-emo-kid-long-sleeve-onesie-ca",
+   "shopify": "9521471356982",
+   "printify": "6ad285a097824dc2420b34b2",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992308138038",
+   "lostColours": []
+  },
+  {
+   "handle": "second-generation-pop-punk-kid-long-sleeve-onesie-ca",
+   "shopify": "9521471815734",
+   "printify": "6ad285b9be99720e8e0bc5ff",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7992310267958",
+   "lostColours": []
+  },
+  {
+   "handle": "screaming-infant-melodies-long-sleeve-onesie-ca",
+   "shopify": "9521472208950",
+   "printify": "6ad285c88e63605db603ca0d",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992312791094",
+   "lostColours": []
+  },
+  {
+   "handle": "crawl-out-boy-long-sleeve-onesie-ca",
+   "shopify": "9521472569398",
+   "printify": "6ad285d83a6621c15c0b825e",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992314626102",
+   "lostColours": []
+  },
+  {
+   "handle": "my-chemical-underpants-long-sleeve-onesie-ca",
+   "shopify": "9521472897078",
+   "printify": "6ad285e7be99720e8e0bc62c",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992324587574",
+   "lostColours": []
+  },
+  {
+   "handle": "alkawhine-long-sleeve-onesie-ca",
+   "shopify": "9521473224758",
+   "printify": "6ad285f697824dc2420b350f",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7992325832758",
+   "lostColours": []
+  },
+  {
+   "handle": "im-just-a-kid-long-sleeve-onesie-ca",
+   "shopify": "9521473454134",
+   "printify": "6ad28606205a24e6370213e0",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7992327569462",
+   "lostColours": []
+  },
+  {
+   "handle": "garage-band-king-long-sleeve-onesie-ca",
+   "shopify": "9521473749046",
+   "printify": "6ad2861197824dc2420b354e",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992329207862",
+   "lostColours": []
+  },
+  {
+   "handle": "cute-is-what-i-aim-for-long-sleeve-onesie-ca",
+   "shopify": "9521474109494",
+   "printify": "6ad28621205a24e637021413",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992332484662",
+   "lostColours": []
+  },
+  {
+   "handle": "hawthorne-high-chair-long-sleeve-onesie-ca",
+   "shopify": "9521474469942",
+   "printify": "6ad2863097824dc2420b3587",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7992334090294",
+   "lostColours": []
+  },
+  {
+   "handle": "the-snack-parade-long-sleeve-onesie-ca",
+   "shopify": "9521474830390",
+   "printify": "6ad2864097824dc2420b35a9",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7992335269942",
+   "lostColours": []
+  },
+  {
+   "handle": "crumb-41-long-sleeve-onesie-ca",
+   "shopify": "9521475289142",
+   "printify": "6ad28651824c87e1e7021830",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7992337072182",
+   "lostColours": []
+  },
+  {
+   "handle": "scream-day-long-sleeve-onesie-ca",
+   "shopify": "9521475551286",
+   "printify": "6ad28661a80cd3aa5906c97f",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7992341364790",
+   "lostColours": []
+  },
+  {
+   "handle": "waiting-for-my-fangs-to-come-in-onesie-ca",
+   "shopify": "9521476042806",
+   "printify": "6ad28675a80cd3aa5906c9a8",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7627007623222",
+   "lostColours": []
+  },
+  {
+   "handle": "fall-out-boo-onesie-ca",
+   "shopify": "9521476370486",
+   "printify": "6ad28689a79415976f0ee505",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7627007754294",
+   "lostColours": []
+  },
+  {
+   "handle": "wake-me-up-when-september-ends-onesie-ca",
+   "shopify": "9521476665398",
+   "printify": "6ad28699eaf4439556021cdb",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7627007852598",
+   "lostColours": []
+  },
+  {
+   "handle": "sk8er-boo-onesie-ca",
+   "shopify": "9521476960310",
+   "printify": "6ad286a8824c87e1e70218b6",
+   "printer": "Duplium",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7627007950902",
+   "lostColours": []
+  },
+  {
+   "handle": "i-just-want-to-break-you-down-so-badly-onesie-ca",
+   "shopify": "9521477091382",
+   "printify": "6ad286b3205a24e63702150d",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7994717438006",
+   "lostColours": []
+  },
+  {
+   "handle": "stink-182-onesie-ca",
+   "shopify": "9521477484598",
+   "printify": "6ad286c4f3b2ab4a880cec43",
+   "printer": "Duplium",
+   "variants": 15,
+   "sourceVariants": 15,
+   "sourceShopify": "7994721140790",
+   "lostColours": []
+  },
+  {
+   "handle": "taking-dads-sunday-onesie-ca",
+   "shopify": "9521478008886",
+   "printify": "6ad286d4eaf4439556021d5c",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7994821869622",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-onesie-ca",
+   "shopify": "9521478271030",
+   "printify": "6ad286df8e63605db603cb5a",
+   "printer": "Duplium",
+   "variants": 15,
+   "sourceVariants": 15,
+   "sourceShopify": "7994822557750",
+   "lostColours": []
+  },
+  {
+   "handle": "garage-band-king-onesie-ca",
+   "shopify": "9521478598710",
+   "printify": "6ad286eef124a2c13f09cd52",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7994823245878",
+   "lostColours": []
+  },
+  {
+   "handle": "there-s-a-story-at-the-bottom-of-this-bottle-onesie-ca",
+   "shopify": "9521478926390",
+   "printify": "6ad286fe8e63605db603cb8c",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7994824228918",
+   "lostColours": []
+  },
+  {
+   "handle": "all-the-small-things-colorful-onesie-ca",
+   "shopify": "9521479155766",
+   "printify": "6ad2870eeaf4439556021db8",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7994824589366",
+   "lostColours": []
+  },
+  {
+   "handle": "my-chemical-underpants-onesie-ca",
+   "shopify": "9521479614518",
+   "printify": "6ad2871ebe99720e8e0bc83a",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7994825703478",
+   "lostColours": []
+  },
+  {
+   "handle": "second-generation-pop-punk-kid-onesie-ca",
+   "shopify": "9521480269878",
+   "printify": "6ad2872df3b2ab4a880cecfd",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7994829504566",
+   "lostColours": []
+  },
+  {
+   "handle": "crawl-out-boy-onesie-ca",
+   "shopify": "9521480794166",
+   "printify": "6ad2873ef124a2c13f09cdd0",
+   "printer": "Duplium",
+   "variants": 22,
+   "sourceVariants": 27,
+   "sourceShopify": "7994840973366",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "alkawhine-trio-onesie-ca",
+   "shopify": "9521481383990",
+   "printify": "6ad2874dbe99720e8e0bc88f",
+   "printer": "Duplium",
+   "variants": 7,
+   "sourceVariants": 9,
+   "sourceShopify": "7994853064758",
+   "lostColours": []
+  },
+  {
+   "handle": "scream-day-onesie-ca",
+   "shopify": "9521481711670",
+   "printify": "6ad2875dbe99720e8e0bc8bd",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7994868629558",
+   "lostColours": []
+  },
+  {
+   "handle": "panic-at-the-disco-onesie-ca",
+   "shopify": "9521481973814",
+   "printify": "6ad2876cf3b2ab4a880ced62",
+   "printer": "Duplium",
+   "variants": 22,
+   "sourceVariants": 27,
+   "sourceShopify": "7994880360502",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "hawthorne-high-chair-onesie-ca",
+   "shopify": "9521483055158",
+   "printify": "6ad2877da80cd3aa5906cb4a",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7994890354742",
+   "lostColours": []
+  },
+  {
+   "handle": "silverscream-onesie-ca",
+   "shopify": "9521483513910",
+   "printify": "6ad287b1be99720e8e0bc90e",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995427717174",
+   "lostColours": []
+  },
+  {
+   "handle": "the-snack-parade-onesie-ca",
+   "shopify": "9521483677750",
+   "printify": "6ad287ca205a24e637021649",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 9,
+   "sourceShopify": "7995429027894",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "cute-with-the-e-onesie-ca",
+   "shopify": "9521484070966",
+   "printify": "6ad287dabe99720e8e0bc937",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 9,
+   "sourceShopify": "7995432239158",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "the-all-american-recess-onesie-ca",
+   "shopify": "9521484333110",
+   "printify": "6ad287e53a6621c15c0b8534",
+   "printer": "Duplium",
+   "variants": 22,
+   "sourceVariants": 27,
+   "sourceShopify": "7995435057206",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "screaming-infant-melodies-onesie-ca",
+   "shopify": "9521509040182",
+   "printify": "6ad287f5a79415976f0ee6ef",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceShopify": "7995436236854",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "so-long-and-good-night-onesie-ca",
+   "shopify": "9521509072950",
+   "printify": "6ad28cf1f3b2ab4a880cf266",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7995438497846",
+   "lostColours": []
+  },
+  {
+   "handle": "stained-white-ts-onesie-ca",
+   "shopify": "9521509171254",
+   "printify": "6ad28cfc8e63605db603d1cd",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7995447050294",
+   "lostColours": []
+  },
+  {
+   "handle": "the-get-up-kid-onesie-ca",
+   "shopify": "9521509236790",
+   "printify": "6ad28d0c2a4636081705f95c",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995448098870",
+   "lostColours": []
+  },
+  {
+   "handle": "pierce-the-veggies-onesie-ca",
+   "shopify": "9521509335094",
+   "printify": "6ad28d1c3a6621c15c0b8a78",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995448492086",
+   "lostColours": []
+  },
+  {
+   "handle": "bayslide-onesie-ca",
+   "shopify": "9521509433398",
+   "printify": "6ad28d2cf124a2c13f09d346",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7995450261558",
+   "lostColours": []
+  },
+  {
+   "handle": "cute-is-what-i-aim-for-onesie-ca",
+   "shopify": "9521509662774",
+   "printify": "6ad28d372a4636081705f9bb",
+   "printer": "Duplium",
+   "variants": 22,
+   "sourceVariants": 27,
+   "sourceShopify": "7995452981302",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "boys-like-squirrels-onesie-1-ca",
+   "shopify": "9521509826614",
+   "printify": "6ad28d4c3a6621c15c0b8ab7",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995455275062",
+   "lostColours": []
+  },
+  {
+   "handle": "whine-thru-records-onesie-1-ca",
+   "shopify": "9521509990454",
+   "printify": "6ad28d57eaf4439556022381",
+   "printer": "Duplium",
+   "variants": 15,
+   "sourceVariants": 19,
+   "sourceShopify": "7995456225334",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "pop-punk-in-training-onesie-1-ca",
+   "shopify": "9521510154294",
+   "printify": "6ad28d66f124a2c13f09d371",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7995461599286",
+   "lostColours": []
+  },
+  {
+   "handle": "let-it-enfold-you-onesie-1-ca",
+   "shopify": "9521510187062",
+   "printify": "6ad28d76205a24e637021bb9",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7995463172150",
+   "lostColours": []
+  },
+  {
+   "handle": "its-not-a-phase-dad-onesie-1-ca",
+   "shopify": "9521510219830",
+   "printify": "6ad28d81824c87e1e7021f5c",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7995467628598",
+   "lostColours": []
+  },
+  {
+   "handle": "2nd-generation-pop-punk-kid-onesie-1-ca",
+   "shopify": "9521510252598",
+   "printify": "6ad28d8d205a24e637021bd0",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995481030710",
+   "lostColours": []
+  },
+  {
+   "handle": "2nd-generation-emo-kid-broken-heart-onesie-1-ca",
+   "shopify": "9521510318134",
+   "printify": "6ad28d9d3a6621c15c0b8b0e",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995483160630",
+   "lostColours": []
+  },
+  {
+   "handle": "crumb41-onesie-1-ca",
+   "shopify": "9521510383670",
+   "printify": "6ad28da93a6621c15c0b8b17",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995484307510",
+   "lostColours": []
+  },
+  {
+   "handle": "see-u-l8r-boi-onesie-1-ca",
+   "shopify": "9521510744118",
+   "printify": "6ad28db88e63605db603d295",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7995484962870",
+   "lostColours": []
+  },
+  {
+   "handle": "playosin-onesie-1-ca",
+   "shopify": "9521511006262",
+   "printify": "6ad28dc8824c87e1e7021f9a",
+   "printer": "Print Geek",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7995487158326",
+   "lostColours": []
+  },
+  {
+   "handle": "rock-on-onesie-1-ca",
+   "shopify": "9521511235638",
+   "printify": "6ad28dd3f3b2ab4a880cf356",
+   "printer": "Duplium",
+   "variants": 14,
+   "sourceVariants": 17,
+   "sourceShopify": "7995488960566",
+   "lostColours": []
+  },
+  {
+   "handle": "second-generation-emo-kid-onesie-1-ca",
+   "shopify": "9521511563318",
+   "printify": "6ad28de33a6621c15c0b8b3c",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995492696118",
+   "lostColours": []
+  },
+  {
+   "handle": "raised-by-an-elder-emo-onesie-1-ca",
+   "shopify": "9521512022070",
+   "printify": "6ad28df23a6621c15c0b8b44",
+   "printer": "Duplium",
+   "variants": 20,
+   "sourceVariants": 24,
+   "sourceShopify": "7995495022646",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "im-just-a-kid-onesie-1-ca",
+   "shopify": "9521512415286",
+   "printify": "6ad28e02eaf44395560223f9",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7995496497206",
+   "lostColours": []
+  },
+  {
+   "handle": "do-you-have-the-time-to-listen-to-me-whine-onesie-1-ca",
+   "shopify": "9521512775734",
+   "printify": "6ad28e123f42a07d4c090cb0",
+   "printer": "Duplium",
+   "variants": 15,
+   "sourceVariants": 19,
+   "sourceShopify": "7995499610166",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "invented-screamo-onesie-1-ca",
+   "shopify": "9521513136182",
+   "printify": "6ad28e22f3b2ab4a880cf3d8",
+   "printer": "Duplium",
+   "variants": 15,
+   "sourceVariants": 19,
+   "sourceShopify": "7995500855350",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "every-time-i-cry-onesie-1-ca",
+   "shopify": "9521513857078",
+   "printify": "6ad28e31eaf443955602244b",
+   "printer": "Duplium",
+   "variants": 15,
+   "sourceVariants": 19,
+   "sourceShopify": "7995505803318",
+   "lostColours": [
+    "Ash"
+   ]
+  },
+  {
+   "handle": "pierce-the-veggies-onesie-uk-ca",
+   "shopify": "9521714593846",
+   "printify": "6ad293ed8dd72e60d20f1471",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "8002815623222",
+   "lostColours": []
+  },
+  {
+   "handle": "bayslide-onesie-uk-ca",
+   "shopify": "9521715413046",
+   "printify": "6ad293fd824c87e1e7022411",
+   "printer": "Print Geek",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "8002815655990",
+   "lostColours": []
+  },
+  {
+   "handle": "cute-is-what-i-aim-for-onesie-uk-ca",
+   "shopify": "9521716035638",
+   "printify": "6ad29407205a24e63702209c",
+   "printer": "Print Geek",
+   "variants": 15,
+   "sourceVariants": 16,
+   "sourceShopify": "8002815721526",
+   "lostColours": []
+  },
+  {
+   "handle": "screaming-infant-melodies-onesie-uk-ca",
+   "shopify": "9521716723766",
+   "printify": "6ad29412eaf4439556022844",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "8002815754294",
+   "lostColours": []
+  },
+  {
+   "handle": "stink-182-infant-tee-ca",
+   "shopify": "9521724620854",
+   "printify": "6ad294a63f42a07d4c091169",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7995520647222",
+   "lostColours": []
+  },
+  {
+   "handle": "i-just-want-to-break-you-down-so-badly-infant-tee-ca",
+   "shopify": "9521725177910",
+   "printify": "6ad294b18dd72e60d20f14c0",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996089237558",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-infant-tee-ca",
+   "shopify": "9521726160950",
+   "printify": "6ad294c0205a24e6370220e5",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996090679350",
+   "lostColours": []
+  },
+  {
+   "handle": "cute-with-the-e-infant-tee-ca",
+   "shopify": "9521726750774",
+   "printify": "6ad294d48e63605db603d7e9",
+   "printer": "Print Geek",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7996091826230",
+   "lostColours": []
+  },
+  {
+   "handle": "screaming-infant-melodies-infant-tee-ca",
+   "shopify": "9521727275062",
+   "printify": "6ad294e4f124a2c13f09d89f",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7996092710966",
+   "lostColours": []
+  },
+  {
+   "handle": "panic-at-the-disco-infant-tee-ca",
+   "shopify": "9521728028726",
+   "printify": "6ad294f3824c87e1e7022466",
+   "printer": "Print Geek",
+   "variants": 20,
+   "sourceVariants": 20,
+   "sourceShopify": "7996093202486",
+   "lostColours": []
+  },
+  {
+   "handle": "all-the-small-things-colorful-infant-tee-ca",
+   "shopify": "9521729011766",
+   "printify": "6ad295038dd72e60d20f14e9",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996094185526",
+   "lostColours": []
+  },
+  {
+   "handle": "all-the-small-things-infant-tee-ca",
+   "shopify": "9521729503286",
+   "printify": "6ad29513f3b2ab4a880cf8a4",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996095004726",
+   "lostColours": []
+  },
+  {
+   "handle": "theres-a-story-at-the-bottom-of-this-bottle-infant-tee-ca",
+   "shopify": "9521729634358",
+   "printify": "6ad29523eaf4439556022912",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996095987766",
+   "lostColours": []
+  },
+  {
+   "handle": "so-long-and-good-night-infant-tee-ca",
+   "shopify": "9521729929270",
+   "printify": "6ad29533be99720e8e0bd43d",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996096938038",
+   "lostColours": []
+  },
+  {
+   "handle": "raised-by-an-elder-emo-infant-tee-ca",
+   "shopify": "9521730256950",
+   "printify": "6ad295433a6621c15c0b9097",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996097167414",
+   "lostColours": []
+  },
+  {
+   "handle": "my-chemical-underpants-infant-tee-ca",
+   "shopify": "9521730715702",
+   "printify": "6ad29552824c87e1e70224e3",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996099133494",
+   "lostColours": []
+  },
+  {
+   "handle": "2nd-generation-pop-punk-kid-infant-tee-ca",
+   "shopify": "9521731010614",
+   "printify": "6ad2955d8dd72e60d20f158d",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996104704054",
+   "lostColours": []
+  },
+  {
+   "handle": "taking-dads-sunday-infant-tee-ca",
+   "shopify": "9521732026422",
+   "printify": "6ad2956deaf443955602297d",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996125315126",
+   "lostColours": []
+  },
+  {
+   "handle": "see-u-l8r-boi-infant-tee-ca",
+   "shopify": "9521732288566",
+   "printify": "6ad2957d3f42a07d4c091265",
+   "printer": "Print Geek",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7996129837110",
+   "lostColours": []
+  },
+  {
+   "handle": "rock-on-infant-tee-ca",
+   "shopify": "9521732550710",
+   "printify": "6ad295873f42a07d4c091270",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996136783926",
+   "lostColours": []
+  },
+  {
+   "handle": "junior-emo-infant-tee-ca",
+   "shopify": "9521733140534",
+   "printify": "6ad29597205a24e6370221f8",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996157067318",
+   "lostColours": []
+  },
+  {
+   "handle": "im-just-a-kid-infant-tee-ca",
+   "shopify": "9521733500982",
+   "printify": "6ad295ac3a6621c15c0b9108",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996162342966",
+   "lostColours": []
+  },
+  {
+   "handle": "hawthorne-high-chair-infant-tee-ca",
+   "shopify": "9521777606710",
+   "printify": "6ad295bb2a46360817060053",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996167159862",
+   "lostColours": []
+  },
+  {
+   "handle": "cute-is-what-i-aim-for-infant-tee-ca",
+   "shopify": "9521777737782",
+   "printify": "6ad296512a463608170600cf",
+   "printer": "Print Geek",
+   "variants": 20,
+   "sourceVariants": 20,
+   "sourceShopify": "7996179152950",
+   "lostColours": []
+  },
+  {
+   "handle": "scream-day-infant-tee-ca",
+   "shopify": "9521777934390",
+   "printify": "6ad2973da79415976f0ef2d4",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996724281398",
+   "lostColours": []
+  },
+  {
+   "handle": "playosin-infant-tee-ca",
+   "shopify": "9521778130998",
+   "printify": "6ad297d2205a24e6370223b2",
+   "printer": "Print Geek",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7996726181942",
+   "lostColours": []
+  },
+  {
+   "handle": "garage-band-king-infant-tee-ca",
+   "shopify": "9521778262070",
+   "printify": "6ad298662a46360817060271",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996730605622",
+   "lostColours": []
+  },
+  {
+   "handle": "do-you-have-the-time-to-listen-to-me-whine-infant-tee-ca",
+   "shopify": "9521778360374",
+   "printify": "6ad298fcbe99720e8e0bd70f",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996731719734",
+   "lostColours": []
+  },
+  {
+   "handle": "bayslide-infant-tee-ca",
+   "shopify": "9521779179574",
+   "printify": "6ad2998f2a4636081706031f",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996732407862",
+   "lostColours": []
+  },
+  {
+   "handle": "crawl-out-boy-infant-tee-ca",
+   "shopify": "9521779638326",
+   "printify": "6ad29d0df3b2ab4a880cfe9f",
+   "printer": "Duplium",
+   "variants": 28,
+   "sourceVariants": 28,
+   "sourceShopify": "7996733915190",
+   "lostColours": []
+  },
+  {
+   "handle": "the-snack-parade-infant-tee-ca",
+   "shopify": "9521780097078",
+   "printify": "6ad29d22f3b2ab4a880cfeb2",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996734996534",
+   "lostColours": []
+  },
+  {
+   "handle": "the-get-up-kid-infant-tee-ca",
+   "shopify": "9521780719670",
+   "printify": "6ad29d31f3b2ab4a880cfebb",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996735553590",
+   "lostColours": []
+  },
+  {
+   "handle": "second-generation-pop-punk-kid-infant-tee-ca",
+   "shopify": "9521780981814",
+   "printify": "6ad29d3b3f42a07d4c091856",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996735946806",
+   "lostColours": []
+  },
+  {
+   "handle": "second-generation-emo-kid-infant-tee-ca",
+   "shopify": "9521781276726",
+   "printify": "6ad29d45824c87e1e7022aee",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996737028150",
+   "lostColours": []
+  },
+  {
+   "handle": "its-not-a-phase-dad-infant-tee-ca",
+   "shopify": "9521781506102",
+   "printify": "6ad29d4ff3b2ab4a880cfed3",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996738535478",
+   "lostColours": []
+  },
+  {
+   "handle": "2nd-generation-emo-kid-broken-heart-infant-tee-ca",
+   "shopify": "9521781768246",
+   "printify": "6ad29d5a3855ae83af0b687a",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996739158070",
+   "lostColours": []
+  },
+  {
+   "handle": "alkawhine-trio-infant-tee-ca",
+   "shopify": "9521782063158",
+   "printify": "6ad29d66f124a2c13f09df1d",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996740960310",
+   "lostColours": []
+  },
+  {
+   "handle": "whine-thru-records-infant-tee-ca",
+   "shopify": "9521782423606",
+   "printify": "6ad29d71824c87e1e7022afb",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7996746432566",
+   "lostColours": []
+  },
+  {
+   "handle": "there-s-a-story-at-the-bottom-of-this-bottle-infant-tee-ca",
+   "shopify": "9521782718518",
+   "printify": "6ad29d7d3a6621c15c0b962c",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996747218998",
+   "lostColours": []
+  },
+  {
+   "handle": "the-all-american-recess-infant-tee-ca",
+   "shopify": "9521783111734",
+   "printify": "6ad29d8c3855ae83af0b68aa",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996747677750",
+   "lostColours": []
+  },
+  {
+   "handle": "stained-white-ts-infant-tee-ca",
+   "shopify": "9521783275574",
+   "printify": "6ad29d962a46360817060674",
+   "printer": "Print Geek",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7996747972662",
+   "lostColours": []
+  },
+  {
+   "handle": "silverscream-infant-tee-ca",
+   "shopify": "9521783308342",
+   "printify": "6ad29da03a6621c15c0b9640",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996748431414",
+   "lostColours": []
+  },
+  {
+   "handle": "pierce-the-veggies-infant-tee-ca",
+   "shopify": "9521783341110",
+   "printify": "6ad29daaf124a2c13f09df3a",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996749414454",
+   "lostColours": []
+  },
+  {
+   "handle": "let-it-enfold-you-infant-tee-ca",
+   "shopify": "9521783537718",
+   "printify": "6ad29dbfa79415976f0ef794",
+   "printer": "Print Geek",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "7996750954550",
+   "lostColours": []
+  },
+  {
+   "handle": "every-time-i-cry-infant-tee-ca",
+   "shopify": "9521784062006",
+   "printify": "6ad29dcf824c87e1e7022b41",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7996753444918",
+   "lostColours": []
+  },
+  {
+   "handle": "crumb41-infant-tee-ca",
+   "shopify": "9521784487990",
+   "printify": "6ad29ddb2a463608170606ad",
+   "printer": "Print Geek",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7996754034742",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-punk-again-sweatshirt-ca",
+   "shopify": "9521784717366",
+   "printify": "6ad29df5a79415976f0ef7c0",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7619607822390",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-pop-punk-again-sweatshirt-ca",
+   "shopify": "9521784815670",
+   "printify": "6ad29e053a6621c15c0b967e",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7619609133110",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-pop-punk-again-sweatshirt-1-ca",
+   "shopify": "9521784913974",
+   "printify": "6ad29e103855ae83af0b68fa",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7619612737590",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-balcony-womens-tee-ca",
+   "shopify": "9521785143350",
+   "printify": "6ad29e35a79415976f0ef7df",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8251229110326",
+   "lostColours": []
+  },
+  {
+   "handle": "from-mosh-pits-to-mezzanines-womens-tee-ca",
+   "shopify": "9522035458102",
+   "printify": "6ad29e402a463608170606f0",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "8251664629814",
+   "lostColours": []
+  },
+  {
+   "handle": "girl-at-the-rock-show-womens-tee-ca",
+   "shopify": "9522041126966",
+   "printify": "6ad2aa9a205a24e6370231f5",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8255138758710",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-womens-fitted-tee-ca",
+   "shopify": "9522041159734",
+   "printify": "6ad2aae33f42a07d4c0922c7",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 16,
+   "sourceShopify": "8259260710966",
+   "lostColours": [
+    "Azalea"
+   ]
+  },
+  {
+   "handle": "emo-music-therapy-womens-fitted-tee-ca",
+   "shopify": "9522041192502",
+   "printify": "6ad2aaedf124a2c13f09e92b",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 9,
+   "sourceShopify": "8330628857910",
+   "lostColours": []
+  },
+  {
+   "handle": "1776-was-cool-womens-tee-ca",
+   "shopify": "9522041258038",
+   "printify": "6ad2aafc3f42a07d4c0922e2",
+   "printer": "Duplium",
+   "variants": 20,
+   "sourceVariants": 20,
+   "sourceShopify": "8695235510326",
+   "lostColours": []
+  },
+  {
+   "handle": "dept-of-elder-emo-affairs-womens-tee-ca",
+   "shopify": "9522041323574",
+   "printify": "6ad2ab073f42a07d4c0922e5",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceShopify": "8705107984438",
+   "lostColours": []
+  },
+  {
+   "handle": "emomom-womens-tee-ca",
+   "shopify": "9522041389110",
+   "printify": "6ad2ab113a6621c15c0ba06f",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceShopify": "8707541303350",
+   "lostColours": []
+  },
+  {
+   "handle": "in-the-early-2000s-womens-tee-ca",
+   "shopify": "9522041454646",
+   "printify": "6ad2ab1b3f42a07d4c0922ea",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceShopify": "8752815374390",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-beach-club-womens-tee-ca",
+   "shopify": "9522041487414",
+   "printify": "6ad2ab2c3f42a07d4c0922f4",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceShopify": "8876897435702",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-skull-womens-tee-ca",
+   "shopify": "9522041520182",
+   "printify": "6ad2ab37eaf443955602395d",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceShopify": "8876913459254",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-sit-womens-tee-ca",
+   "shopify": "9522041552950",
+   "printify": "6ad2ab41f124a2c13f09e94d",
+   "printer": "Duplium",
+   "variants": 15,
+   "sourceVariants": 15,
+   "sourceShopify": "8992625098806",
+   "lostColours": []
+  },
+  {
+   "handle": "hearts-says-pit-back-says-balcony-womens-tee-ca",
+   "shopify": "9522041618486",
+   "printify": "6ad2ab51205a24e637023291",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceShopify": "8992629751862",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-eyeball-womens-tee-ca",
+   "shopify": "9522041651254",
+   "printify": "6ad2ab61f124a2c13f09e95c",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 14,
+   "sourceShopify": "8992638795830",
+   "lostColours": []
+  },
+  {
+   "handle": "still-not-okay-womens-tee-ca",
+   "shopify": "9522041716790",
+   "printify": "6ad2ab6cbe99720e8e0be43b",
+   "printer": "Duplium",
+   "variants": 10,
+   "sourceVariants": 15,
+   "sourceShopify": "8992640827446",
+   "lostColours": [
+    "Sport Grey"
+   ]
+  },
+  {
+   "handle": "emo-music-therapy-byw-womens-tee-ca",
+   "shopify": "9522041782326",
+   "printify": "6ad2ab773a6621c15c0ba09b",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 10,
+   "sourceShopify": "8994686828598",
+   "lostColours": [
+    "Sport Grey"
+   ]
+  },
+  {
+   "handle": "still-emo-flower-womens-tee-ca",
+   "shopify": "9522041946166",
+   "printify": "6ad2ab87f124a2c13f09e994",
+   "printer": "Duplium",
+   "variants": 15,
+   "sourceVariants": 19,
+   "sourceShopify": "9000372469814",
+   "lostColours": []
+  },
+  {
+   "handle": "jack-sally-youth-shirt-ca",
+   "shopify": "9522042011702",
+   "printify": "6ad2ab99205a24e6370232d7",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7630922317878",
+   "lostColours": []
+  },
+  {
+   "handle": "2nd-generation-emo-kid-youth-tee-ca",
+   "shopify": "9522042077238",
+   "printify": "6ad2aba8eaf44395560239aa",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7649228488758",
+   "lostColours": []
+  },
+  {
+   "handle": "invented-screamo-youth-tee-ca",
+   "shopify": "9522042142774",
+   "printify": "6ad2abb33855ae83af0b7297",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "7649228750902",
+   "lostColours": []
+  },
+  {
+   "handle": "im-just-a-kid-youth-tee-ca",
+   "shopify": "9522042273846",
+   "printify": "6ad2abbd3f42a07d4c092354",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000092078134",
+   "lostColours": []
+  },
+  {
+   "handle": "raised-by-an-elder-emo-youth-tee-ca",
+   "shopify": "9522042306614",
+   "printify": "6ad2abc83f42a07d4c092360",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "8000093650998",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-youth-tee-ca",
+   "shopify": "9522042339382",
+   "printify": "6ad2abd23a6621c15c0ba0d7",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 20,
+   "sourceShopify": "8000095354934",
+   "lostColours": []
+  },
+  {
+   "handle": "pop-punk-in-training-youth-tee-ca",
+   "shopify": "9522042404918",
+   "printify": "6ad2abe73855ae83af0b72bd",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000095420470",
+   "lostColours": []
+  },
+  {
+   "handle": "taking-dads-sunday-youth-tee-ca",
+   "shopify": "9522042470454",
+   "printify": "6ad2abf23a6621c15c0ba0ed",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000096305206",
+   "lostColours": []
+  },
+  {
+   "handle": "second-generation-pop-punk-kid-youth-tee-ca",
+   "shopify": "9522042503222",
+   "printify": "6ad2abfceaf44395560239ce",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000096567350",
+   "lostColours": []
+  },
+  {
+   "handle": "garage-band-king-youth-tee-ca",
+   "shopify": "9522042535990",
+   "printify": "6ad2ac06205a24e63702330a",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "8000096665654",
+   "lostColours": []
+  },
+  {
+   "handle": "its-not-a-phase-dad-youth-tee-ca",
+   "shopify": "9522042667062",
+   "printify": "6ad2ac16205a24e637023312",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000096829494",
+   "lostColours": []
+  },
+  {
+   "handle": "stink-182-youth-tee-ca",
+   "shopify": "9522042699830",
+   "printify": "6ad2ac203855ae83af0b72e0",
+   "printer": "Print Geek",
+   "variants": 15,
+   "sourceVariants": 15,
+   "sourceShopify": "8000097058870",
+   "lostColours": []
+  },
+  {
+   "handle": "junior-emo-youth-tee-ca",
+   "shopify": "9522042765366",
+   "printify": "6ad2ac2b3855ae83af0b72e9",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000097452086",
+   "lostColours": []
+  },
+  {
+   "handle": "rock-on-youth-tee-ca",
+   "shopify": "9522042798134",
+   "printify": "6ad2ac36f124a2c13f09e9f4",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000097550390",
+   "lostColours": []
+  },
+  {
+   "handle": "2nd-generation-pop-punk-kid-youth-tee-ca",
+   "shopify": "9522042896438",
+   "printify": "6ad2ac40205a24e63702332f",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000097714230",
+   "lostColours": []
+  },
+  {
+   "handle": "second-generation-emo-kid-youth-tee-ca",
+   "shopify": "9522042961974",
+   "printify": "6ad2ac4af3b2ab4a880d09db",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000097878070",
+   "lostColours": []
+  },
+  {
+   "handle": "my-chemical-underpants-youth-tee-ca",
+   "shopify": "9522042994742",
+   "printify": "6ad2ac5af3b2ab4a880d09eb",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000098172982",
+   "lostColours": []
+  },
+  {
+   "handle": "motion-city-swing-set-youth-tee-ca",
+   "shopify": "9522043027510",
+   "printify": "6ad2ac64824c87e1e7023584",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "8000099156022",
+   "lostColours": []
+  },
+  {
+   "handle": "see-u-l8r-boi-youth-tee-ca",
+   "shopify": "9522043060278",
+   "printify": "6ad2ac6fbe99720e8e0be4c5",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "8000100237366",
+   "lostColours": []
+  },
+  {
+   "handle": "whine-thru-records-youth-tee-ca",
+   "shopify": "9522043125814",
+   "printify": "6ad2ac7feaf4439556023a1e",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "8000100270134",
+   "lostColours": []
+  },
+  {
+   "handle": "pierce-the-veggies-youth-tee-ca",
+   "shopify": "9522043191350",
+   "printify": "6ad2ac8f2a46360817061151",
+   "printer": "Print Geek",
+   "variants": 11,
+   "sourceVariants": 11,
+   "sourceShopify": "8000100466742",
+   "lostColours": []
+  },
+  {
+   "handle": "do-you-have-the-time-to-listen-to-me-whine-youth-tee-ca",
+   "shopify": "9522043322422",
+   "printify": "6ad2ac9a2a46360817061162",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000100794422",
+   "lostColours": []
+  },
+  {
+   "handle": "boys-like-squirrels-youth-tee-ca",
+   "shopify": "9522045059126",
+   "printify": "6ad2acaa3855ae83af0b735e",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000101089334",
+   "lostColours": []
+  },
+  {
+   "handle": "bayslide-youth-tee-ca",
+   "shopify": "9522056462390",
+   "printify": "6ad2acb4eaf4439556023a6f",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000101318710",
+   "lostColours": []
+  },
+  {
+   "handle": "all-american-recess-youth-tee-ca",
+   "shopify": "9522075238454",
+   "printify": "6ad2acc03855ae83af0b7371",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "8000101515318",
+   "lostColours": []
+  },
+  {
+   "handle": "every-time-i-cry-youth-tee-ca",
+   "shopify": "9522089426998",
+   "printify": "6ad2acd13855ae83af0b73a2",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000102236214",
+   "lostColours": []
+  },
+  {
+   "handle": "2nd-generation-emo-kid-broken-heart-youth-tee-ca",
+   "shopify": "9522106728502",
+   "printify": "6ad2ace1f3b2ab4a880d0ab6",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000102268982",
+   "lostColours": []
+  },
+  {
+   "handle": "silverscream-youth-tee-ca",
+   "shopify": "9522121244726",
+   "printify": "6ad2acf1a79415976f0f0339",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000102531126",
+   "lostColours": []
+  },
+  {
+   "handle": "alkawhine-trio-youth-tee-ca",
+   "shopify": "9522140446774",
+   "printify": "6ad2ad01a79415976f0f0345",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000102563894",
+   "lostColours": []
+  },
+  {
+   "handle": "playosin-youth-tee-ca",
+   "shopify": "9522165121078",
+   "printify": "6ad2ad123a6621c15c0ba1fe",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "8000103448630",
+   "lostColours": []
+  },
+  {
+   "handle": "crumb41-youth-tee-ca",
+   "shopify": "9522175115318",
+   "printify": "6ad2ad2d3855ae83af0b7425",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000103481398",
+   "lostColours": []
+  },
+  {
+   "handle": "the-snack-parade-youth-tee-ca",
+   "shopify": "9522184716342",
+   "printify": "6ad2ad373f42a07d4c0924c8",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "8000104136758",
+   "lostColours": []
+  },
+  {
+   "handle": "the-get-up-kid-youth-tee-ca",
+   "shopify": "9522193891382",
+   "printify": "6ad2ad42f124a2c13f09eb0a",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000104169526",
+   "lostColours": []
+  },
+  {
+   "handle": "stained-white-tees-youth-tee-ca",
+   "shopify": "9522201460790",
+   "printify": "6ad2ad4d824c87e1e7023661",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "8000104497206",
+   "lostColours": []
+  },
+  {
+   "handle": "scream-day-youth-tee-ca",
+   "shopify": "9522208866358",
+   "printify": "6ad2ad59f124a2c13f09eb11",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8000104693814",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-youth-hoodie-ca",
+   "shopify": "9522208931894",
+   "printify": "6ad2ad63824c87e1e702366d",
+   "printer": "Duplium",
+   "variants": 12,
+   "sourceVariants": 16,
+   "sourceShopify": "7649228193846",
+   "lostColours": [
+    "Heliconia"
+   ]
+  },
+  {
+   "handle": "youth-heavy-blend-hooded-sweatshirt-ca",
+   "shopify": "9522209095734",
+   "printify": "6ad2ad73f124a2c13f09eb1b",
+   "printer": "Duplium",
+   "variants": 8,
+   "sourceVariants": 8,
+   "sourceShopify": "7649228324918",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-badge-hoodie-ca",
+   "shopify": "9522209194038",
+   "printify": "6ad2ad7e3855ae83af0b7475",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceShopify": "7630323351606",
+   "lostColours": []
+  },
+  {
+   "handle": "emo-dads-hoodie-ca",
+   "shopify": "9522209357878",
+   "printify": "6ad2ad933f42a07d4c0924eb",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 11,
+   "sourceShopify": "7630324039734",
+   "lostColours": []
+  },
+  {
+   "handle": "delonge-hoppus-2024-campaign-hoodie-ca",
+   "shopify": "9522209456182",
+   "printify": "6ad2ada0a79415976f0f038e",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 12,
+   "sourceShopify": "7630327447606",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-emo-again-hoodie-ca",
+   "shopify": "9522209718326",
+   "printify": "6ad2adb6be99720e8e0be5e9",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 7,
+   "sourceShopify": "7911804731446",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-pop-punk-again-hoodie-ca",
+   "shopify": "9522209849398",
+   "printify": "6ad2adc1205a24e63702347a",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 7,
+   "sourceShopify": "7911805976630",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-punk-again-hoodie-ca",
+   "shopify": "9522210013238",
+   "printify": "6ad2adca3a6621c15c0ba277",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 7,
+   "sourceShopify": "7911806795830",
+   "lostColours": []
+  },
+  {
+   "handle": "we-got-older-on-comfort-colors-ca",
+   "shopify": "9522216173622",
+   "printify": "6ad2b19a824c87e1e70239b8",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 14,
+   "sourceShopify": "7852970606646",
+   "lostColours": []
+  },
+  {
+   "handle": "jone-waste-your-toye-monme-on-comfort-colors-ca",
+   "shopify": "9522216337462",
+   "printify": "6ad2b1ab3a6621c15c0ba53a",
+   "printer": "Print Geek",
+   "variants": 28,
+   "sourceVariants": 28,
+   "sourceShopify": "7909727141942",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-rose-badge-tee-on-comfort-colors-ca",
+   "shopify": "9522216402998",
+   "printify": "6ad2b1bcf3b2ab4a880d0da7",
+   "printer": "Print Geek",
+   "variants": 7,
+   "sourceVariants": 7,
+   "sourceShopify": "7912505704502",
+   "lostColours": []
+  },
+  {
+   "handle": "im-too-old-for-this-pit-danny-tee-on-comfort-colors-ca",
+   "shopify": "9522216468534",
+   "printify": "6ad2b1cda79415976f0f06cb",
+   "printer": "Print Geek",
+   "variants": 7,
+   "sourceVariants": 7,
+   "sourceShopify": "7927300915254",
+   "lostColours": []
+  },
+  {
+   "handle": "im-too-old-for-this-pit-tee-on-comfort-colors-ca",
+   "shopify": "9522216566838",
+   "printify": "6ad2b1d7f124a2c13f09ee01",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 14,
+   "sourceShopify": "7927301570614",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-cursive-tee-on-comfort-colors-ca",
+   "shopify": "9522216665142",
+   "printify": "6ad2b1e7a79415976f0f06df",
+   "printer": "Print Geek",
+   "variants": 7,
+   "sourceVariants": 7,
+   "sourceShopify": "7992186503222",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-gothic-tee-on-comfort-colors-ca",
+   "shopify": "9522216697910",
+   "printify": "6ad2b1f2a79415976f0f06f0",
+   "printer": "Print Geek",
+   "variants": 7,
+   "sourceVariants": 7,
+   "sourceShopify": "7992244928566",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-rose-tee-on-comfort-colors-ca",
+   "shopify": "9522216730678",
+   "printify": "6ad2b1fd205a24e63702374e",
+   "printer": "Print Geek",
+   "variants": 7,
+   "sourceVariants": 7,
+   "sourceShopify": "7996869673014",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-club-smiley-tee-on-comfort-colors-ca",
+   "shopify": "9522216796214",
+   "printify": "6ad2b208205a24e63702375b",
+   "printer": "Print Geek",
+   "variants": 26,
+   "sourceVariants": 26,
+   "sourceShopify": "7996881862710",
+   "lostColours": []
+  },
+  {
+   "handle": "from-mosh-pits-to-mezzanines-varsity-tee-on-comfort-colors-ca",
+   "shopify": "9522216894518",
+   "printify": "6ad2b218205a24e637023767",
+   "printer": "Print Geek",
+   "variants": 28,
+   "sourceVariants": 28,
+   "sourceShopify": "8174113718326",
+   "lostColours": []
+  },
+  {
+   "handle": "im-too-old-for-this-pit-varsity-tee-on-comfort-colors-ca",
+   "shopify": "9522216992822",
+   "printify": "6ad2b224eaf4439556023e25",
+   "printer": "Print Geek",
+   "variants": 28,
+   "sourceVariants": 28,
+   "sourceShopify": "8174120140854",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-balcony-tee-on-comfort-colors-ca",
+   "shopify": "9522427232310",
+   "printify": "6ad2bd87205a24e63702427e",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "8251499053110",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-balcony-neon-edition-tee-on-comfort-colors-ca",
+   "shopify": "9522427559990",
+   "printify": "6ad2bd983f1400f6ad05165e",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "8251672100918",
+   "lostColours": []
+  },
+  {
+   "handle": "from-mosh-pits-to-mezzanines-tee-on-comfort-colors-ca",
+   "shopify": "9522427822134",
+   "printify": "6ad2bda8be99720e8e0bf35d",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "8251898888246",
+   "lostColours": []
+  },
+  {
+   "handle": "punk-rock-princess-tee-on-comfort-colors-ca",
+   "shopify": "9522428051510",
+   "printify": "6ad2bdb44bbc4d41c9082783",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 14,
+   "sourceShopify": "8259260219446",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-rose-tee-on-comfort-colors-ca",
+   "shopify": "9522428280886",
+   "printify": "6ad2bdbff3f5d6dfc50e0210",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "8295684046902",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-never-a-phase-tee-on-comfort-colors-ca",
+   "shopify": "9522428477494",
+   "printify": "6ad2bdcaeaf4439556024963",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "8295687946294",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-club-skull-dagger-tee-on-comfort-colors-ca",
+   "shopify": "9522428739638",
+   "printify": "6ad2bdd5f3f5d6dfc50e0225",
+   "printer": "Print Geek",
+   "variants": 4,
+   "sourceVariants": 4,
+   "sourceShopify": "8295854080054",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-never-a-phase-tee-on-comfort-colors-ca",
+   "shopify": "9522429067318",
+   "printify": "6ad2bde5f3f5d6dfc50e026f",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "8295943143478",
+   "lostColours": []
+  },
+  {
+   "handle": "moshin-since-the-90s-tee-on-comfort-colors-ca",
+   "shopify": "9522429394998",
+   "printify": "6ad2bdf8205a24e6370242dd",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "8296066187318",
+   "lostColours": []
+  },
+  {
+   "handle": "all-panic-no-disco-tee-on-comfort-colors-ca",
+   "shopify": "9522429591606",
+   "printify": "6ad2be03205a24e6370242e3",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "8309206024246",
+   "lostColours": []
+  },
+  {
+   "handle": "emo-music-therapy-tee-on-comfort-colors-ca",
+   "shopify": "9522429853750",
+   "printify": "6ad2be0eeaf443955602499b",
+   "printer": "Print Geek",
+   "variants": 11,
+   "sourceVariants": 11,
+   "sourceShopify": "8330627907638",
+   "lostColours": []
+  },
+  {
+   "handle": "1776-was-cool-on-comfort-colors-ca",
+   "shopify": "9522430115894",
+   "printify": "6ad2be1ef266d4ae850888da",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "8369030627382",
+   "lostColours": []
+  },
+  {
+   "handle": "emodad-tee-on-comfort-colors-ca",
+   "shopify": "9522430345270",
+   "printify": "6ad2be2aeaf44395560249e3",
+   "printer": "Print Geek",
+   "variants": 28,
+   "sourceVariants": 28,
+   "sourceShopify": "8699975139382",
+   "lostColours": []
+  },
+  {
+   "handle": "dept-of-elder-emo-tee-on-comfort-colors-ca",
+   "shopify": "9522430541878",
+   "printify": "6ad2be353f42a07d4c0932fc",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "8705092223030",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-emo-again-tee-on-comfort-colors-ca",
+   "shopify": "9522430869558",
+   "printify": "6ad2be40be99720e8e0bf412",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 28,
+   "sourceShopify": "8705132167222",
+   "lostColours": [
+    "Red",
+    "Royal Caribe"
+   ]
+  },
+  {
+   "handle": "make-america-pop-punk-again-tee-on-comfort-colors-ca",
+   "shopify": "9522431098934",
+   "printify": "6ad2be517a02c7a11505c7ec",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 28,
+   "sourceShopify": "8705139179574",
+   "lostColours": [
+    "Red",
+    "Royal Caribe"
+   ]
+  },
+  {
+   "handle": "make-america-punk-again-tee-on-comfort-colors-ca",
+   "shopify": "9522431361078",
+   "printify": "6ad2be61f266d4ae85088928",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 28,
+   "sourceShopify": "8705146454070",
+   "lostColours": [
+    "Red",
+    "Royal Caribe"
+   ]
+  },
+  {
+   "handle": "emomom-tee-on-comfort-colors-ca",
+   "shopify": "9522431688758",
+   "printify": "6ad2be71f266d4ae8508893f",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "8707540647990",
+   "lostColours": []
+  },
+  {
+   "handle": "in-the-early-2000s-tee-on-comfort-colors-ca",
+   "shopify": "9522431885366",
+   "printify": "6ad2be7c205a24e637024353",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 10,
+   "sourceShopify": "8752719659062",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-beach-club-tee-on-comfort-colors-ca",
+   "shopify": "9522432147510",
+   "printify": "6ad2be88f266d4ae85088960",
+   "printer": "Print Geek",
+   "variants": 20,
+   "sourceVariants": 20,
+   "sourceShopify": "8876675072054",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-skull-tee-on-comfort-colors-ca",
+   "shopify": "9522432475190",
+   "printify": "6ad2be93ba53eed58c019a15",
+   "printer": "Print Geek",
+   "variants": 17,
+   "sourceVariants": 17,
+   "sourceShopify": "8876900450358",
+   "lostColours": []
+  },
+  {
+   "handle": "still-not-okay-tee-on-comfort-colors-ca",
+   "shopify": "9522432704566",
+   "printify": "6ad2bea3205a24e637024381",
+   "printer": "Print Geek",
+   "variants": 21,
+   "sourceVariants": 21,
+   "sourceShopify": "8989210935350",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-eyeball-tee-on-comfort-colors-ca",
+   "shopify": "9522432901174",
+   "printify": "6ad2beae205a24e637024387",
+   "printer": "Print Geek",
+   "variants": 21,
+   "sourceVariants": 21,
+   "sourceShopify": "8989211557942",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-sit-tee-on-comfort-colors-ca",
+   "shopify": "9522433163318",
+   "printify": "6ad2beba205a24e63702438d",
+   "printer": "Print Geek",
+   "variants": 28,
+   "sourceVariants": 29,
+   "sourceShopify": "8992627818550",
+   "lostColours": [
+    "Topaz Blue"
+   ]
+  },
+  {
+   "handle": "emo-music-therapy-byw-tee-on-comfort-colors-ca",
+   "shopify": "9522433458230",
+   "printify": "6ad2becb7a02c7a11505c842",
+   "printer": "Print Geek",
+   "variants": 14,
+   "sourceVariants": 14,
+   "sourceShopify": "8994687156278",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-flower-tee-on-comfort-colors-ca",
+   "shopify": "9522433753142",
+   "printify": "6ad2bed62a46360817062123",
+   "printer": "Print Geek",
+   "variants": 21,
+   "sourceVariants": 28,
+   "sourceShopify": "9000372535350",
+   "lostColours": [
+    "Chili"
+   ]
+  },
+  {
+   "handle": "so-what-happened-was-john-tee-on-comfort-colors-ca",
+   "shopify": "9522434015286",
+   "printify": "6ad2bee6eaf4439556024a67",
+   "printer": "Print Geek",
+   "variants": 21,
+   "sourceVariants": 21,
+   "sourceShopify": "9229872431158",
+   "lostColours": []
+  },
+  {
+   "handle": "skiba-andriano-2024-campaign-hat-ca",
+   "shopify": "9522434211894",
+   "printify": "6ad2bef2205a24e6370243a7",
+   "printer": "Duplium",
+   "variants": 2,
+   "sourceVariants": 2,
+   "sourceShopify": "7621750489142",
+   "lostColours": []
+  },
+  {
+   "handle": "trucker-retro-hat-ca",
+   "shopify": "9522434474038",
+   "printify": "6ad2bf012a46360817062148",
+   "printer": "Duplium",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceShopify": "8332170297398",
+   "lostColours": []
+  },
+  {
+   "handle": "1776-was-cool-trucker-hat-ca",
+   "shopify": "9522434670646",
+   "printify": "6ad2bf0bf266d4ae850889aa",
+   "printer": "Duplium",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceShopify": "8695107747894",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-emo-again-trucker-hat-ca",
+   "shopify": "9522434965558",
+   "printify": "6ad2bf1cf3f5d6dfc50e035e",
+   "printer": "Duplium",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceShopify": "8705133871158",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-pop-punk-again-trucker-hat-ca",
+   "shopify": "9522435162166",
+   "printify": "6ad2bf26f3f5d6dfc50e0364",
+   "printer": "Duplium",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceShopify": "8705147142198",
+   "lostColours": []
+  },
+  {
+   "handle": "make-america-punk-again-trucker-hat-ca",
+   "shopify": "9522435424310",
+   "printify": "6ad2bf2f2a46360817062165",
+   "printer": "Duplium",
+   "variants": 1,
+   "sourceVariants": 1,
+   "sourceShopify": "8705162510390",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-knees-say-balcony-neon-edition-womens-tee-ca",
+   "shopify": "9522041421878",
+   "printify": "6ad2a67d824c87e1e70231f0",
+   "printer": "Duplium",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "8251863760950",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-society-hoodie-ca",
+   "shopify": "9522487984182",
+   "printify": "6ad2c59aeaf4439556024ee1",
+   "printer": "Print Geek",
+   "variants": 10,
+   "sourceVariants": 11,
+   "sourceShopify": "7630324990006",
+   "lostColours": []
+  },
+  {
+   "handle": "so-what-happened-was-john-hoodie-ca",
+   "shopify": "9522488639542",
+   "printify": "6ad2c5a4f3f5d6dfc50e078e",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceShopify": "7906713075766",
+   "lostColours": []
+  },
+  {
+   "handle": "from-moshpits-to-mezzanines-hoodie-ca",
+   "shopify": "9522489360438",
+   "printify": "6ad2c5afbc6cc96c5a06d9f3",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceShopify": "7906714878006",
+   "lostColours": []
+  },
+  {
+   "handle": "we-got-older-hoodie-ca",
+   "shopify": "9522490245174",
+   "printify": "6ad2c5b9f3f5d6dfc50e079d",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceShopify": "7906716254262",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-club-hoodie-ca",
+   "shopify": "9522491326518",
+   "printify": "6ad2c5c3824c87e1e7024a8c",
+   "printer": "Print Geek",
+   "variants": 15,
+   "sourceVariants": 16,
+   "sourceShopify": "8169952510006",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-flower-hoodie-ca",
+   "shopify": "9522492637238",
+   "printify": "6ad2c5d5d1d4b97d2209da22",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 7,
+   "sourceShopify": "9291781439542",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-never-a-phase-hoodie-ca",
+   "shopify": "9522493849654",
+   "printify": "6ad2c5df7a02c7a11505cd08",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceShopify": "9291782324278",
+   "lostColours": []
+  },
+  {
+   "handle": "still-not-okay-hoodie-ca",
+   "shopify": "9522495062070",
+   "printify": "6ad2c5eef814a7b67403ee15",
+   "printer": "Print Geek",
+   "variants": 15,
+   "sourceVariants": 21,
+   "sourceShopify": "9291784224822",
+   "lostColours": []
+  },
+  {
+   "handle": "heart-says-pit-back-says-balcony-hoodie-ca",
+   "shopify": "9522497650742",
+   "printify": "6ad2c5fa3f1400f6ad051bf6",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceShopify": "9291789926454",
+   "lostColours": []
+  },
+  {
+   "handle": "still-emo-skull-hoodie-ca",
+   "shopify": "9522505908278",
+   "printify": "6ad2c61ff3f5d6dfc50e07c3",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 6,
+   "sourceShopify": "9291800281142",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-club-skull-dagger-hoodie-ca",
+   "shopify": "9522508267574",
+   "printify": "6ad2c6544bbc4d41c9082de2",
+   "printer": "Print Geek",
+   "variants": 15,
+   "sourceVariants": 21,
+   "sourceShopify": "9291804442678",
+   "lostColours": []
+  },
+  {
+   "handle": "we-got-older-but-were-still-young-zippered-hoodie-ca",
+   "shopify": "9522510528566",
+   "printify": "6ad2c65ef3f5d6dfc50e0810",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7929162858550",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-club-zippered-hoodie-ca",
+   "shopify": "9522512035894",
+   "printify": "6ad2c668824c87e1e7024afb",
+   "printer": "Print Geek",
+   "variants": 9,
+   "sourceVariants": 10,
+   "sourceShopify": "7929165348918",
+   "lostColours": []
+  },
+  {
+   "handle": "from-mosh-pits-to-mezzanines-zippered-hoodie-ca",
+   "shopify": "9522513018934",
+   "printify": "6ad2c672824c87e1e7024aff",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7929168429110",
+   "lostColours": []
+  },
+  {
+   "handle": "elder-emo-society-zippered-hoodie-ca",
+   "shopify": "9522516492342",
+   "printify": "6ad2c681f266d4ae85088ea5",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7929168953398",
+   "lostColours": []
+  },
+  {
+   "handle": "so-what-happened-was-john-zippered-hoodie-ca",
+   "shopify": "9522518294582",
+   "printify": "6ad2c691f3f5d6dfc50e0826",
+   "printer": "Print Geek",
+   "variants": 5,
+   "sourceVariants": 5,
+   "sourceShopify": "7929225052214",
+   "lostColours": []
+  },
+  {
+   "handle": "boys-like-squirrels-infant-tee-ca",
+   "shopify": "9522587631670",
+   "printify": "6ad2c8eef266d4ae850890ef",
+   "printer": "Print Geek",
+   "variants": 16,
+   "sourceVariants": 16,
+   "sourceShopify": "7996755050550",
+   "lostColours": []
+  },
+  {
+   "handle": "skiba-andriano-2024-campaign-sweatshirt-ca",
+   "shopify": "9522602901558",
+   "printify": "6ad2c8febc6cc96c5a06dd8f",
+   "printer": "Print Geek",
+   "variants": 12,
+   "sourceVariants": 12,
+   "sourceShopify": "7621718343734",
+   "lostColours": []
+  },
+  {
+   "handle": "wake-me-up-when-september-ends-sweatshirt-ca",
+   "shopify": "9522618433590",
+   "printify": "6ad2c90abe99720e8e0bfc91",
+   "printer": "Print Geek",
+   "variants": 6,
+   "sourceVariants": 6,
+   "sourceShopify": "7622000476214",
+   "lostColours": []
+  }
+ ]
+}
