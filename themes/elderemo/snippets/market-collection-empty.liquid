@@ -1,0 +1,30 @@
+{%- comment -%}
+  Is this collection empty for the market the buyer is in?
+
+  Elder Emo's market catalogs are deliberately narrow: Canada and Australia hold only
+  locally printed listings, and the UK holds nothing shipped in from abroad. Collections
+  are NOT per-market in Shopify, though. They publish to sales channels only, so every
+  collection exists in every market and simply renders with whatever products that
+  market can buy. That is why Australia has 26 collection pages that return HTTP 200
+  with an empty state, and the UK 21.
+
+  Liquid does see the market, so collection.products_count is already filtered to the
+  buyer's catalog. That is the whole mechanism here: nothing needs a hardcoded list, and
+  the result follows the catalogs as they change.
+
+  Usage, with `col` set to a collection object:
+      {%- render 'market-collection-empty', col: some_collection -%}
+  It outputs "true" or "" so it can be captured and tested:
+      {%- capture empty -%}{%- render 'market-collection-empty', col: link.object -%}{%- endcapture -%}
+      {%- unless empty == 'true' -%} ... {%- endunless -%}
+
+  Note all_products_count is NOT used: it ignores the market and would report a
+  collection as full when the buyer cannot see any of it.
+{%- endcomment -%}
+{%- liquid
+  if col == blank
+    echo 'true'
+  elsif col.products_count == 0
+    echo 'true'
+  endif
+-%}
