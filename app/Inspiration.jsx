@@ -10,6 +10,25 @@ const PAGE = 60;
 const SEED_KEY = 'backstage.mockupSeed'; // read once by app/Mockups.jsx
 const TOOL_LABELS = { mockup: 'Lifestyle mockup', carousel: 'Carousel ad', video: 'Video ad from Canva' };
 
+// Meta publishes no impressions for US commercial ads, so "winning" is inferred from the
+// two things a competitor's spend does reveal: they keep paying for an ad that sells
+// (days running), and they scale one by running copies of it (live ads from the same
+// advertiser with the same headline). A guess, and the tab says so.
+const WIN_DAYS = 30;      // still live after a month
+const WIN_COPIES = 3;     // or scaled to three or more live copies
+const COPY_WEIGHT = 10;   // one extra live copy counts like ten more days running
+// Capped, because some advertisers launch 30+ copies of an ad on day one (Little Trouble
+// did): that is how they set up, not proof it works, and uncapped it buried ads that have
+// been live for three months.
+const COPY_CAP = 10;
+
+// Same advertiser, same headline once case, spacing and punctuation are ignored. Ads
+// with no headline cannot be matched, so each stands alone.
+function copyKey(ad) {
+  const h = String(ad.headline || '').toLowerCase().replace(/[^\p{L}\p{N}$%]+/gu, ' ').trim();
+  return h ? ad.competitor + '|' + h : 'id|' + ad.id;
+}
+
 // Screenshots go to Claude, which reads nothing past ~1568px on the long edge, so shrink
 // before sending rather than paying to upload pixels nobody looks at.
 function shrink(file) {
@@ -35,8 +54,15 @@ function AdCard({ ad, open, onOpen }) {
       <div className="insp-ad-top">
         <span className="insp-comp">{ad.competitor}</span>
         {ad.starred && <span className="insp-star" title="Starred in the sheet">&#9733;</span>}
+        {ad.winner && (
+          <span className="insp-win" title="Likely winner: still running after a month, or scaled to several live copies. Inferred, since Meta does not publish impressions.">
+            Likely winner
+          </span>
+        )}
         <span className={'insp-run' + (ad.active ? '' : ' ended')}>
-          {ad.active ? (ad.days > 0 ? ad.days + 'd running' : 'new') : 'ended'}
+          {ad.active
+            ? (ad.copies > 1 ? ad.copies + ' copies · ' : '') + (ad.days > 0 ? ad.days + 'd' : 'new')
+            : 'ended'}
         </span>
       </div>
       <div className="insp-headline">{ad.headline || <span className="ledger-note">No headline</span>}</div>
@@ -184,7 +210,7 @@ export default function Inspiration({ go }) {
 
   const [competitor, setCompetitor] = useState('');
   const [show, setShow] = useState('active');   // active | all | starred
-  const [sort, setSort] = useState('newest');   // newest | longest
+  const [sort, setSort] = useState('winners');  // winners | newest | longest
   const [search, setSearch] = useState('');
   const [limit, setLimit] = useState(PAGE);
 
@@ -207,7 +233,21 @@ export default function Inspiration({ go }) {
   }
   useEffect(() => { load(false); }, []);
 
-  const ads = data ? data.ads : [];
+  // Each ad gets its copy count (live ads sharing its key), a score and the winner flag.
+  const ads = useMemo(() => {
+    const raw = data ? data.ads : [];
+    const live = {};
+    for (const a of raw) if (a.active) { const k = copyKey(a); live[k] = (live[k] || 0) + 1; }
+    return raw.map((a) => {
+      const key = copyKey(a);
+      const copies = a.active ? live[key] : 0;
+      return {
+        ...a, key, copies,
+        score: a.active ? a.days + COPY_WEIGHT * Math.min(copies - 1, COPY_CAP) : -1,
+        winner: a.active && (a.days >= WIN_DAYS || copies >= WIN_COPIES),
+      };
+    });
+  }, [data]);
   const competitors = useMemo(() => Array.from(new Set(ads.map((a) => a.competitor))).sort((a, b) => a.localeCompare(b)), [ads]);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -218,6 +258,16 @@ export default function Inspiration({ go }) {
       if (q && !(a.headline + ' ' + a.text + ' ' + a.notes + ' ' + a.competitor).toLowerCase().includes(q)) return false;
       return true;
     });
+    // Likely winners shows one card per set of copies (the longest running), so fifteen
+    // copies of one Emo Nite ad do not fill the first screen, and only flagged winners.
+    if (sort === 'winners') {
+      const best = {};
+      for (const a of list) {
+        if (!a.winner) continue;
+        if (!best[a.key] || a.days > best[a.key].days) best[a.key] = a;
+      }
+      return Object.values(best).sort((a, b) => b.score - a.score || b.days - a.days);
+    }
     // Long-running ads first is the useful view: an ad still live after weeks is one the
     // competitor keeps paying for, so it is probably working.
     return list.sort(sort === 'longest'
@@ -271,6 +321,7 @@ export default function Inspiration({ go }) {
           <label className="field">
             <span>Sort</span>
             <select className="input" value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="winners">Likely winners</option>
               <option value="newest">Newest first</option>
               <option value="longest">Running longest first</option>
             </select>
@@ -281,7 +332,12 @@ export default function Inspiration({ go }) {
           </label>
         </div>
         <div className="reply-actions" style={{ marginTop: -6 }}>
-          <span className="acc-count">{loading ? 'loading...' : filtered.length + ' of ' + ads.length + ' ads'}</span>
+          <span className="acc-count">
+            {loading ? 'loading...'
+              : sort === 'winners'
+                ? filtered.length + ' likely winners, one card per set of copies. Inferred from days running and live copies; Meta does not publish impressions.'
+                : filtered.length + ' of ' + ads.length + ' ads'}
+          </span>
           <button className="btn btn-ghost" onClick={() => load(true)} disabled={loading}>Refresh</button>
         </div>
       </div>

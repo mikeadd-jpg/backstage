@@ -547,6 +547,13 @@ version. Area `inspiration` (owner, admin, creative).
   scene instead of a freshly written one until "Stop using it". Generation, review and
   sending are the normal Mockups flow.
 - Nothing here is stored: breakdowns live in the tab and go when it closes, like mockups.
+- **"Likely winners" is inferred, never impressions.** Meta publishes no impressions for
+  US commercial ads and the search returns none (its order is newest first). The tab flags
+  an active ad as a likely winner when it has run 30+ days or has 3+ live copies (same
+  advertiser, same headline ignoring case and punctuation), scores days + 10 per extra
+  copy capped at 10 copies, and shows one card per set of copies. The cap exists because
+  some brands launch 30+ copies on day one, which buried 99-day ads. Constants are at the
+  top of `app/Inspiration.jsx`; it is the default sort.
 
 ## Sending a mockup to Meta (`lib/meta.js`)
 
