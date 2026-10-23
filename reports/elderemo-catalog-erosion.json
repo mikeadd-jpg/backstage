@@ -1,0 +1,37 @@
+{
+ "generated": "2026-10-23",
+ "store": "Elder Emo (9e2273-43)",
+ "what": "The international listings built on 2026-10-16 have eroded. Found while verifying the new Canada and Australia web presences, not looked for.",
+ "asBuilt_2026_10_16": {
+  "-int": 98,
+  "-uk rebuilds": 45,
+  "-ca": 297
+ },
+ "asFound_2026_10_23": {
+  "-int": {
+   "active": 70,
+   "draft": 0,
+   "deletedFromShopify": 28
+  },
+  "-uk rebuilds": {
+   "active": 39,
+   "draft": 0,
+   "deletedFromShopify": 6
+  },
+  "-ca": {
+   "active": 159,
+   "draft": 77,
+   "deletedFromShopify": 61
+  }
+ },
+ "catalogImpact": {
+  "Canada": "395 products on 2026-10-16, 260 now (81 -int + 179 -ca)",
+  "note": "Australia and the UK were not re-counted in detail; -int losses affect all three."
+ },
+ "deletionsOriginatedInPrintify": "All 12 deleted -ca products sampled return 404 from the Printify API as well, so the products were removed in Printify and its sync removed the Shopify products. Deleting in Printify deletes the Shopify product too; that was observed deliberately on 2026-10-16 when one redundant duplicate was removed that way.",
+ "draftingTimeline": "Of the drafted products, 7 last changed on 2026-10-19 and 77 on 2026-10-23, so the 77 were drafted in a single event today rather than drifting over the week.",
+ "relationToEarlierProblem": "On 2026-10-16 twelve products silently flipped to DRAFT during the build and were restored, cause unidentified (recorded in reports/elderemo-canada-builds.json). This is the same symptom at larger scale, now with deletions alongside it.",
+ "notDoneByBackstage": "Nothing in this repo deletes products. The only deletion made on 2026-10-16 was a single redundant duplicate, elder-emo-club-hoodie-uk-1, which is recorded. No cron or route removes or drafts products.",
+ "whatToEstablishFirst": "Whether the Printify deletions were made by hand in the Printify UI, since that decides whether these should be rebuilt or were removed on purpose. Rebuilding 95 products that someone deliberately deleted would undo their decision.",
+ "ifRebuilding": "The committed reports hold every source product, chosen printer, variant count and colour loss, so a rebuild is a rerun rather than a fresh analysis. The known blockers also still stand: the dead neck-label upload and the printers with no back or front_left_chest print area."
+}
