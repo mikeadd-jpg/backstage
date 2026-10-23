@@ -1,0 +1,36 @@
+{
+ "generated": "2026-10-23",
+ "store": "Elder Emo (9e2273-43)",
+ "what": "Canada and Australia were given subfolder web presences on the primary domain, so their products have URLs of their own, appear in their own sitemaps, and get hreflang. Before this they had no web presence at all and none of their products were discoverable.",
+ "created": [
+  {
+   "market": "Canada",
+   "marketId": "20562673718",
+   "webPresenceId": "49819779126",
+   "subfolderSuffix": "ca",
+   "rootUrl": "https://elderemo.com/en-ca/",
+   "defaultLocale": "en"
+  },
+  {
+   "market": "Australia",
+   "marketId": "30649778230",
+   "webPresenceId": "49819811894",
+   "subfolderSuffix": "au",
+   "rootUrl": "https://elderemo.com/en-au/",
+   "defaultLocale": "en"
+  }
+ ],
+ "apiNotes": [
+  "The mutation is webPresenceCreate(input: WebPresenceCreateInput), which takes no market id; the presence is then attached with marketUpdate(webPresencesToAdd: [id]). Two steps, not one.",
+  "subfolderSuffix must be letters only, and it is the COUNTRY part alone. Shopify composes the path as /<defaultLocale>-<suffix>, so suffix \"ca\" with locale \"en\" gives /en-ca. Passing \"en-ca\" is rejected with \"Subfolder suffix must contain only letters\".",
+  "Reading defaultLocale or alternateLocales on a web presence needs read_locales or read_markets_home, neither of which this app has. Writing a locale string works without them, so creation is possible but the result cannot be read back in full."
+ ],
+ "verified": {
+  "subfolderHomepages": "https://elderemo.com/en-ca/ and /en-au/ both return 200.",
+  "productsServeOnSubfolder": "Live -ca products return 200 at /en-ca/products/<handle> and 404 at the root domain, so market separation holds.",
+  "hreflang": "Now cross-references all four markets on every product: x-default and en to elderemo.com, en-AU to /en-au, en-CA to /en-ca, en-GB to elderemo.co.uk. This is what was missing before.",
+  "sitemaps": "/en-ca/sitemap.xml and /en-au/sitemap.xml were still empty immediately after creation. Shopify regenerates these asynchronously, so recheck before concluding anything is wrong."
+ },
+ "openDefect": "hreflang x-default and en point at https://elderemo.com/products/<handle> for every product, including the -int and -ca listings that are deliberately NOT in the US catalog. Those URLs return 404. Shopify emits an entry for the primary market regardless of catalog membership, so Google is told the default version of an international-only product lives at a URL that does not resolve. Giving the US market its own web presence would not fix it; the cause is that the primary market has no copy of those products.",
+ "regressionFound": "Checking this work against the committed reports showed the catalogues have eroded badly since 2026-10-16. See reports/elderemo-catalog-erosion.json."
+}
