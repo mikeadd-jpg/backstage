@@ -1,0 +1,498 @@
+{
+ "generated": "2026-10-23",
+ "store": "Elder Emo (9e2273-43)",
+ "what": "Every product shipped into the UK from abroad was removed from the UK market catalog, and the four UK listings sitting in the US catalog were removed from it. Catalog membership only: nothing was deleted or drafted, and each product stays live in the markets it belongs to.",
+ "restore": "Re-publish the listed product ids to publication 111705915446 (UK) or 111705784374 (US) with publishablePublish.",
+ "howShippedInWasDecided": "By the delivery profile zones, not the handle. A profile with no GB zone quotes the buyer the rest-of-world rate, which is the mark of a product shipped in. Handles were not used because 35 UK-fulfilled products do not end in -uk.",
+ "ukRemoved": {
+  "count": 87,
+  "byVendor": {
+   "Printify (US-printed)": 76,
+   "Loog Guitars": 7,
+   "BANZ Carewear USA": 4
+  },
+  "products": [
+   {
+    "id": "7596336513078",
+    "handle": "the-quiet-times-that-mom-will-never-know-toddler-tee-1",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7596338577462",
+    "handle": "the-quiet-times-that-dad-will-never-know-toddler-tee-1",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7621720277046",
+    "handle": "skiba-andriano-2024-tote-bag",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7621750489142",
+    "handle": "skiba-andriano-2024-campaign-hat",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7628325519414",
+    "handle": "delonge-hoppus-2024-sticker",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7634733891638",
+    "handle": "delonge-hoppus-2024-yard-sign",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7635072450614",
+    "handle": "make-america-pop-punk-again-yard-sign",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7635076415542",
+    "handle": "make-america-emo-again-yard-sign",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7635101974582",
+    "handle": "pop-punk-doormat",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7649228193846",
+    "handle": "punk-rock-princess-youth-hoodie",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7649228324918",
+    "handle": "youth-heavy-blend-hooded-sweatshirt",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7828721696822",
+    "handle": "customizable-warped-tour-themed-adult-tee",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7828822294582",
+    "handle": "customizable-warped-tour-themed-womens-boxy-tee",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7828830945334",
+    "handle": "customizable-warped-tour-themed-mylar-balloon",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7828883308598",
+    "handle": "customizable-warped-tour-themed-lineup-poster",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7828891238454",
+    "handle": "customizable-warped-tour-themed-2-buttons",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7855144960054",
+    "handle": "ass-gas-or-grass-bumper-sticker",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7862115041334",
+    "handle": "loog-mini-electric-collective",
+    "vendor": "Loog Guitars"
+   },
+   {
+    "id": "7862115139638",
+    "handle": "loog-pro-acoustic-collective",
+    "vendor": "Loog Guitars"
+   },
+   {
+    "id": "7862115172406",
+    "handle": "loog-pro-6-acoustic-collective",
+    "vendor": "Loog Guitars"
+   },
+   {
+    "id": "7862115205174",
+    "handle": "loog-piano-collective",
+    "vendor": "Loog Guitars"
+   },
+   {
+    "id": "7862115237942",
+    "handle": "loog-mini-acoustic-collective",
+    "vendor": "Loog Guitars"
+   },
+   {
+    "id": "7862115434550",
+    "handle": "loog-pro-6-electric-collective",
+    "vendor": "Loog Guitars"
+   },
+   {
+    "id": "7862115532854",
+    "handle": "loog-pro-electric-collective",
+    "vendor": "Loog Guitars"
+   },
+   {
+    "id": "7863642587190",
+    "handle": "kids-hearing-protection-earmuffs-solids",
+    "vendor": "BANZ\u00ae Carewear USA"
+   },
+   {
+    "id": "7863642619958",
+    "handle": "baby-hearing-protection-earmuffs-solids",
+    "vendor": "BANZ\u00ae Carewear USA"
+   },
+   {
+    "id": "7863642849334",
+    "handle": "kids-hearing-protection-earmuffs-prints",
+    "vendor": "BANZ\u00ae Carewear USA"
+   },
+   {
+    "id": "7863643209782",
+    "handle": "baby-hearing-protection-earmuffs-prints",
+    "vendor": "BANZ\u00ae Carewear USA"
+   },
+   {
+    "id": "7864633688118",
+    "handle": "lil-emo-all-stars-sticker-pack",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7891580911670",
+    "handle": "guitar-themed-pet-bandana-collar-fun-dog-accessory-for-music-lovers-pet-gift-for-birthdays-festivals-and-everyday-wear",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7909732220982",
+    "handle": "jone-waste-your-toye-monme-on-comfort-colors-boxy-tee",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7909732515894",
+    "handle": "jone-waste-your-toye-monme-tote",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7909744050230",
+    "handle": "work-sucks-tee-on-comfort-colors",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7912515239990",
+    "handle": "elder-emo-rose-badge-boxy-tee-on-comfort-colors",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922186616886",
+    "handle": "bark-182-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922192121910",
+    "handle": "cute-is-what-we-aim-fur-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922193072182",
+    "handle": "alcanine-trio-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922194513974",
+    "handle": "im-sorry-i-cant-be-purrrfect-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922195136566",
+    "handle": "fur-out-boy-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922196643894",
+    "handle": "taking-bark-sunday-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922199363638",
+    "handle": "pawramore-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922203164726",
+    "handle": "the-bark-parade-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922208374838",
+    "handle": "cut-my-leash-into-pieces-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922213552182",
+    "handle": "motion-kitty-soundtrack-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922216992822",
+    "handle": "boys-like-squirrels-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7922221154358",
+    "handle": "panic-at-the-litter-box-pet-bandana",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7996870623286",
+    "handle": "elder-emo-rose-boxy-tee-on-comfort-colors",
+    "vendor": "Printify"
+   },
+   {
+    "id": "7996886450230",
+    "handle": "elder-emo-premium-embroidered-sweatshirt",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8024161419318",
+    "handle": "make-america-emo-again-flag",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8254793023542",
+    "handle": "from-mosh-pits-to-mezzanines-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8254962335798",
+    "handle": "elder-emo-club-smiley-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8255136858166",
+    "handle": "im-too-old-for-this-pit-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8259401121846",
+    "handle": "punk-rock-princess-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8295854735414",
+    "handle": "elder-emo-club-skull-dagger-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8330629251126",
+    "handle": "emo-music-therapy-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8332170297398",
+    "handle": "trucker-retro-hat",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8332344426550",
+    "handle": "emo-for-life-color-blast-tee",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8334875197494",
+    "handle": "bark-182-replacement",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8695107747894",
+    "handle": "1776-was-cool-trucker-hat",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8695225647158",
+    "handle": "1776-was-cool-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8700154216502",
+    "handle": "1776-was-cool-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8705085210678",
+    "handle": "dept-of-elder-emo-affairs-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8705113587766",
+    "handle": "dept-of-elder-emo-affairs-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8705133871158",
+    "handle": "make-america-emo-again-trucker-hat",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8705147142198",
+    "handle": "make-america-pop-punk-again-trucker-hat",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8705162510390",
+    "handle": "make-america-punk-again-trucker-hat",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8707536781366",
+    "handle": "emomom-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8707537338422",
+    "handle": "emomom-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8752813408310",
+    "handle": "in-the-early-2000s-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8876726419510",
+    "handle": "still-emo-beach-club-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8876908216374",
+    "handle": "still-emo-skull-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8918900211766",
+    "handle": "hearts-says-pit-back-says-balcony-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8935165231158",
+    "handle": "hearts-says-pit-back-says-balcony-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8935166836790",
+    "handle": "still-emo-rose-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8935168639030",
+    "handle": "still-emo-never-a-phase-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8989199859766",
+    "handle": "still-emo-eyeball-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8989212672054",
+    "handle": "still-not-okay-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8992625066038",
+    "handle": "heart-says-pit-knees-say-sit-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8992628080694",
+    "handle": "heart-says-pit-knees-say-sit-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8992629489718",
+    "handle": "still-emo-eyeball-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8992640794678",
+    "handle": "still-not-okay-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8992844939318",
+    "handle": "still-emo-skull-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8992852574262",
+    "handle": "still-emo-beach-club-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8994672869430",
+    "handle": "emo-music-therapy-byw-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8994686959670",
+    "handle": "emo-music-therapy-byw-tank",
+    "vendor": "Printify"
+   },
+   {
+    "id": "9000370896950",
+    "handle": "still-emo-flower-crop",
+    "vendor": "Printify"
+   },
+   {
+    "id": "9000372502582",
+    "handle": "still-emo-flower-tank",
+    "vendor": "Printify"
+   }
+  ]
+ },
+ "ukKeptDeliberately": {
+  "ukFulfilledWithoutAUkHandle": 35,
+  "why": "These have a UK shipping zone, so they are printed in the UK despite not being named -uk. Removing all 124 non-international products, as a handle-based reading would have done, would have pulled these too.",
+  "digitalProducts": [
+   "warped-tour-themed-invitation-template",
+   "elderemo-com-gift-card"
+  ],
+  "digitalWhy": "Neither requires shipping, so neither is fulfilled from anywhere. Left in the UK."
+ },
+ "usRemoved": {
+  "count": 4,
+  "products": [
+   {
+    "id": "8002815623222",
+    "handle": "pierce-the-veggies-onesie-uk",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8002815655990",
+    "handle": "bayslide-onesie-uk",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8002815721526",
+    "handle": "cute-is-what-i-aim-for-onesie-uk",
+    "vendor": "Printify"
+   },
+   {
+    "id": "8002815754294",
+    "handle": "screaming-infant-melodies-onesie-uk",
+    "vendor": "Printify"
+   }
+  ]
+ },
+ "alsoFixed": {
+  "handle": "make-america-punk-again-tee-on-comfort-colors-int",
+  "problem": "The only product left quoting UK buyers a US-facility rate. It had grown back to 17 enabled variants of which 6 are not Global Fulfillment eligible, and one ineligible variant drops the whole listing to regular Choice. It was cut to 5 variants on 2026-10-16, so its variant set was restored in Printify at some point since.",
+  "fix": "Cut back to its 11 GF-eligible variants and republished; it is on the International profile again. This affected the UK, Canada and Australia at once, so removing it from the UK alone would have left it wrong in the other two."
+ },
+ "marketsAfter": {
+  "US": 489,
+  "UK": 270,
+  "CA": 262,
+  "AU": 88
+ },
+ "verified": "No active product in the UK catalog is shipped in from abroad, and no -uk listing remains in the US catalog."
+}
