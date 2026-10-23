@@ -1,0 +1,405 @@
+{
+ "generated": "2026-10-23",
+ "store": "Elder Emo (9e2273-43)",
+ "question": "Which collections render empty in each market, now that the Canada, Australia and UK catalogs are narrow?",
+ "finding": "Collections are not per-market in Shopify. They publish to sales channels only and never to a market catalog, so every collection exists in every market and renders with whatever that market can buy. 26 of the 41 collections are empty in Australia and 21 in the UK, all returning HTTP 200 with an empty state. There is no API way to hide one for a single market; the only lever is the theme.",
+ "confirmedOnStorefront": "Liquid does respect the market. /collections/crops renders fully at the root and shows the empty state under /en-au and /en-ca, and /collections/emo-kids is empty under /en-au but full under /en-ca, which matches the per-market counts below.",
+ "fixShipped": "themes/elderemo/snippets/market-collection-empty.liquid plus the two edits documented in themes/elderemo/README.md. Hand-pasted, not deployed, and not yet run in a theme.",
+ "buckets": {
+  "noProductsInAnyMarket": {
+   "count": 7,
+   "handles": [
+    "halloween",
+    "gift-cards",
+    "halloween-kids",
+    "halloween-adults",
+    "halloween-totes-treat-or-treat-bags",
+    "halloween-pets",
+    "are-you-even-emo-uk-pre-order"
+   ],
+   "note": "Empty in the US too, so these pre-date the market work. Left alone: Halloween is a week away and these may be about to be filled."
+  },
+  "usOnlyEmptyInUkAndAu": {
+   "count": 14,
+   "handles": [
+    "make-america-rock-again",
+    "green-day-themed-apparel",
+    "punk-emo-pets",
+    "banz-earmuffs",
+    "new-arrivals-old",
+    "accessories",
+    "are-you-even-emo",
+    "tank-tops-old",
+    "crops",
+    "tank-tops",
+    "are-you-even-emo-bundle",
+    "still-emo-tees-on-comfort-colors",
+    "still-emo-tees-on-comfort-colors-1",
+    "hoodie-season"
+   ],
+   "note": "Tanks, crops, pets, accessories and earmuffs. Empty abroad because those garments have no local printer, which is the same reason they left the UK catalog."
+  },
+  "emptyInAuOnly": {
+   "count": 12,
+   "handles": [
+    "loog-guitars",
+    "invitation",
+    "mothers-day",
+    "warped-tour-themed-party",
+    "fathers-day",
+    "delonge-hoppus-2024",
+    "hats",
+    "elder-emo-womens-apparel",
+    "emo-kids",
+    "tiny-emos-baby-tees-onesies",
+    "little-emos-toddler-tees",
+    "kids-best-sellers"
+   ],
+   "note": "Mostly kids and womens, which Australia lost because Global Fulfillment does not cover those blanks and Australia has no local listings for them."
+  },
+  "haveAuProducts": {
+   "count": 8,
+   "handles": [
+    "blink-summer-2025",
+    "pop-punk-for-president",
+    "fourth-of-july-2026-by-elder-emo",
+    "best-sellers",
+    "new-arrivals",
+    "comfort-colors",
+    "elder-emo-hoodies",
+    "elder-emo-apparel"
+   ]
+  }
+ },
+ "perMarketCounts": [
+  {
+   "handle": "make-america-rock-again",
+   "allActive": 1,
+   "US": 1,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "halloween",
+   "allActive": 0,
+   "US": 0,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "gift-cards",
+   "allActive": 0,
+   "US": 0,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "green-day-themed-apparel",
+   "allActive": 4,
+   "US": 4,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "punk-emo-pets",
+   "allActive": 14,
+   "US": 14,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "banz-earmuffs",
+   "allActive": 4,
+   "US": 4,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "new-arrivals-old",
+   "allActive": 10,
+   "US": 10,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "halloween-kids",
+   "allActive": 0,
+   "US": 0,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "halloween-adults",
+   "allActive": 0,
+   "US": 0,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "halloween-totes-treat-or-treat-bags",
+   "allActive": 0,
+   "US": 0,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "halloween-pets",
+   "allActive": 0,
+   "US": 0,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "accessories",
+   "allActive": 15,
+   "US": 15,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "are-you-even-emo",
+   "allActive": 4,
+   "US": 4,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "tank-tops-old",
+   "allActive": 17,
+   "US": 17,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "crops",
+   "allActive": 17,
+   "US": 17,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "tank-tops",
+   "allActive": 17,
+   "US": 17,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "are-you-even-emo-bundle",
+   "allActive": 1,
+   "US": 1,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "are-you-even-emo-uk-pre-order",
+   "allActive": 0,
+   "US": 0,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "still-emo-tees-on-comfort-colors",
+   "allActive": 8,
+   "US": 8,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "still-emo-tees-on-comfort-colors-1",
+   "allActive": 8,
+   "US": 8,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "hoodie-season",
+   "allActive": 6,
+   "US": 6,
+   "UK": 0,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "loog-guitars",
+   "allActive": 12,
+   "US": 12,
+   "UK": 1,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "invitation",
+   "allActive": 1,
+   "US": 1,
+   "UK": 1,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "mothers-day",
+   "allActive": 3,
+   "US": 3,
+   "UK": 2,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "warped-tour-themed-party",
+   "allActive": 9,
+   "US": 9,
+   "UK": 2,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "fathers-day",
+   "allActive": 6,
+   "US": 5,
+   "UK": 2,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "delonge-hoppus-2024",
+   "allActive": 9,
+   "US": 9,
+   "UK": 6,
+   "CA": 0,
+   "AU": 0
+  },
+  {
+   "handle": "hats",
+   "allActive": 16,
+   "US": 9,
+   "UK": 6,
+   "CA": 1,
+   "AU": 0
+  },
+  {
+   "handle": "elder-emo-womens-apparel",
+   "allActive": 51,
+   "US": 22,
+   "UK": 16,
+   "CA": 13,
+   "AU": 0
+  },
+  {
+   "handle": "emo-kids",
+   "allActive": 95,
+   "US": 33,
+   "UK": 33,
+   "CA": 29,
+   "AU": 0
+  },
+  {
+   "handle": "tiny-emos-baby-tees-onesies",
+   "allActive": 245,
+   "US": 107,
+   "UK": 41,
+   "CA": 97,
+   "AU": 0
+  },
+  {
+   "handle": "little-emos-toddler-tees",
+   "allActive": 121,
+   "US": 60,
+   "UK": 41,
+   "CA": 20,
+   "AU": 0
+  },
+  {
+   "handle": "kids-best-sellers",
+   "allActive": 284,
+   "US": 124,
+   "UK": 82,
+   "CA": 78,
+   "AU": 0
+  },
+  {
+   "handle": "blink-summer-2025",
+   "allActive": 16,
+   "US": 14,
+   "UK": 3,
+   "CA": 2,
+   "AU": 2
+  },
+  {
+   "handle": "pop-punk-for-president",
+   "allActive": 32,
+   "US": 26,
+   "UK": 12,
+   "CA": 6,
+   "AU": 2
+  },
+  {
+   "handle": "fourth-of-july-2026-by-elder-emo",
+   "allActive": 29,
+   "US": 23,
+   "UK": 3,
+   "CA": 6,
+   "AU": 3
+  },
+  {
+   "handle": "best-sellers",
+   "allActive": 276,
+   "US": 185,
+   "UK": 116,
+   "CA": 5,
+   "AU": 3
+  },
+  {
+   "handle": "new-arrivals",
+   "allActive": 27,
+   "US": 12,
+   "UK": 14,
+   "CA": 15,
+   "AU": 14
+  },
+  {
+   "handle": "comfort-colors",
+   "allActive": 54,
+   "US": 38,
+   "UK": 16,
+   "CA": 16,
+   "AU": 15
+  },
+  {
+   "handle": "elder-emo-hoodies",
+   "allActive": 61,
+   "US": 22,
+   "UK": 21,
+   "CA": 17,
+   "AU": 17
+  },
+  {
+   "handle": "elder-emo-apparel",
+   "allActive": 169,
+   "US": 82,
+   "UK": 65,
+   "CA": 65,
+   "AU": 59
+  }
+ ],
+ "worthNoting": "Australia has only 8 collections with anything in them, and 3 of those hold fewer than 4 products. The Australian storefront is thin enough that its navigation is worth a look on its own, separately from hiding the empty ones."
+}
