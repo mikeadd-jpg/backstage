@@ -23,6 +23,7 @@ const PATHS = {
   traffic: ['M3 12h4l3-8 4 16 3-8h4'],
   orders: ['M6 3h12v18l-3-2-3 2-3-2-3 2z', 'M9 8h6', 'M9 12h6'],
   ads: ['M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z', 'M17 9a4 4 0 0 1 0 6', 'M20 6a8 8 0 0 1 0 12'],
+  inspiration: ['M9 18h6', 'M10 21h4', 'M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V16h5v-.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z'],
   insights: ['M4 20h16', 'M7 16v-4', 'M12 16V8', 'M17 16v-6'],
   create: ['M12 5v14', 'M5 12h14'],
   settings: ['M4 6h8', 'M16 6h4', 'M14 4v4', 'M4 12h4', 'M12 12h8', 'M10 10v4', 'M4 18h11', 'M19 18h1', 'M17 16v4'],
@@ -49,6 +50,7 @@ export const DESTINATIONS = {
   products:  { area: 'products',  label: 'Products',  icon: 'products',  group: 'Create', blurb: 'Printify drafts from a design' },
   mockups:   { area: 'mockups',   label: 'Mockups',   icon: 'mockups',   group: 'Create', blurb: 'Lifestyle shots for a live product' },
   ads:       { area: 'ads',       label: 'Ads',       icon: 'ads',       group: 'Create', blurb: 'Carousel ads from the Meta image library' },
+  inspiration: { area: 'inspiration', label: 'Inspiration', icon: 'inspiration', group: 'Create', blurb: 'Competitor ads, and how to make our own' },
   profit:    { area: 'profit',    label: 'Profit',    icon: 'profit',    group: 'Insights', blurb: 'Revenue, costs and margin' },
   attribution: { area: 'attribution', label: 'Attribution', icon: 'attribution', group: 'Insights', blurb: 'Where revenue comes from' },
   email:     { area: 'email',     label: 'Email',     icon: 'email',     group: 'Insights', blurb: 'List growth, flows and campaigns' },
@@ -135,7 +137,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
   const [menu, setMenu] = useState(null);       // null | 'side' | 'top'
   const [chooser, setChooser] = useState(null);  // null | 'work' | 'create' | 'insights'
   const allowed = allowedDestinations(me);
-  const createKeys = ['products', 'mockups', 'ads'].filter((k) => allowed.includes(k));
+  const createKeys = ['products', 'mockups', 'ads', 'inspiration'].filter((k) => allowed.includes(k));
 
   // Bottom tabs on phones, five at most: Work screens, then Create and Insights. A group
   // with several screens folds into one tab that opens a chooser, but only when there are

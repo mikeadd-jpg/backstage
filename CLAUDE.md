@@ -16,10 +16,10 @@ cookie that stored it in plaintext.
 
 **Roles decide which screens someone sees and which API routes answer them.** They are
 defined once in `lib/roles.js` (each role lists its *areas*: inbox, risk, approvals,
-products, mockups, ads, profit, attribution, email, traffic, orders, settings, users, connect), and both the navigation
+products, mockups, ads, inspiration, profit, attribution, email, traffic, orders, settings, users, connect), and both the navigation
 (`app/Shell.jsx`) and the server (`lib/access.js`) read that one file, so the two cannot
 drift. Owner (everything, the only role with profit, attribution, email, traffic and orders), Admin (everything but those),
-Support (inbox, at risk, approvals), Creative (products, mockups, ads, no customer data), and
+Support (inbox, at risk, approvals), Creative (products, mockups, ads, inspiration, no customer data), and
 Member, which is exactly what everyone had before roles and exists so nobody lost access
 the day they shipped.
 
@@ -95,7 +95,7 @@ a headline, what is going well, what needs work, and 3 to 5 concrete actions.
 
 ## Navigation (`app/Shell.jsx`)
 
-Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups, Ads;
+Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups, Ads, Inspiration;
 Insights: Profit, Attribution, Email, Traffic, Orders) at 1100px and up, an icon rail from 681 to 1099px, and on
 phones a title bar plus at most five bottom tabs: Create and Insights each fold into one
 tab with a chooser (and Work too, when Home would otherwise make six, carrying the summed
@@ -506,6 +506,47 @@ keyed per brand for the same reason the scenes are: Wallspoke sells wall art and
 model to photograph, so it gets room and camera variants instead. Nothing in a variation
 may touch the product; that is `HARD_RULES`' job and the two must not argue. `MAX_BATCH`
 in the route is a spending guard, not a technical ceiling.
+
+## Inspiration tab (`lib/inspiration.js`, `/api/inspiration`, `app/Inspiration.jsx`)
+
+Competitor Meta ads to borrow ideas from, and Claude's take on how to build our own
+version. Area `inspiration` (owner, admin, creative).
+
+- **The data is a Google Sheet that Backstage only reads.** "Competitor Ads"
+  (`INSPIRATION_SHEET_ID`), shared with the service account as Viewer like the profit
+  sheet; `lib/sheets.js` is the client both use. Tabs: `competitors` (name, page_id,
+  active, notes), `ads` (one row per ad, keyed by `ad_id`) and `digest` (one row per day
+  with a patterns note). Columns are matched by header name. Cached 5 minutes; Refresh
+  skips it.
+- **A scheduled Claude task fills it, not Backstage.** `competitor-ads-daily`, a desktop
+  scheduled task on the owner's Mac (~8am, `~/.claude/scheduled-tasks/competitor-ads-daily/`),
+  searches the Meta Ad Library per Page ID through the Meta connector and writes the sheet
+  through the Google Sheets connector. So it only runs while that app is open, and the
+  prompt lives there, not in this repo. Rules it follows that are easy to break: IDs are
+  plain-text columns (16 digits otherwise turn into scientific notation), rows are written
+  with `update_values` at exact ranges and **never appended** (append inserted rows without
+  the date formats, and pre-filled checkboxes made it land at row 2001), and the people's
+  `starred` / `notes` columns are never overwritten.
+- **The Ad Library search returns at most 50 ads per Page and no image or body text**,
+  only the link headline, start date and a link. Vans, Little Trouble, Rebel Bro and H&M
+  run hundreds, so only their newest 50 are seen, and the task never marks a capped
+  competitor's ads inactive. `ad_text` stays empty.
+- **So "How would I build this?" reads the headline, plus a screenshot if pasted.**
+  `analyzeAd` (`DRAFT_MODEL`) returns, through a tool like the briefing: format, hook, why,
+  which of our tools (mockup, carousel, video), steps, headline ideas, a Mockups scene and
+  what not to copy. `TOOLS` in that file says exactly what each tab can do; keep it exact,
+  because a vaguer version had people building single-image ads in the Ads tab, which only
+  does carousels and video. Headlines and scenes never name a band or other brand, and
+  never invent offers. The ad is looked up by id from the sheet, not taken from the client,
+  and its text is fenced as data: competitors wrote it.
+- **"Make one like it" never sends the competitor's image to an image model.** Claude
+  writes an original scene, surroundings only, and the button leaves
+  `{ brand, scene, search, source }` in `sessionStorage` (`backstage.mockupSeed`). Mockups
+  reads it once on load (a ref, so React's dev double effect cannot eat it), opens that
+  store with the product hint as its search, and products picked there start with that
+  scene instead of a freshly written one until "Stop using it". Generation, review and
+  sending are the normal Mockups flow.
+- Nothing here is stored: breakdowns live in the tab and go when it closes, like mockups.
 
 ## Sending a mockup to Meta (`lib/meta.js`)
 

@@ -1036,3 +1036,41 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .od-card-fields dt { color: var(--faint); }
 .od-card-fields dd { margin: 0; overflow-wrap: anywhere; }
 .od-card-none { margin-top: 8px; font-size: 12px; color: var(--faint); }
+
+/* Inspiration: competitor ads in a grid; an opened ad takes the full row so its
+   breakdown has room. */
+.insp-pane { max-width: none; }
+.insp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; align-items: start; }
+.insp-cell.wide { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.insp-cell > .card, .insp-filters, .insp-digest { margin-bottom: 0; }
+.insp-filters, .insp-digest { margin-bottom: 14px; }
+.insp-ad { display: flex; flex-direction: column; gap: 8px; height: 100%; }
+.insp-ad.open { border-color: var(--action); }
+.insp-ad-top { display: flex; align-items: center; gap: 8px; }
+.insp-comp { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.insp-star { color: var(--amber); font-size: 13px; }
+.insp-run { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--green);
+  background: var(--green-bg); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.insp-run.ended { color: var(--faint); background: var(--surface-2); }
+.insp-headline { font-size: 14px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.insp-text { font-size: 12.5px; color: var(--muted); line-height: 1.5; white-space: pre-line; }
+.insp-notes { font-size: 12px; color: var(--text); background: var(--amber-bg); border-radius: 6px; padding: 6px 9px; }
+.insp-meta { font-size: 11px; color: var(--faint); margin-top: auto; }
+.insp-actions { margin-top: 2px; flex-wrap: wrap; }
+.insp-drop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px; margin-top: 4px;
+  border: 1px dashed var(--line-strong); border-radius: 10px; font-size: 12.5px; color: var(--muted); }
+.insp-drop.has { border-style: solid; align-items: flex-start; }
+.insp-drop img { max-width: min(100%, 320px); max-height: 360px; border-radius: 8px; border: 1px solid var(--line); }
+.insp-recipe { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.insp-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; margin: 0 0 6px; font-size: 13px; line-height: 1.5; }
+.insp-facts dt { color: var(--faint); font-weight: 600; }
+.insp-facts dd { margin: 0; }
+.insp-sub { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--faint); margin: 14px 0 6px; }
+.insp-p { font-size: 13px; line-height: 1.55; margin: 0 0 6px; }
+.insp-steps { margin: 0 0 6px 18px; padding: 0; font-size: 13px; line-height: 1.55; }
+.insp-steps li { margin-bottom: 3px; }
+.mk-seed { margin-bottom: 14px; }
+@media (max-width: 680px) {
+  .insp-facts { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .insp-facts dd { margin-bottom: 6px; }
+}

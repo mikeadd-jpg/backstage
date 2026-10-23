@@ -12,6 +12,18 @@ const SIZE_LABELS = { portrait: 'Portrait', square: 'Square', landscape: 'Landsc
 // and buys little over two; one at a time makes ten products a ten minute wait.
 const CONCURRENCY = 2;
 
+// Left by the Inspiration tab's "Make one like it": { brand, scene, search, source }.
+// Read once on load, then removed, so a refresh does not bring it back.
+const SEED_KEY = 'backstage.mockupSeed';
+function takeSeed() {
+  try {
+    const raw = sessionStorage.getItem(SEED_KEY);
+    sessionStorage.removeItem(SEED_KEY);
+    const s = raw && JSON.parse(raw);
+    return s && s.brand && s.scene ? s : null;
+  } catch { return null; }
+}
+
 export default function Mockups() {
   const [brands, setBrands] = useState([]);
   const [brand, setBrand] = useState('');
@@ -51,6 +63,10 @@ export default function Mockups() {
   const themeRef = useRef('');
   useEffect(() => { themeRef.current = theme.trim(); }, [theme]);
   const [rewriting, setRewriting] = useState(false);
+  // A scene from the Inspiration tab. While it is set, products picked in its store start
+  // with it instead of a freshly written one; Rotate on a card still replaces it there.
+  const [seed, setSeed] = useState(null);
+  const seedTaken = useRef(undefined); // survives the dev-mode double effect run
 
   const jobsRef = useRef(jobs);
   useEffect(() => { jobsRef.current = jobs; }, [jobs]);
@@ -72,7 +88,13 @@ export default function Mockups() {
       if (d.canva) setCanva(d.canva);
       setSizes(d.sizes || sizes);
       setReady(d.ready !== false);
-      if (bs.length) setBrand(bs[0].key);
+      if (seedTaken.current === undefined) seedTaken.current = takeSeed();
+      const s = seedTaken.current;
+      if (s && bs.some((b) => b.key === s.brand)) {
+        setSeed(s);
+        setBrand(s.brand);
+        setSearch(s.search || '');
+      } else if (bs.length) setBrand(bs[0].key);
     }).catch(() => setError('Could not load the stores.'));
   }, []);
 
@@ -139,12 +161,13 @@ export default function Mockups() {
     const key = jobKey(brand, p);
     if (pickedKeys.has(key)) return removeJob(key);
     if (jobs.length >= maxProducts) return setError('Up to ' + maxProducts + ' products at a time. Remove one to add another.');
+    const seeded = seed && seed.brand === brand;
     const job = {
-      key, brand, product: p, scene: scenes[brand] || defaults[brand] || '',
-      notes: '', rotating: false, msg: '', failures: [],
+      key, brand, product: p, scene: seeded ? seed.scene : scenes[brand] || defaults[brand] || '',
+      notes: '', rotating: false, msg: seeded ? 'Scene from Inspiration.' : '', failures: [],
     };
     setJobs((js) => [...js, job]);
-    rotate(job);
+    if (!seeded) rotate(job);
   }
 
   function removeJob(key) {
@@ -548,6 +571,15 @@ export default function Mockups() {
         </aside>
 
         <section className="mk-work">
+          {seed && (
+            <div className="flag ok mk-seed">
+              <span className="ico">&#10003;</span>
+              <span>
+                Inspired by {seed.source}. Products you pick in {brandName(seed.brand)} start with this scene: {seed.scene}{' '}
+                <button className="btn btn-ghost" style={{ marginLeft: 6 }} onClick={() => setSeed(null)}>Stop using it</button>
+              </span>
+            </div>
+          )}
           <div className="card">
             <label className="field">
               <span>Theme for every scene (optional)</span>

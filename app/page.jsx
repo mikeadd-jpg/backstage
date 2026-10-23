@@ -12,6 +12,7 @@ import { BRANDS } from './ui';
 import Builder from './Builder';
 import Mockups from './Mockups';
 import Ads from './Ads';
+import Inspiration from './Inspiration';
 import Profit from './Profit';
 import Settings from './Settings';
 import Shell, { allowedDestinations } from './Shell';
@@ -159,6 +160,7 @@ export default function Page() {
       {tab === 'products' && <Builder />}
       {tab === 'mockups' && <Mockups />}
       {tab === 'ads' && <Ads />}
+      {tab === 'inspiration' && <Inspiration go={go} />}
       {tab === 'profit' && <Profit />}
       {tab === 'attribution' && <Attribution />}
       {tab === 'email' && <Email />}
