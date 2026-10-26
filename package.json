@@ -8,7 +8,8 @@
     "start": "next start",
     "ingest": "node scripts/run-ingest.mjs",
     "seed": "node scripts/seed-db.mjs",
-    "test-alert": "node scripts/test-alert.mjs"
+    "test-alert": "node scripts/test-alert.mjs",
+    "check-tags": "node scripts/check-tags.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",

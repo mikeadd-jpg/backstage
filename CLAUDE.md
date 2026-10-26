@@ -380,6 +380,13 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   `configRows()`. The AU kids rows, and UK for the long-sleeve bodysuit, are new: until a
   price is set in Settings they build at $24.99 with a warning. The market tag is added
   on top of the configured tags; adults still get `upsellprod` (not the Gildan).
+- **Audience tags come from the garment, not the Settings row** (`lib/productTags.js`). On
+  Elder Emo `elderemo` is the adults collection's rule tag, and on 2026-10-24 every kids row
+  carried it, so 74 kids listings showed under Elders; the AU kids rows did not exist, so
+  those listings went out tagged only `au`. Kids listings now always get `kids`, their age
+  tag (`infants`, `toddler`, `youthsizes`), the blank tag of the blueprint actually built,
+  and never `elderemo`. Only Elder Emo's rules are in `KIDS_RULES`; other stores pass their
+  rows through. `npm run check-tags` checks it, no database needed.
 - **Colours** are names resolved to variant ids at build time, never hardcoded ids, since
   each printer stocks a different set. Sizes are every in-stock size of a picked colour.
   Swatch hex comes from the catalog pages, falling back to the fixed map in

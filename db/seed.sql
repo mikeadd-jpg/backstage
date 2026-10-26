@@ -34,21 +34,23 @@ ON CONFLICT (brand_key) DO NOTHING;
 -- One row per kids product the builder can create: garment plus region. Region is part
 -- of the key because UK and Canada use their own print providers and their tags differ.
 -- PRICES BELOW ARE PLACEHOLDERS. Review them in the Settings tab before publishing.
+-- No `elderemo` on Elder Emo kids rows: it is the adults collection's rule tag. The
+-- builder strips it and adds the age-group and blank tags anyway (lib/productTags.js).
 INSERT INTO product_config (brand_key, garment_key, price_cents, tags) VALUES
-  ('elderemo', 'onesie_us', 2499, 'elderemo, kids, onesie, us, rabbitskins4424'),
-  ('elderemo', 'onesie_uk', 2499, 'elderemo, kids, onesie, uk, rabbitskins4424'),
-  ('elderemo', 'onesie_ca', 2499, 'elderemo, kids, onesie, ca, rabbitskins4424'),
-  ('elderemo', 'ls_bodysuit_us', 2699, 'elderemo, kids, longsleeve bodysuit, us, rabbitskins4411'),
-  ('elderemo', 'ls_bodysuit_ca', 2699, 'elderemo, kids, longsleeve bodysuit, ca, rabbitskins4411'),
-  ('elderemo', 'baby_tee_us', 2399, 'elderemo, kids, baby tee, us, rabbitskins3322'),
-  ('elderemo', 'baby_tee_uk', 2399, 'elderemo, kids, baby tee, uk, rabbitskins3322'),
-  ('elderemo', 'baby_tee_ca', 2399, 'elderemo, kids, baby tee, ca, rabbitskins3322'),
-  ('elderemo', 'toddler_tee_us', 2499, 'elderemo, kids, toddler tee, us, bellacanvas3001t'),
-  ('elderemo', 'toddler_tee_uk', 2499, 'elderemo, kids, toddler tee, uk, rabbitskins3321'),
-  ('elderemo', 'toddler_tee_ca', 2499, 'elderemo, kids, toddler tee, ca, rabbitskins3321'),
-  ('elderemo', 'youth_tee_us', 2599, 'elderemo, kids, youth tee, us, gildan5000b'),
-  ('elderemo', 'youth_tee_uk', 2599, 'elderemo, kids, youth tee, uk, gildan5000b'),
-  ('elderemo', 'youth_tee_ca', 2599, 'elderemo, kids, youth tee, ca, gildan5000b'),
+  ('elderemo', 'onesie_us', 2499, 'kids, onesie, us, rabbitskins4424'),
+  ('elderemo', 'onesie_uk', 2499, 'kids, onesie, uk, rabbitskins4424'),
+  ('elderemo', 'onesie_ca', 2499, 'kids, onesie, ca, rabbitskins4424'),
+  ('elderemo', 'ls_bodysuit_us', 2699, 'kids, long, onesie, us, rabbitskins4411'),
+  ('elderemo', 'ls_bodysuit_ca', 2699, 'kids, long, onesie, ca, rabbitskins4411'),
+  ('elderemo', 'baby_tee_us', 2399, 'kids, babytee, us, rabbitskins3322'),
+  ('elderemo', 'baby_tee_uk', 2399, 'kids, babytee, uk, rabbitskins3322'),
+  ('elderemo', 'baby_tee_ca', 2399, 'kids, babytee, ca, rabbitskins3322'),
+  ('elderemo', 'toddler_tee_us', 2499, 'kids, toddler tee, us, bellacanvas3001t'),
+  ('elderemo', 'toddler_tee_uk', 2499, 'kids, toddler tee, uk, rabbitskins3321'),
+  ('elderemo', 'toddler_tee_ca', 2499, 'kids, toddler tee, ca, rabbitskins3321'),
+  ('elderemo', 'youth_tee_us', 2599, 'kids, youth tee, us, gildan5000b'),
+  ('elderemo', 'youth_tee_uk', 2599, 'kids, youth tee, uk, gildan5000b'),
+  ('elderemo', 'youth_tee_ca', 2599, 'kids, youth tee, ca, gildan5000b'),
   ('poppunks', 'onesie_us', 2499, 'poppunks, kids, onesie, us, rabbitskins4424'),
   ('poppunks', 'onesie_uk', 2499, 'poppunks, kids, onesie, uk, rabbitskins4424'),
   ('poppunks', 'onesie_ca', 2499, 'poppunks, kids, onesie, ca, rabbitskins4424'),
