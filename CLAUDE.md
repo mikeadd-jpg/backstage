@@ -408,13 +408,19 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   on a phone. Everything in it is already in the catalog payload, so it costs no request.
 - **A design per colour is opt-in** ("Use a different design for some colours"). Printify
   takes several `print_areas` per product, each with its own `variant_ids`, and
-  `printAreas()` in `lib/printers.js` groups the variants by the artwork they get. Uploads
-  are keyed by colour **name** (lower case) across every ticked product, so one Black file
-  reaches the Gildan, Comfort Colors, Crop and Hoodie alike; a colour with no upload falls
-  back to the main front and back, so the main front is optional once every picked colour
-  has its own (`perColour` on prepare; `printAreas` refuses a colour with no front). Names are not normalised: Pepper and Charcoal are two
-  rows. Each extra file is its own `upload` request, since several images in one body
-  would pass Vercel's request size limit.
+  `printAreas()` in `lib/printers.js` groups the variants by the artwork they get; a test
+  build on 2026-10-27 confirmed Printify stores each group exactly as sent. **Uploads are
+  per colour family, not per name** (`DESIGN_FAMILIES` in `lib/colors.js`: Black, Navy,
+  Dark grey, Light grey, Cream / off-white, White), because each blank names its shades
+  differently. The first version asked once per name, a seven-garment build showed ~15
+  rows (Charcoal, Pepper, Coal, Dark Heather...), and every missed row quietly took the
+  main design, which read as colours "lumped together". A family can be split so a shade
+  gets its own file; un-splitting drops those overrides (`resolvedFile`). Each row shows a
+  preview of what it will get and flags a fall-back to the main design, and each result
+  lists the file every colour received (`designMap`). The main front is optional once
+  every picked colour resolves to one (`perColour` on prepare; `printAreas` refuses a
+  colour with no front). Each file is its own `upload` request, since several images in
+  one body would pass Vercel's request size limit.
 - **Never assume a back print area.** Some printers (Print Geek on the infant blanks) have
   none; the build leaves the back off with a warning.
 

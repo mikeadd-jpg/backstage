@@ -236,6 +236,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .pc-row { border-top: 1px solid var(--line); padding-top: 8px; }
 .pc-name { display: flex; align-items: center; gap: 6px; font-size: 13px; flex-wrap: wrap; }
 .pc-name .li-sub { margin-top: 0; }
+.pc-name .pal-btn { margin-left: auto; }
+.pc-shade { margin-left: 22px; border-top-style: dashed; }
+.pc-pick { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.pc-pick input { min-width: 0; }
+.pc-thumb { width: 44px; height: 44px; object-fit: contain; border-radius: 6px; flex-shrink: 0;
+  background: repeating-conic-gradient(var(--line) 0% 25%, var(--surface) 0% 50%) 50% / 10px 10px;
+  box-shadow: inset 0 0 0 1px var(--line-strong); }
+.pc-warn { color: var(--amber); }
+.pc-map { display: block; }
 .input { padding: 10px 12px; font-size: 14px; font-family: 'Inter', sans-serif; border: 1px solid var(--line-strong);
   border-radius: 8px; background: var(--surface); color: var(--text); outline: none; width: 100%; }
 .input:focus { border-color: var(--action); }

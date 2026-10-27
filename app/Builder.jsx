@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { designFamily } from '../lib/colors';
 
 // Product builder. One upload builds every product's listings:
 //   - Global Fulfillment (Gildan, Comfort Colors): one Printify Choice listing made and
@@ -8,8 +9,10 @@ import { useEffect, useState } from 'react';
 //   - Everything else: one listing per market (US, CA, UK, AU), each tagged with its
 //     market, on the printer lib/printers.js ranks best there. Every pick is overridable.
 // One design goes on every colour unless "different design per colour" is on. Then each
-// colour picked anywhere can take its own front and back, matched by colour name across
-// products, so one Black upload covers the Gildan, Comfort Colors, Crop, Hoodie and so on.
+// colour family picked anywhere (Black, Navy, Dark grey...) takes one front and back across
+// every product, since each blank names its shades differently; a family can be split so a
+// shade gets its own. Each row shows a preview of exactly what it will get, and the result
+// lists the design each colour received.
 
 const money = (cents) => (cents == null ? '?' : '$' + (cents / 100).toFixed(2));
 
@@ -291,7 +294,7 @@ function fileToB64(file) {
 }
 
 // Every colour picked on a ticked listing, by name (case-insensitive), with the products
-// that use it. This is the list the per-colour designs are uploaded against.
+// that use it and its family.
 function pickedColours(products, picks) {
   const out = new Map();
   for (const p of products) {
@@ -303,12 +306,55 @@ function pickedColours(products, picks) {
       const stock = colorsOf(p, cand);
       for (const name of s.colors) {
         const k = name.toLowerCase();
-        if (!out.has(k)) out.set(k, { key: k, name, hex: (stock.find((c) => c.name === name) || {}).hex || null, products: new Set() });
+        if (!out.has(k)) {
+          out.set(k, { key: 'c:' + k, lower: k, name, family: designFamily(name),
+            hex: (stock.find((c) => c.name === name) || {}).hex || null, products: new Set() });
+        }
         out.get(k).products.add(p.label);
       }
     }
   }
   return [...out.values()].sort((a, b) => b.products.size - a.products.size || a.name.localeCompare(b.name));
+}
+
+// The upload rows: one per colour family present, its shades listed under it when split,
+// then one per colour that is in no family. Upload keys: 'fam:<family>' and 'c:<colour>'.
+function designRows(colours, split) {
+  const rows = [];
+  const fams = new Map();
+  for (const c of colours) {
+    if (!c.family) { rows.push({ key: c.key, label: c.name, colours: [c], hex: c.hex }); continue; }
+    if (!fams.has(c.family.key)) {
+      const row = { key: 'fam:' + c.family.key, label: c.family.label, colours: [], hex: c.hex, family: c.family.key };
+      fams.set(c.family.key, row);
+      rows.push(row);
+    }
+    fams.get(c.family.key).colours.push(c);
+  }
+  const out = [];
+  for (const r of rows) {
+    out.push(r);
+    if (r.family && split.includes(r.family)) {
+      for (const c of r.colours) out.push({ key: c.key, label: c.name, colours: [c], hex: c.hex, shadeOf: r });
+    }
+  }
+  return out;
+}
+
+// What one colour gets for one side: its own upload (only while its family is split, so an
+// un-split family never keeps a hidden shade override), else its family's, else null (the
+// main design).
+function resolvedFile(colourFiles, split, c, side) {
+  const shaded = !c.family || split.includes(c.family.key);
+  const own = shaded && (colourFiles[c.key] || {})[side];
+  if (own) return { file: own, from: c.key };
+  const fam = c.family && (colourFiles['fam:' + c.family.key] || {})[side];
+  return fam ? { file: fam, from: 'fam:' + c.family.key } : null;
+}
+
+function Thumb({ file }) {
+  if (!file) return null;
+  return <img className="pc-thumb" alt="" src={'data:' + (file.type || 'image/png') + ';base64,' + file.b64} />;
 }
 
 function initialSelection(products) {
@@ -330,7 +376,8 @@ export default function Builder() {
   const [front, setFront] = useState(null);
   const [back, setBack] = useState(null);
   const [perColour, setPerColour] = useState(false);
-  const [colourFiles, setColourFiles] = useState({}); // colour (lower case) -> { front, back }
+  const [colourFiles, setColourFiles] = useState({}); // 'fam:<family>' | 'c:<colour>' -> { front, back }
+  const [split, setSplit] = useState([]);            // family keys set shade by shade
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -341,7 +388,7 @@ export default function Builder() {
   const [open, setOpen] = useState(null);        // 'key:market:printer|colours'
   const [openAcc, setOpenAcc] = useState(true);
   const [progress, setProgress] = useState('');
-  const [rows, setRows] = useState([]);
+  const [built, setBuilt] = useState([]);
   const [checkedAt, setCheckedAt] = useState({ adults: null, kids: null });
 
   useEffect(() => {
@@ -367,6 +414,7 @@ export default function Builder() {
   const products = catalog[mode] || [];
   const picks = sel[mode];
   const colours = perColour ? pickedColours(products, picks) : [];
+  const rows = designRows(colours, split);
   const selectedCount = products.reduce((n, p) =>
     n + (p.error ? 0 : p.listings.filter((l) => picks[p.key] && picks[p.key][l.market] && picks[p.key][l.market].on).length), 0);
 
@@ -399,27 +447,27 @@ export default function Builder() {
 
   async function pick(setter, file) {
     if (!file) { setter(null); return; }
-    setter({ name: file.name, b64: await fileToB64(file) });
+    setter({ name: file.name, type: file.type, b64: await fileToB64(file) });
   }
   async function pickColour(key, side, file) {
-    const img = file ? { name: file.name, b64: await fileToB64(file) } : null;
+    const img = file ? { name: file.name, type: file.type, b64: await fileToB64(file) } : null;
     setColourFiles((f) => ({ ...f, [key]: { ...f[key], [side]: img } }));
   }
 
   function switchMode(m) {
-    setMode(m); setResult(null); setRows([]); setError(''); setOpen(null);
+    setMode(m); setResult(null); setBuilt([]); setError(''); setOpen(null);
   }
 
   // One prepare call (upload + descriptions), then one call per product with all of its
   // ticked listings, so no request grows with the number of markets and results land
   // product by product.
   async function build() {
-    setError(''); setResult(null); setRows([]); setProgress('');
+    setError(''); setResult(null); setBuilt([]); setProgress('');
     if (!shopId) return setError('Pick a store.');
     if (!designName.trim()) return setError('Enter a design name.');
     // Per colour, the main front only covers colours without their own, so it is needed
     // only while some picked colour has no front.
-    const bare = perColour ? colours.filter((c) => !(colourFiles[c.key] || {}).front) : [];
+    const bare = perColour ? colours.filter((c) => !resolvedFile(colourFiles, split, c, 'front')) : [];
     if (!front && (!perColour || !colours.length)) return setError('Add a front design.');
     if (!front && bare.length) return setError('Add a main front design, or a front for ' + bare.map((c) => c.name).join(', ') + '.');
     if (selectedCount === 0) return setError('Pick at least one listing to build.');
@@ -449,24 +497,38 @@ export default function Builder() {
 
       const allWarnings = [...(prep.warnings || [])];
 
-      // Per-colour designs go up one per request (a request body has a size limit), and
-      // only for colours still picked somewhere.
-      const colorDesigns = {};
-      for (const c of colours) {
-        const files = colourFiles[c.key] || {};
+      // Each row's files go up once, one per request (a request body has a size limit),
+      // then every picked colour is given the id its own row resolves to. Uploaded ids are
+      // named so the result can say which file each colour got.
+      const fileNames = {};
+      if (prep.frontId) fileNames[prep.frontId] = front.name + ' (main)';
+      if (prep.backId) fileNames[prep.backId] = back.name + ' (main)';
+      const uploaded = {};
+      for (const r of rows) {
+        const files = colourFiles[r.key] || {};
         for (const side of ['front', 'back']) {
           const f = files[side];
           if (!f) continue;
-          setProgress('Uploading the ' + c.name + ' ' + side + ' design...');
+          setProgress('Uploading the ' + r.label + ' ' + side + ' design...');
           const res = await fetch('/api/builder', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'upload', group: mode, b64: f.b64, name: f.name, label: 'The ' + c.name + ' ' + side + ' design' }),
+            body: JSON.stringify({ action: 'upload', group: mode, b64: f.b64, name: f.name, label: 'The ' + r.label + ' ' + side + ' design' }),
           });
           const d = await res.json();
-          if (!res.ok) { setError(c.name + ' ' + side + ': ' + (d.error || 'upload failed')); setBusy(false); setProgress(''); return; }
+          if (!res.ok) { setError(r.label + ' ' + side + ': ' + (d.error || 'upload failed')); setBusy(false); setProgress(''); return; }
           if (d.note) allWarnings.push(d.note);
-          colorDesigns[c.key] = { ...colorDesigns[c.key], [side + 'Id']: d.id };
+          uploaded[r.key + ':' + side] = d.id;
+          fileNames[d.id] = f.name;
         }
+      }
+      const colorDesigns = {};
+      for (const c of colours) {
+        const d = {};
+        for (const side of ['front', 'back']) {
+          const hit = resolvedFile(colourFiles, split, c, side);
+          if (hit && uploaded[hit.from + ':' + side]) d[side + 'Id'] = uploaded[hit.from + ':' + side];
+        }
+        if (Object.keys(d).length) colorDesigns[c.lower] = d;
       }
 
       const collected = [];
@@ -491,10 +553,10 @@ export default function Builder() {
         const d = await res.json();
         if (!res.ok) collected.push({ label: p.label, ok: false, error: d.error || 'Build failed' });
         else { collected.push(...d.results); allWarnings.push(...(d.warnings || [])); }
-        setRows([...collected]);
+        setBuilt([...collected]);
       }
       setProgress('');
-      setResult({ designName, storeName: prep.storeName, warnings: allWarnings, results: collected });
+      setResult({ designName, storeName: prep.storeName, warnings: allWarnings, results: collected, fileNames });
     } catch (e) {
       setError('Something went wrong. Try again.');
       setProgress('');
@@ -559,27 +621,51 @@ export default function Builder() {
         {perColour && (
           <div className="pc">
             <div className="acc-note">
-              Matched by colour name across every ticked product, so one Black design goes on every
-              black garment. A colour left empty gets the main front and back above.
+              One design per colour family across every ticked product: the Dark grey upload goes
+              on Charcoal, Pepper, Coal and Dark Heather alike. Split a family to give a shade its
+              own. Anything left empty gets the main front and back above.
             </div>
             {colours.length === 0 && <div className="acc-note">Tick some listings and colours below first.</div>}
-            {colours.map((c) => {
-              const files = colourFiles[c.key] || {};
+            {rows.map((r) => {
+              const files = colourFiles[r.key] || {};
+              // What this row's colours will actually get, so a gap shows before the build.
+              const sideState = (side, main) => {
+                if (files[side]) return { file: files[side], text: files[side].name };
+                const up = r.shadeOf && (colourFiles[r.shadeOf.key] || {})[side];
+                if (up) return { file: up, text: 'uses the ' + r.shadeOf.label + ' design' };
+                if (main) return { file: main, text: 'main design', warn: true };
+                return { text: side === 'front' ? 'needed' : 'none', bad: side === 'front' };
+              };
+              const f = sideState('front', front);
+              const b = sideState('back', back);
               return (
-                <div className="pc-row" key={c.key}>
+                <div className={'pc-row' + (r.shadeOf ? ' pc-shade' : '')} key={r.key}>
                   <div className="pc-name">
-                    <Dot c={c} /> <b>{c.name}</b>
-                    <span className="li-sub"> {[...c.products].join(', ')}</span>
+                    <Dot c={r} /> <b>{r.label}</b>
+                    {!r.shadeOf && (
+                      <span className="li-sub">
+                        {' '}{r.family ? r.colours.map((c) => c.name).join(', ') + ' · ' : ''}
+                        {[...new Set(r.colours.flatMap((c) => [...c.products]))].join(', ')}
+                      </span>
+                    )}
+                    {r.shadeOf && <span className="li-sub"> {[...r.colours[0].products].join(', ')}</span>}
+                    {r.family && r.colours.length > 1 && (
+                      <button type="button" className="pal-btn"
+                        onClick={() => setSplit((x) => (x.includes(r.family) ? x.filter((k) => k !== r.family) : [...x, r.family]))}>
+                        {split.includes(r.family) ? 'One design for all' : 'Set shades separately'}
+                      </button>
+                    )}
                   </div>
                   <div className="field-row">
-                    <label className="field">
-                      <span>Front{files.front ? '' : front ? ' (main design)' : ' (needed)'}</span>
-                      <input type="file" accept="image/*" onChange={(e) => pickColour(c.key, 'front', e.target.files[0])} />
-                    </label>
-                    <label className="field">
-                      <span>Back{files.back ? '' : back ? ' (main design)' : ' (none)'}</span>
-                      <input type="file" accept="image/*" onChange={(e) => pickColour(c.key, 'back', e.target.files[0])} />
-                    </label>
+                    {[['front', 'Front', f], ['back', 'Back', b]].map(([side, label, st]) => (
+                      <label className="field" key={side}>
+                        <span className={st.bad ? 'rg-warn' : st.warn ? 'pc-warn' : ''}>{label}: {st.text}</span>
+                        <span className="pc-pick">
+                          <Thumb file={st.file} />
+                          <input type="file" accept="image/*" onChange={(e) => pickColour(r.key, side, e.target.files[0])} />
+                        </span>
+                      </label>
+                    ))}
                   </div>
                 </div>
               );
@@ -683,10 +769,10 @@ export default function Builder() {
         {busy && progress && <div className="ledger-note" style={{ marginTop: 8 }}>{progress}</div>}
       </div>
 
-      {!result && rows.length > 0 && (
+      {!result && built.length > 0 && (
         <div className="card">
           <div className="card-label">Progress</div>
-          {rows.map((r, i) => (
+          {built.map((r, i) => (
             <div className="build-row" key={i}>
               <span className="li-name">{r.label}</span>
               {r.ok
@@ -705,7 +791,14 @@ export default function Builder() {
           ))}
           {result.results.map((r, i) => (
             <div className="build-row" key={i}>
-              <span className="li-name">{r.label}{r.tags ? <span className="li-sub"> &middot; tags {r.tags.join(', ')}</span> : null}</span>
+              <span className="li-name">
+                {r.label}{r.tags ? <span className="li-sub"> &middot; tags {r.tags.join(', ')}</span> : null}
+                {r.designMap && r.designs > 1 && (
+                  <span className="li-sub pc-map">
+                    {Object.entries(r.designMap).map(([colour, d]) => colour + ': ' + (result.fileNames[d.front] || 'main')).join(' · ')}
+                  </span>
+                )}
+              </span>
               {r.ok
                 ? <span className="status-pill s-shipped"><span className="mini-dot" style={{ background: 'var(--green)' }} />Created{r.colors ? ' · ' + r.colors + ' colours' : ''}{r.variants ? ' · ' + r.variants + ' variants' : ''}{r.designs > 1 ? ' · ' + r.designs + ' designs' : ''}</span>
                 : <span className="status-pill s-action" title={r.error}><span className="mini-dot" style={{ background: 'var(--red)' }} />Failed</span>}
