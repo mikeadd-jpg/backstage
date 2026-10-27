@@ -232,6 +232,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .field > span { font-size: 12px; font-weight: 600; color: var(--muted); }
 .field-row { display: flex; gap: 14px; flex-wrap: wrap; }
 .field-row .field { flex: 1; min-width: 180px; }
+.pc { display: flex; flex-direction: column; gap: 10px; margin: 4px 0 10px 26px; }
+.pc-row { border-top: 1px solid var(--line); padding-top: 8px; }
+.pc-name { display: flex; align-items: center; gap: 6px; font-size: 13px; flex-wrap: wrap; }
+.pc-name .li-sub { margin-top: 0; }
 .input { padding: 10px 12px; font-size: 14px; font-family: 'Inter', sans-serif; border: 1px solid var(--line-strong);
   border-radius: 8px; background: var(--surface); color: var(--text); outline: none; width: 100%; }
 .input:focus { border-color: var(--action); }

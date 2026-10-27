@@ -7,6 +7,9 @@ import { useEffect, useState } from 'react';
 //     are offered beside it, unticked, for a market-specific design.
 //   - Everything else: one listing per market (US, CA, UK, AU), each tagged with its
 //     market, on the printer lib/printers.js ranks best there. Every pick is overridable.
+// One design goes on every colour unless "different design per colour" is on. Then each
+// colour picked anywhere can take its own front and back, matched by colour name across
+// products, so one Black upload covers the Gildan, Comfort Colors, Crop, Hoodie and so on.
 
 const money = (cents) => (cents == null ? '?' : '$' + (cents / 100).toFixed(2));
 
@@ -287,6 +290,27 @@ function fileToB64(file) {
   });
 }
 
+// Every colour picked on a ticked listing, by name (case-insensitive), with the products
+// that use it. This is the list the per-colour designs are uploaded against.
+function pickedColours(products, picks) {
+  const out = new Map();
+  for (const p of products) {
+    if (p.error || !picks[p.key]) continue;
+    for (const l of p.listings) {
+      const s = picks[p.key][l.market];
+      if (!s || !s.on) continue;
+      const cand = l.candidates.find((c) => c.id === s.pick);
+      const stock = colorsOf(p, cand);
+      for (const name of s.colors) {
+        const k = name.toLowerCase();
+        if (!out.has(k)) out.set(k, { key: k, name, hex: (stock.find((c) => c.name === name) || {}).hex || null, products: new Set() });
+        out.get(k).products.add(p.label);
+      }
+    }
+  }
+  return [...out.values()].sort((a, b) => b.products.size - a.products.size || a.name.localeCompare(b.name));
+}
+
 function initialSelection(products) {
   const out = {};
   for (const p of products) {
@@ -305,6 +329,8 @@ export default function Builder() {
   const [leftChest, setLeftChest] = useState(false);
   const [front, setFront] = useState(null);
   const [back, setBack] = useState(null);
+  const [perColour, setPerColour] = useState(false);
+  const [colourFiles, setColourFiles] = useState({}); // colour (lower case) -> { front, back }
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -340,6 +366,7 @@ export default function Builder() {
 
   const products = catalog[mode] || [];
   const picks = sel[mode];
+  const colours = perColour ? pickedColours(products, picks) : [];
   const selectedCount = products.reduce((n, p) =>
     n + (p.error ? 0 : p.listings.filter((l) => picks[p.key] && picks[p.key][l.market] && picks[p.key][l.market].on).length), 0);
 
@@ -373,6 +400,10 @@ export default function Builder() {
   async function pick(setter, file) {
     if (!file) { setter(null); return; }
     setter({ name: file.name, b64: await fileToB64(file) });
+  }
+  async function pickColour(key, side, file) {
+    const img = file ? { name: file.name, b64: await fileToB64(file) } : null;
+    setColourFiles((f) => ({ ...f, [key]: { ...f[key], [side]: img } }));
   }
 
   function switchMode(m) {
@@ -413,6 +444,27 @@ export default function Builder() {
       if (!prepRes.ok) { setError(prep.error || 'Prepare failed'); setBusy(false); return; }
 
       const allWarnings = [...(prep.warnings || [])];
+
+      // Per-colour designs go up one per request (a request body has a size limit), and
+      // only for colours still picked somewhere.
+      const colorDesigns = {};
+      for (const c of colours) {
+        const files = colourFiles[c.key] || {};
+        for (const side of ['front', 'back']) {
+          const f = files[side];
+          if (!f) continue;
+          setProgress('Uploading the ' + c.name + ' ' + side + ' design...');
+          const res = await fetch('/api/builder', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'upload', b64: f.b64, name: f.name, label: 'The ' + c.name + ' ' + side + ' design' }),
+          });
+          const d = await res.json();
+          if (!res.ok) { setError(c.name + ' ' + side + ': ' + (d.error || 'upload failed')); setBusy(false); setProgress(''); return; }
+          if (d.note) allWarnings.push(d.note);
+          colorDesigns[c.key] = { ...colorDesigns[c.key], [side + 'Id']: d.id };
+        }
+      }
+
       const collected = [];
       for (const p of products) {
         if (p.error) continue;
@@ -429,7 +481,7 @@ export default function Builder() {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             action: 'build', group: mode, shopId, key: p.key, designName, leftChest, listings,
-            description: prep.descriptions[p.key], frontId: prep.frontId, backId: prep.backId,
+            description: prep.descriptions[p.key], frontId: prep.frontId, backId: prep.backId, colorDesigns,
           }),
         });
         const d = await res.json();
@@ -495,6 +547,41 @@ export default function Builder() {
           <input type="checkbox" checked={leftChest} onChange={(e) => setLeftChest(e.target.checked)} />
           Place front design as a small left-chest print
         </label>
+
+        <label className="check">
+          <input type="checkbox" checked={perColour} onChange={(e) => setPerColour(e.target.checked)} />
+          Use a different design for some colours
+        </label>
+        {perColour && (
+          <div className="pc">
+            <div className="acc-note">
+              Matched by colour name across every ticked product, so one Black design goes on every
+              black garment. A colour left empty gets the main front and back above.
+            </div>
+            {colours.length === 0 && <div className="acc-note">Tick some listings and colours below first.</div>}
+            {colours.map((c) => {
+              const files = colourFiles[c.key] || {};
+              return (
+                <div className="pc-row" key={c.key}>
+                  <div className="pc-name">
+                    <Dot c={c} /> <b>{c.name}</b>
+                    <span className="li-sub"> {[...c.products].join(', ')}</span>
+                  </div>
+                  <div className="field-row">
+                    <label className="field">
+                      <span>Front{files.front ? '' : ' (main design)'}</span>
+                      <input type="file" accept="image/*" onChange={(e) => pickColour(c.key, 'front', e.target.files[0])} />
+                    </label>
+                    <label className="field">
+                      <span>Back{files.back ? '' : back ? ' (main design)' : ' (none)'}</span>
+                      <input type="file" accept="image/*" onChange={(e) => pickColour(c.key, 'back', e.target.files[0])} />
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <div className="acc">
           <button className="acc-head" onClick={() => setOpenAcc((o) => !o)} type="button">
@@ -616,7 +703,7 @@ export default function Builder() {
             <div className="build-row" key={i}>
               <span className="li-name">{r.label}{r.tags ? <span className="li-sub"> &middot; tags {r.tags.join(', ')}</span> : null}</span>
               {r.ok
-                ? <span className="status-pill s-shipped"><span className="mini-dot" style={{ background: 'var(--green)' }} />Created{r.colors ? ' · ' + r.colors + ' colours' : ''}{r.variants ? ' · ' + r.variants + ' variants' : ''}</span>
+                ? <span className="status-pill s-shipped"><span className="mini-dot" style={{ background: 'var(--green)' }} />Created{r.colors ? ' · ' + r.colors + ' colours' : ''}{r.variants ? ' · ' + r.variants + ' variants' : ''}{r.designs > 1 ? ' · ' + r.designs + ' designs' : ''}</span>
                 : <span className="status-pill s-action" title={r.error}><span className="mini-dot" style={{ background: 'var(--red)' }} />Failed</span>}
             </div>
           ))}
