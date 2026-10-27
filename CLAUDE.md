@@ -411,7 +411,8 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   `printAreas()` in `lib/printers.js` groups the variants by the artwork they get. Uploads
   are keyed by colour **name** (lower case) across every ticked product, so one Black file
   reaches the Gildan, Comfort Colors, Crop and Hoodie alike; a colour with no upload falls
-  back to the main front and back. Names are not normalised: Pepper and Charcoal are two
+  back to the main front and back, so the main front is optional once every picked colour
+  has its own (`perColour` on prepare; `printAreas` refuses a colour with no front). Names are not normalised: Pepper and Charcoal are two
   rows. Each extra file is its own `upload` request, since several images in one body
   would pass Vercel's request size limit.
 - **Never assume a back print area.** Some printers (Print Geek on the infant blanks) have

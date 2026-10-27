@@ -417,7 +417,11 @@ export default function Builder() {
     setError(''); setResult(null); setRows([]); setProgress('');
     if (!shopId) return setError('Pick a store.');
     if (!designName.trim()) return setError('Enter a design name.');
-    if (!front) return setError('Add a front design.');
+    // Per colour, the main front only covers colours without their own, so it is needed
+    // only while some picked colour has no front.
+    const bare = perColour ? colours.filter((c) => !(colourFiles[c.key] || {}).front) : [];
+    if (!front && (!perColour || !colours.length)) return setError('Add a front design.');
+    if (!front && bare.length) return setError('Add a main front design, or a front for ' + bare.map((c) => c.name).join(', ') + '.');
     if (selectedCount === 0) return setError('Pick at least one listing to build.');
     for (const p of products) {
       if (p.error) continue;
@@ -436,7 +440,7 @@ export default function Builder() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'prepare', group: mode, shopId, designName, vibe,
-          frontB64: front.b64, frontName: front.name,
+          frontB64: front ? front.b64 : null, frontName: front ? front.name : null, perColour,
           backB64: back ? back.b64 : null, backName: back ? back.name : null,
         }),
       });
@@ -456,7 +460,7 @@ export default function Builder() {
           setProgress('Uploading the ' + c.name + ' ' + side + ' design...');
           const res = await fetch('/api/builder', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'upload', b64: f.b64, name: f.name, label: 'The ' + c.name + ' ' + side + ' design' }),
+            body: JSON.stringify({ action: 'upload', group: mode, b64: f.b64, name: f.name, label: 'The ' + c.name + ' ' + side + ' design' }),
           });
           const d = await res.json();
           if (!res.ok) { setError(c.name + ' ' + side + ': ' + (d.error || 'upload failed')); setBusy(false); setProgress(''); return; }
@@ -534,11 +538,11 @@ export default function Builder() {
 
         <div className="field-row">
           <label className="field">
-            <span>Front design</span>
+            <span>{perColour ? 'Main front (optional if every colour has its own)' : 'Front design'}</span>
             <input type="file" accept="image/*" onChange={(e) => pick(setFront, e.target.files[0])} />
           </label>
           <label className="field">
-            <span>Back design (optional)</span>
+            <span>{perColour ? 'Main back (optional)' : 'Back design (optional)'}</span>
             <input type="file" accept="image/*" onChange={(e) => pick(setBack, e.target.files[0])} />
           </label>
         </div>
@@ -569,7 +573,7 @@ export default function Builder() {
                   </div>
                   <div className="field-row">
                     <label className="field">
-                      <span>Front{files.front ? '' : ' (main design)'}</span>
+                      <span>Front{files.front ? '' : front ? ' (main design)' : ' (needed)'}</span>
                       <input type="file" accept="image/*" onChange={(e) => pickColour(c.key, 'front', e.target.files[0])} />
                     </label>
                     <label className="field">
