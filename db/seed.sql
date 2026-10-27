@@ -20,7 +20,11 @@ INSERT INTO product_config (brand_key, garment_key, price_cents, tags) VALUES
   ('poppunks', 'comfort_colors_tee', 3299, 'poppunks, comfort colors, adult, upsellprod, cc1717'),
   ('poppunks', 'tank',               2899, 'poppunks, adult, tank, upsellprod, gildantank'),
   ('poppunks', 'womens_tee',         2899, 'poppunks, adult, women, upsellprod, gildan64000L'),
-  ('poppunks', 'crop',               3299, 'ccboxy, poppunks, adult, comfortcolors, upsellprod, womens')
+  ('poppunks', 'crop',               3299, 'ccboxy, poppunks, adult, comfortcolors, upsellprod, womens'),
+  -- Hoodie (added 2026-10-26). No blank tag here: gildan18500 / ls14001 follow the blueprint
+  -- built (lib/productTags.js). Elder Emo matches its live hoodies, which carry no `adult`.
+  ('elderemo', 'hoodie',             5950, 'elderemo, hoodie'),
+  ('poppunks', 'hoodie',             5950, 'poppunks, hoodie, base, adult')
 ON CONFLICT (brand_key, garment_key) DO NOTHING;
 
 -- Shared brand voice (drives BOTH product descriptions and CS reply drafts). Edit in Settings.

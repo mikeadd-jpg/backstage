@@ -557,7 +557,11 @@ export default function Builder() {
                       {p.listings.map((l, i) => (
                         <div key={l.market} style={{ width: '100%' }}>
                           {p.globalCapable && !p.globalMissing && i === 1 && (
-                            <div className="rg-divider">Per-market listings, for a market-specific design</div>
+                            <div className="rg-divider">
+                              {p.ownMarkets && p.ownMarkets.length
+                                ? 'Per-market listings. Global leaves out ' + p.ownMarkets.join(', ') + ', so that one is ticked'
+                                : 'Per-market listings, for a market-specific design'}
+                            </div>
                           )}
                           <ListingRow
                             product={p}

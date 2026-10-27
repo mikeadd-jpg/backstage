@@ -41,4 +41,12 @@ assert.ok(adult.includes('elderemo') && adult.includes('upsellprod'), 'adult tag
 const gildan = listingTags({ brand: 'elderemo', group: 'adults', slotKey: 'gildan_tee', blueprintId: 6, configTags: ['elderemo', 'adult'], marketTags: ['us', 'ca', 'uk', 'au'] });
 assert.ok(gildan.includes('elderemo') && !gildan.includes('upsellprod'), 'gildan tags: ' + gildan);
 
-console.log('ok: ' + n + ' kids listings checked, adults unchanged');
+// Hoodie: Global (Gildan 18500) is ca/uk/au with gildan18500, US (Lane Seven) is us with
+// ls14001, neither gets upsellprod, and a stray blank tag in the row follows the blueprint.
+const hoodieRow = ['elderemo', 'hoodie', 'gildan18500'];
+const gf = listingTags({ brand: 'elderemo', group: 'adults', slotKey: 'hoodie', blueprintId: 77, configTags: hoodieRow, marketTags: ['ca', 'uk', 'au'] });
+assert.deepEqual(gf, ['elderemo', 'hoodie', 'gildan18500', 'ca', 'uk', 'au'], 'hoodie global tags: ' + gf);
+const l7 = listingTags({ brand: 'elderemo', group: 'adults', slotKey: 'hoodie', blueprintId: 439, configTags: hoodieRow, marketTags: ['us'] });
+assert.deepEqual(l7, ['elderemo', 'hoodie', 'ls14001', 'us'], 'hoodie US tags: ' + l7);
+
+console.log('ok: ' + n + ' kids listings checked, adults unchanged, hoodie tagged per blank');

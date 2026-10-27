@@ -295,6 +295,13 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   build time, dropping (with a warning) any colour that lost it. Only 6 of Printify's
   ~1,275 Choice blueprints had eligible colours on 2026-10-14 (also B+C 3001, Gildan
   64000, 18000, 18500); none of the kids, tank, women's tee or crop blanks do.
+- **The hoodie is Global Fulfillment with the US left out** (`globalMarkets`,
+  `marketBlueprints` in `VARIANTS`), matching the hoodies already live on Elder Emo: Gildan
+  18500 (bp 77) is the Global listing, tagged `ca uk au`, and the US gets its own Lane Seven
+  LS14001 (bp 439) listing, ticked by default and ranked over Lane Seven printers only. The
+  blank tag (`gildan18500` / `ls14001`) follows the blueprint built (`ADULT_BLANK_TAGS` in
+  `lib/productTags.js`), since both share one Settings row, and the hoodie gets no
+  `upsellprod`: no live hoodie has it, and it would drop them out of `elder-emo-apparel`.
 - **Per-market listings** are one product per market, titled `<design> Tee (UK)` and
   tagged with that market alone, for bulk-adding to its Shopify market. Printify does
   not restrict where a product ships; the tag and title are the whole mechanism. On a
@@ -369,7 +376,8 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   look $7.40 dearer in the UK than it is. `regional_shipping` also gives the local and
   imported rates per region, which is the clearest statement of what each route costs.
 - **Saved weekly, not loaded live.** Prices barely move, so the whole builder catalog is
-  saved in `insights_cache` (`printify_catalog_<group>`) and rebuilt every Monday 05:00
+  saved in `insights_cache` (`printify_catalog3_<group>`; the number is bumped when the
+  garment list changes, so the old copy is not served without the new garment) and rebuilt every Monday 05:00
   UTC by the `/api/printers-refresh` cron, which re-reads every printer (a few hundred
   Printify calls; `apiGet` waits out the per-minute catalog rate limit). The builder reads
   the saved copy in one query and shows its date. Copies are kept 8 days, so a missed cron

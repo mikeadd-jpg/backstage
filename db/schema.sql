@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS stores (
 -- Per-store, per-garment price + tags for the builder.
 CREATE TABLE IF NOT EXISTS product_config (
   brand_key    TEXT NOT NULL,
-  garment_key  TEXT NOT NULL,               -- gildan_tee | comfort_colors_tee | tank | womens_tee | crop
+  garment_key  TEXT NOT NULL,               -- gildan_tee | comfort_colors_tee | tank | womens_tee | crop | hoodie
   price_cents  INT NOT NULL,
   tags         TEXT,                         -- comma separated
   PRIMARY KEY (brand_key, garment_key)
