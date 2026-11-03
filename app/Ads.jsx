@@ -650,7 +650,7 @@ export default function Ads() {
               <label className="field">
                 <span>Button</span>
                 <select className="input" value={cta} onChange={(e) => setCta(e.target.value)}>
-                  {(config.ctaTypes || []).map((t) => <option key={t} value={t}>{CTA_LABELS[t] || t}</option>)}
+                  {((config && config.ctaTypes) || []).map((t) => <option key={t} value={t}>{CTA_LABELS[t] || t}</option>)}
                 </select>
               </label>
             </div>
