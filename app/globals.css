@@ -1146,3 +1146,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .as-extra { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 12px; }
 .as-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; margin-bottom: 8px; }
 .as-card-thumb { width: 100%; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 6px; background: var(--surface-2); }
+.kit-colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.kit-color { display: flex; gap: 8px; align-items: center; padding: 6px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); cursor: pointer; }
+.kit-color input[type=color] { width: 38px; height: 38px; padding: 0; border: none; background: none; flex: none; cursor: pointer; }
+.kit-color > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kit-hex { padding: 3px 6px; font-size: 12px; font-family: 'Space Mono', monospace; }
+.kit-fontroles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0 10px; }
+.kit-looks { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 10px; }

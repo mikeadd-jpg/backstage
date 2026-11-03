@@ -748,6 +748,9 @@ songs, then hands it to the same form as a Canva video (headline, link, text, bu
   (`lib/adVideo.js`, action `plan-video`, `DRAFT_MODEL`, shown 512px thumbnails, answers
   through a tool). Quick cuts land on the beat: `detectTempo` reads the song in the browser.
   Same copy rules as `lib/adcopy.js`: no invented offers, no other brands, no dashes.
+- **Filters** (`FILTERS` in `lib/adPlans.js`, `plan.filter`) are CSS filter presets on the
+  pictures only, never text, logo or end cards. They render in Chrome and Edge; Safari
+  renders unfiltered. Claude may pick one.
 - **A plan can also carry** a `caption` (one line that stays up through every shot, drawn
   after the shots so swaps happen underneath), a `logo` overlay, a brand `font`, and an end
   made of brand kit images (`end.cards`, 2s each) and/or the generated headline card
@@ -783,6 +786,20 @@ music, which the video builder offers in every option.
   by `sort_order`, is the default; "Make default" moves one to the front. Delete removes
   the Blob file first, then the row.
 - Reading needs `ads` or `settings`; writing needs `settings`.
+- **Brand style** (`lib/brandStyle.js`, `app_settings.brand_style_<brand>`, action `style`)
+  sits above the files: colours by role (background, text, main action, highlight, panel),
+  which kit font does which job (headline, body, bold, sticker), look rules (uppercase,
+  square corners, hard offset shadows, borders, gradients) and written guidelines.
+  `resolveStyle` turns it into what the templates draw with and picks readable text on each
+  colour by contrast; with no style saved the templates look as they did before. A sticker
+  font turns Quick cuts' words into tilted stickers. The guidelines go into Claude's plan
+  prompt. Elder Emo's was filled from its brand kit document on 2026-11-03.
+- Kit fonts hold one weight per file, so text in a kit font asks for weight 400 (`weight()`
+  in `AdTemplates.jsx`); bold is its own file in the bold role. Variable fonts were skipped
+  for the static cuts on purpose.
+- **SVG kit images are rasterized to PNG on load** (`renderableImage` in
+  `app/mediaProbe.js`, 1600px long edge): the web renderer drew nothing for an SVG loaded
+  by URL.
 
 ## Settings layout (`app/Settings.jsx`)
 

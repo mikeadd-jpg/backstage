@@ -17,10 +17,10 @@ import { Player } from '@remotion/player';
 import AdVideo from './AdTemplates.jsx';
 import {
   ASPECTS, TEMPLATES, TEMPLATE_KEYS, FPS, CHUNK_BYTES, timeline, planSeconds, templatePlans, normalizePlan,
-  CAPTION_POSITIONS, CAPTION_STYLES, CAPTION_MAX, LOGO_POSITIONS, LOGO_SIZES,
+  CAPTION_POSITIONS, CAPTION_STYLES, CAPTION_MAX, LOGO_POSITIONS, LOGO_SIZES, FILTERS,
 } from '../lib/adPlans.js';
 import { kitFontFamily, loadKitFont } from './BrandKit.jsx';
-import { probeImage, probeVideo, probeAudio } from './mediaProbe.js';
+import { probeImage, probeVideo, probeAudio, renderableImage } from './mediaProbe.js';
 
 const MAX_ASSETS = 20;
 const MAX_UPLOAD = 500 * 1024 * 1024;
@@ -48,10 +48,11 @@ async function loadKit(brand) {
     } else {
       const res = await fetch(a.url).catch(() => null);
       if (!res || !res.ok) continue;
-      out.push({ ...base, kind: a.kind, src: URL.createObjectURL(await res.blob()) });
+      const img = await renderableImage(await res.blob()).catch(() => null);
+      if (img) out.push({ ...base, kind: a.kind, ...img });
     }
   }
-  return out;
+  return { assets: out, style: d.style || null };
 }
 
 /** An uploaded file as a builder asset. */
@@ -98,12 +99,13 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   const fileInput = useRef(null);
   const [kit, setKit] = useState([]);
   const [kitState, setKitState] = useState('loading');  // loading | ready | failed
+  const [kitStyle, setKitStyle] = useState(null);       // the brand's saved style, or null
 
   // A new store means a new kit, and options made from the old store's assets go.
   useEffect(() => {
     let live = true;
     setKitState('loading'); setOptions([]); setCurrent(''); setRender(null); setSend(null);
-    loadKit(brand).then((k) => { if (live) { setKit(k); setKitState('ready'); } else releaseAssets(k); })
+    loadKit(brand).then(({ assets: k, style: st }) => { if (live) { setKit(k); setKitStyle(st); setKitState('ready'); } else releaseAssets(k); })
       .catch(() => { if (live) { setKit([]); setKitState('failed'); } });
     return () => { live = false; setKit((k) => { releaseAssets(k.filter((a) => a.kind !== 'audio')); return []; }); };
   }, [brand]);
@@ -115,7 +117,6 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   const kitOf = (kind) => kit.filter((a) => a.kind === kind);
   const kitSongs = kit.filter((a) => a.kind === 'audio');
   const defaults = useMemo(() => ({
-    font: (kit.find((a) => a.kind === 'font') || {}).id || null,
     endcard: (kit.find((a) => a.kind === 'endcard') || {}).id || null,
   }), [kit]);
   const visuals = assets.filter((a) => a.kind !== 'audio');
@@ -130,7 +131,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   const renderStale = render && opt && render.key === opt.key && render.stamp !== stamp && render.status === 'done';
   const dims = ASPECTS[(plan && plan.aspect) || aspect];
   const frames = plan ? timeline(plan).total : 1;
-  const inputProps = useMemo(() => ({ plan, assets: byId, brandName, accent, fonts }), [plan, byId, brandName, accent, fonts]);
+  const inputProps = useMemo(() => ({ plan, assets: byId, brandName, accent, fonts, style: kitStyle }), [plan, byId, brandName, accent, fonts, kitStyle]);
 
   async function addFiles(files) {
     setAddError(''); setAdding(true);
@@ -194,8 +195,8 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
       });
       if (!ok) return setPlanError(d.error || 'Claude could not plan the cuts.');
       // Checked again here against the assets as they are now.
-      // The font is the brand's choice, not Claude's.
-      addOptions((d.plans || []).map((p) => normalizePlan({ ...p, font: p.font || defaults.font }, all)).filter(Boolean), 'claude');
+      // Fonts are the brand style's, not Claude's.
+      addOptions((d.plans || []).map((p) => normalizePlan({ ...p, font: null }, all)).filter(Boolean), 'claude');
     } catch {
       setPlanError('Request failed.');
     } finally {
@@ -480,10 +481,19 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                     <label className="field">
                       <span>Font</span>
                       <select className="input" value={plan.font || ''} onChange={(e) => editPlan({ font: e.target.value || null })}>
-                        <option value="">Template default</option>
-                        {kitOf('font').map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                        <option value="">{kitStyle && kitStyle.fonts && kitStyle.fonts.headline ? 'Brand fonts' : 'Template default'}</option>
+                        {kitOf('font').map((a) => <option key={a.id} value={a.id}>Headlines in {a.name}</option>)}
                       </select>
                     </label>
+                    <label className="field">
+                      <span>Filter</span>
+                      <select className="input" value={plan.filter || ''} onChange={(e) => editPlan({ filter: e.target.value || null })}>
+                        <option value="">None</option>
+                        {Object.entries(FILTERS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="field-row">
                     <label className="field">
                       <span>Logo overlay</span>
                       <select className="input" value={plan.logo ? plan.logo.asset : ''}

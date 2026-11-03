@@ -2,7 +2,8 @@
 // kept for good (files in Vercel Blob, the list in brand_assets). Settings manages it;
 // the Ads tab reads it.
 //
-//   GET  ?brand=                                    { assets: [...] }  (ads or settings)
+//   GET  ?brand=                                    { assets: [...], style }  (ads or settings)
+//   POST { action: 'style', brand, style }          colours, font roles, look, guidelines
 //   POST { action: 'add', brand, kind, url, pathname, name, meta }     record an upload
 //   POST { action: 'rename', id, name }
 //   POST { action: 'default', id }                  first of its kind = the default
@@ -14,11 +15,19 @@ import { head, del } from '@vercel/blob';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS } from '../../../lib/brands.js';
 import { KIT_KINDS, kitPrefix } from '../../../lib/kitKinds.js';
+import { cleanStyle, styleKey } from '../../../lib/brandStyle.js';
 import {
+  getSetting, setSetting,
   listBrandAssets, getBrandAsset, addBrandAsset, renameBrandAsset, makeDefaultBrandAsset, deleteBrandAsset,
 } from '../../../lib/db.js';
 
 export const dynamic = 'force-dynamic';
+
+async function styleFor(brand) {
+  const raw = await getSetting(styleKey(brand));
+  if (!raw) return null;
+  try { return cleanStyle(JSON.parse(raw)); } catch { return null; }
+}
 
 const shape = (r) => ({
   id: r.id, kind: r.kind, name: r.name, url: r.url, contentType: r.content_type,
@@ -40,7 +49,8 @@ export async function GET(req) {
   const brand = new URL(req.url).searchParams.get('brand') || '';
   if (!BRANDS[brand]) return NextResponse.json({ error: 'Unknown brand.' }, { status: 400 });
   try {
-    return NextResponse.json({ assets: (await listBrandAssets(brand)).map(shape), storage: Boolean(process.env.BLOB_READ_WRITE_TOKEN) });
+    const [rows, style] = await Promise.all([listBrandAssets(brand), styleFor(brand)]);
+    return NextResponse.json({ assets: rows.map(shape), style, storage: Boolean(process.env.BLOB_READ_WRITE_TOKEN) });
   } catch (err) {
     return NextResponse.json({ error: String(err.message || err) }, { status: 500 });
   }
@@ -51,6 +61,12 @@ export async function POST(req) {
   if (gate.error) return gate.error;
   try {
     const b = await req.json();
+    if (b.action === 'style') {
+      if (!BRANDS[b.brand]) throw new Error('Unknown brand.');
+      const style = cleanStyle(b.style);
+      await setSetting(styleKey(b.brand), JSON.stringify(style));
+      return NextResponse.json({ style });
+    }
     if (b.action === 'add') {
       const kind = KIT_KINDS[b.kind];
       if (!BRANDS[b.brand] || !kind) throw new Error('Unknown brand or kind.');

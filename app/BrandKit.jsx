@@ -4,9 +4,14 @@
 // straight to Vercel Blob (/api/brand-kit/upload hands out a token for one path), then
 // /api/brand-kit records them with what the browser measured: an image's size, a song's
 // length and tempo. The first file of each kind is the brand's default.
+//
+// Above the files sits the brand's style: colours by role, which kit font does which job,
+// the look rules and written guidelines (lib/brandStyle.js). The video templates draw
+// with it and Claude's planner reads the guidelines.
 import { useEffect, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import { KIT_KINDS, KIT_KEYS, kitContentType, kitPrefix } from '../lib/kitKinds.js';
+import { COLOR_ROLES, FONT_ROLES, GUIDELINES_MAX, cleanStyle, contrast } from '../lib/brandStyle.js';
 import { probeImage, probeAudio } from './mediaProbe.js';
 
 const mb = (n) => (n / 1024 / 1024).toFixed(1) + ' MB';
@@ -49,6 +54,8 @@ export function loadKitFont(asset) {
 
 export default function BrandKit({ brand, brandName }) {
   const [assets, setAssets] = useState(null);
+  const [style, setStyle] = useState(null);
+  const [styleMsg, setStyleMsg] = useState('');
   const [storage, setStorage] = useState(true);
   const [busy, setBusy] = useState({});            // kind -> 'Uploading 2 of 3...'
   const [msg, setMsg] = useState({});              // kind -> message
@@ -59,6 +66,7 @@ export default function BrandKit({ brand, brandName }) {
     fetch('/api/brand-kit?brand=' + encodeURIComponent(brand)).then((r) => r.json()).then((d) => {
       if (d.error) return setMsg({ _: d.error });
       setAssets(d.assets || []); setStorage(d.storage !== false);
+      setStyle(cleanStyle(d.style || {}));
     }).catch(() => setMsg({ _: 'Could not load the brand kit.' }));
   }, [brand]);
 
@@ -122,8 +130,83 @@ export default function BrandKit({ brand, brandName }) {
     return <div className="ledger-note">BLOB_READ_WRITE_TOKEN is not set, so there is nowhere to keep brand files. Connect the Blob store to the project in Vercel.</div>;
   }
 
+  async function saveStyle() {
+    setStyleMsg('');
+    try {
+      const d = await act({ action: 'style', brand, style });
+      setStyle(d.style); setStyleMsg('Saved. New video options use it.');
+    } catch (err) {
+      setStyleMsg(String(err.message || err));
+    }
+  }
+  const fontsInKit = assets.filter((a) => a.kind === 'font');
+  const setColor = (k, v) => setStyle((st) => ({ ...st, colors: { ...st.colors, [k]: v } }));
+  const setLook = (k, v) => setStyle((st) => ({ ...st, look: { ...st.look, [k]: v } }));
+  const bg = (style && style.colors.background) || '#000000';
+
   return (
     <div className="kit">
+      {style && (
+        <div className="kit-group">
+          <div className="kit-head">
+            <div>
+              <div className="li-name">Brand style</div>
+              <div className="li-sub">Colours, fonts and rules the video builder draws with. Claude reads the guidelines when it plans a cut.</div>
+            </div>
+          </div>
+          <div className="kit-colors">
+            {Object.entries(COLOR_ROLES).map(([k, r]) => {
+              const v = style.colors[k] || '';
+              return (
+                <label className="kit-color" key={k} title={r.about}>
+                  <input type="color" value={/^#[0-9a-f]{6}$/i.test(v) ? v : '#000000'} onChange={(e) => setColor(k, e.target.value.toUpperCase())} />
+                  <span>
+                    <span className="li-name">{r.label}</span>
+                    <input className="input kit-hex" value={v} placeholder="#RRGGBB" maxLength={7}
+                      onChange={(e) => setColor(k, e.target.value.trim())} />
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          {style.colors.primary && /^#[0-9a-f]{6}$/i.test(style.colors.primary) && (
+            <div className="ledger-note" style={{ marginBottom: 10 }}>
+              Main action on background: contrast {contrast(style.colors.primary, bg).toFixed(1)}:1
+              {contrast(style.colors.primary, bg) < 3 ? ', too low to read as a button.' : '.'}
+            </div>
+          )}
+          <div className="kit-fontroles">
+            {Object.entries(FONT_ROLES).map(([k, r]) => (
+              <label className="field" key={k} title={r.about}>
+                <span>{r.label}</span>
+                <select className="input" value={style.fonts[k] || ''}
+                  onChange={(e) => setStyle((st) => ({ ...st, fonts: { ...st.fonts, [k]: Number(e.target.value) || undefined } }))}>
+                  <option value="">{fontsInKit.length ? 'Template default' : 'Add fonts below first'}</option>
+                  {fontsInKit.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+                </select>
+              </label>
+            ))}
+          </div>
+          <div className="kit-looks">
+            {[['uppercaseHeadlines', 'Uppercase headlines and buttons'], ['squareCorners', 'Square corners'], ['offsetShadow', 'Hard offset shadows, no blur'],
+              ['borders', 'Thick borders on bars and stickers'], ['gradients', 'Gradients allowed']].map(([k, label]) => (
+              <label className="check" key={k}>
+                <input type="checkbox" checked={Boolean(style.look[k])} onChange={(e) => setLook(k, e.target.checked)} /> {label}
+              </label>
+            ))}
+          </div>
+          <label className="field">
+            <span>Guidelines (logo, colour, type and voice rules, in plain words)</span>
+            <textarea className="textarea" rows={8} maxLength={GUIDELINES_MAX} value={style.guidelines}
+              onChange={(e) => setStyle((st) => ({ ...st, guidelines: e.target.value }))}
+              placeholder="e.g. Pink and lime are the loud colours: one or two moments per ad. Never name real bands." />
+          </label>
+          <div className="reply-actions">
+            <button className="btn btn-ghost" type="button" onClick={saveStyle}>Save brand style</button>
+            {styleMsg && <span className="ledger-note">{styleMsg}</span>}
+          </div>
+        </div>
+      )}
       {KIT_KEYS.map((kind) => {
         const k = KIT_KINDS[kind];
         const items = assets.filter((a) => a.kind === kind);

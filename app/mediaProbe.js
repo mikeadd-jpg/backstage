@@ -47,3 +47,32 @@ export async function probeAudio(file) {
     ctx.close();
   }
 }
+
+// A kit image as a blob: URL the video renderer can draw. SVGs are drawn once onto a
+// canvas at `size` px on the long edge and handed over as PNG: the renderer skipped SVG
+// files loaded by URL (it promises only inline SVG), and an SVG's 150px default size
+// would come out soft anyway. Returns { src, width, height }.
+export async function renderableImage(blob, size = 1600) {
+  if (blob.type !== 'image/svg+xml') {
+    const src = URL.createObjectURL(blob);
+    return { src, ...(await probeImage(src).then(({ width, height }) => ({ width, height })).catch(() => ({}))) };
+  }
+  const svgUrl = URL.createObjectURL(blob);
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error('That SVG could not be read.'));
+      i.src = svgUrl;
+    });
+    const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
+    const w = Math.round(ratio >= 1 ? size : size * ratio), h = Math.round(ratio >= 1 ? size / ratio : size);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(img, 0, 0, w, h);
+    const png = await new Promise((r) => c.toBlob(r, 'image/png'));
+    return { src: URL.createObjectURL(png), width: w, height: h };
+  } finally {
+    URL.revokeObjectURL(svgUrl);
+  }
+}
