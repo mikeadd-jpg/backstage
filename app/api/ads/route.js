@@ -17,6 +17,10 @@
 //   { action: 'video-status', brand, videoId }        poll Meta's processing
 //   { action: 'build-video', brand, videoId, ... }    create the video ad creative
 //
+//   Video builder (app/AdStudio.jsx): the video is made on the device, then sent through
+//   /api/ads/video-upload and finished with 'video-status' and 'build-video' above.
+//   { action: 'plan-video', brand, assets, aspect, notes, beat, previous }  Claude plans 3 cuts
+//
 //   { action: 'check-access', brand } what the Meta token can do for this brand (read-only)
 //   { action: 'collections', brand }  the store's collections, for "you might also like"
 //   { action: 'landing-page', brand, title, handles, alsoLike }  a manual Shopify collection
@@ -39,6 +43,7 @@ import {
   resolveMetaPage, resolveInstagram, listAdSets, createPausedAd, CTA_TYPES,
   uploadAdVideoFromUrl, adVideoStatus, createVideoCreative, checkMetaAccess,
 } from '../../../lib/meta.js';
+import { planVideos } from '../../../lib/adVideo.js';
 import { canvaStatus, listDesigns, startVideoExport, exportStatus } from '../../../lib/canva.js';
 
 export const dynamic = 'force-dynamic';
@@ -170,6 +175,18 @@ export async function POST(req) {
     }
 
     // ---- video from Canva ----
+    if (body.action === 'plan-video') {
+      const brand = checkBrand(body.brand);
+      const plans = await planVideos({
+        brand, brandName: BRANDS[brand].name,
+        assets: Array.isArray(body.assets) ? body.assets : [],
+        aspect: body.aspect, notes: body.notes, beat: body.beat || null,
+        previous: Array.isArray(body.previous) ? body.previous : [],
+        standing: await adNotesFor(brand).catch(() => ''),
+      });
+      return NextResponse.json({ plans });
+    }
+
     if (body.action === 'canva-designs') {
       return NextResponse.json(await listDesigns({
         query: typeof body.query === 'string' ? body.query.trim() : '',

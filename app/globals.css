@@ -1089,3 +1089,22 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
   .insp-facts { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .insp-facts dd { margin-bottom: 6px; }
 }
+
+/* Ads tab: video builder (app/AdStudio.jsx) */
+.as-list { display: flex; flex-direction: column; gap: 6px; }
+.as-row { display: flex; align-items: center; gap: 10px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.as-thumb { width: 44px; height: 44px; flex: none; object-fit: cover; border-radius: 6px; background: var(--surface-2); }
+.as-audio { display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--muted); }
+.as-meta { flex: 1; min-width: 0; }
+.as-meta .li-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.as-actions { display: flex; gap: 4px; flex: none; }
+.btn-xs { padding: 2px 8px; min-width: 28px; }
+.as-option { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.as-preview { width: 100%; max-width: 300px; max-height: 560px; margin: 0 auto; border-radius: 10px; overflow: hidden; background: #000; }
+.as-scenes { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; max-height: 340px; overflow-y: auto; }
+.as-scene { display: grid; grid-template-columns: 44px minmax(0, 1fr) 76px; gap: 8px; align-items: center; }
+.as-secs { text-align: right; }
+.as-result { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+@media (min-width: 900px) {
+  .as-option { grid-template-columns: 300px minmax(0, 1fr); }
+}

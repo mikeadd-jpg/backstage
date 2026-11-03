@@ -724,6 +724,34 @@ A reel made in Canva becomes a Meta video ad without downloading anything by han
   with `URL_TAGS`, built through the shared `postCreative`, then optionally a paused ad.
   Every send re-exports, so edits made in Canva are picked up by sending again.
 
+### Video builder (Ads tab, `app/AdStudio.jsx`, `app/AdTemplates.jsx`, `lib/adPlans.js`)
+
+Makes the video itself with Remotion, from library mockups plus uploaded images, clips and
+songs, then hands it to the same form as a Canva video (headline, link, text, build, paused ad).
+
+- **Everything renders on the person's device** with `@remotion/web-renderer` (WebCodecs, no
+  ffmpeg, no server). Uploads stay in the tab as `blob:` URLs and nothing is stored, the same
+  rule as Mockups. Rendering needs a recent Chrome or Edge; `canRenderMediaOnWeb` says why
+  when it can't. Safari ignores CSS filters, so the blurred backdrop is just darkened there.
+- **The web renderer supports only part of CSS** (no z-index, object-position or
+  backdrop-filter, `@font-face` fonts not embedded). `AdTemplates.jsx` stays inside that set
+  and uses system fonts; check the limitations page before adding styles.
+- **Library images go through `/api/ads/media`**, a same-origin copy limited to Meta and
+  Shopify image hosts, because Meta's CDN sends no CORS headers and a cross-origin image
+  taints the canvas.
+- **The MP4 reaches Meta in 4MB pieces** through `/api/ads/video-upload` (Meta's chunked
+  `advideos` upload: start, transfer at the offset Meta asks for, finish), under Vercel's
+  4.5MB body limit, then the usual `video-status` poll.
+- **A plan is plain data** (`lib/adPlans.js`, pure like `profitMath.js`): template, shape,
+  shots with seconds and text, song, end card. Two sources, both checked by `normalizePlan`:
+  `templatePlans` (Quick cuts, Product spotlight, Slow story, instant) and Claude
+  (`lib/adVideo.js`, action `plan-video`, `DRAFT_MODEL`, shown 512px thumbnails, answers
+  through a tool). Quick cuts land on the beat: `detectTempo` reads the song in the browser.
+  Same copy rules as `lib/adcopy.js`: no invented offers, no other brands, no dashes.
+- Remotion is free for individuals and companies of up to 3 people; past that it needs a
+  company license, passed as `NEXT_PUBLIC_REMOTION_LICENSE_KEY`. All `remotion` and
+  `@remotion/*` packages must be the same exact version.
+
 ## Sending a mockup to Canva (`lib/canva.js`, `/api/canva/*`)
 
 A fourth destination beside Shopify, Meta and "send everywhere": the approved shot is
@@ -1059,7 +1087,7 @@ the three: it has no batching and no time budget at all, so hitting a ceiling lo
 entire run rather than degrading.
 
 `/api/builder` and `/api/printers-refresh` ask for 300 too, for the printer catalog rebuild.
-Still on 60: `/api/mcp`.
+Still on 60: `/api/mcp`. `/api/ads` and `/api/ads/video-upload` ask for 120.
 The builder's prepare-then-one-build-per-product split predates the 300s limit, but it has
 independent value (progress, and one failed product not killing the rest), so keep it.
 
