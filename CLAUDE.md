@@ -748,9 +748,49 @@ songs, then hands it to the same form as a Canva video (headline, link, text, bu
   (`lib/adVideo.js`, action `plan-video`, `DRAFT_MODEL`, shown 512px thumbnails, answers
   through a tool). Quick cuts land on the beat: `detectTempo` reads the song in the browser.
   Same copy rules as `lib/adcopy.js`: no invented offers, no other brands, no dashes.
+- **A plan can also carry** a `caption` (one line that stays up through every shot, drawn
+  after the shots so swaps happen underneath), a `logo` overlay, a brand `font`, and an end
+  made of brand kit images (`end.cards`, 2s each) and/or the generated headline card
+  (`end.generated`, forced on when there are no image cards). The kit's first font and
+  first end card are the defaults; the logo is off until picked. Kit fonts are loaded into
+  `document.fonts` under `bk-font-<id>` and drawn as HTML text, which the web renderer
+  does honour (checked with a custom TTF); only SVG text needs embedding.
+- **Images use `StillImg`, not Remotion's `<Img>`.** `<Img>` waits on `img.decode()`, and
+  when that rejects after the image has already loaded (it did, intermittently, with the same
+  file in several quick cuts while the preview was open) it waits for a load event that
+  already fired and the render times out. Keep new images on `StillImg`.
 - Remotion is free for individuals and companies of up to 3 people; past that it needs a
   company license, passed as `NEXT_PUBLIC_REMOTION_LICENSE_KEY`. All `remotion` and
   `@remotion/*` packages must be the same exact version.
+
+### Brand kit (Settings, `app/BrandKit.jsx`, `/api/brand-kit`, `lib/kitKinds.js`)
+
+Per brand, kept until deleted: end card images, transparent logos, fonts and approved
+music, which the video builder offers in every option.
+
+- **The only files Backstage stores.** They live in Vercel Blob (public store
+  `backstage-brand-kit`, `BLOB_READ_WRITE_TOKEN`, connected to every environment) and are
+  listed in the `brand_assets` table. Public means anyone with a URL can fetch it; the
+  names carry a random suffix and nothing links to them.
+- **Uploads go browser to Blob directly** (`@vercel/blob/client`), so Vercel's 4.5MB body
+  limit doesn't apply. `/api/brand-kit/upload` only issues a token for one path under
+  `brand-kit/<brand>/<kind>/`, that kind's content types and size cap. It has no
+  `onUploadCompleted`, because Blob's callback carries no session and the sign-in gate
+  would refuse it. The row is written afterwards by `add`, which `head()`s the file rather
+  than trusting the client.
+- The browser measures before uploading (image size, a song's length and tempo, and a
+  font is test-loaded) and only those numbers go into `meta`. The first of each kind,
+  by `sort_order`, is the default; "Make default" moves one to the front. Delete removes
+  the Blob file first, then the row.
+- Reading needs `ads` or `settings`; writing needs `settings`.
+
+## Settings layout (`app/Settings.jsx`)
+
+One expandable block per brand (voice, mockup notes, video brand kit, pricing and tags), then
+"All stores" (reply structure, Canva, the store list). Sections render only while open, so a
+brand's kit loads when opened, and which are open is remembered in `localStorage` on that
+device. `Section` is defined outside the component on purpose: defined inside, every
+keystroke remounted the text boxes and lost focus.
 
 ## Sending a mockup to Canva (`lib/canva.js`, `/api/canva/*`)
 

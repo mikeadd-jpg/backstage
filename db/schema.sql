@@ -168,3 +168,26 @@ CREATE TABLE IF NOT EXISTS insights_cache (
   data       JSONB NOT NULL,
   fetched_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ===== Brand kit (Settings, per brand) =====
+-- Files the video builder reuses on every ad: end card images, transparent logos, brand
+-- fonts and approved music. The files live in Vercel Blob (BLOB_READ_WRITE_TOKEN, public
+-- store "backstage-brand-kit"); this table is the list of them. Kept until someone
+-- deletes one in Settings, which removes the file too. `meta` holds what the browser
+-- measured at upload: width/height for images, seconds/bpm/period/offset for music.
+-- The lowest sort_order of a kind is that brand's default.
+CREATE TABLE IF NOT EXISTS brand_assets (
+  id           SERIAL PRIMARY KEY,
+  brand_key    TEXT NOT NULL,
+  kind         TEXT NOT NULL,                 -- endcard | logo | font | music
+  name         TEXT NOT NULL,
+  url          TEXT NOT NULL,
+  pathname     TEXT NOT NULL,
+  content_type TEXT,
+  size_bytes   BIGINT,
+  meta         JSONB NOT NULL DEFAULT '{}'::jsonb,
+  sort_order   INTEGER NOT NULL DEFAULT 0,
+  created_by   TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS brand_assets_brand_idx ON brand_assets (brand_key, kind, sort_order);

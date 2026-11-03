@@ -5,16 +5,22 @@
 // After that the Ads tab's normal video flow takes over: headline, link, primary text,
 // build the creative, optionally a paused ad.
 //
+// The brand kit from Settings (end card images, logos, fonts, approved music) is loaded
+// for the store and offered in every option: the first of each kind is the default.
+//
 // Everything happens on this device. Uploads stay in the tab as blob: URLs, Remotion's
 // web renderer encodes the MP4 here, and the file goes to Meta in pieces through
 // /api/ads/video-upload. Nothing is stored anywhere, the same rule as Mockups: close the
 // tab and the uploads and renders are gone.
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Player } from '@remotion/player';
 import AdVideo from './AdTemplates.jsx';
 import {
-  ASPECTS, TEMPLATES, TEMPLATE_KEYS, FPS, CHUNK_BYTES, timeline, planSeconds, templatePlans, detectTempo, normalizePlan,
+  ASPECTS, TEMPLATES, TEMPLATE_KEYS, FPS, CHUNK_BYTES, timeline, planSeconds, templatePlans, normalizePlan,
+  CAPTION_POSITIONS, CAPTION_STYLES, CAPTION_MAX, LOGO_POSITIONS, LOGO_SIZES,
 } from '../lib/adPlans.js';
+import { kitFontFamily, loadKitFont } from './BrandKit.jsx';
+import { probeImage, probeVideo, probeAudio } from './mediaProbe.js';
 
 const MAX_ASSETS = 20;
 const MAX_UPLOAD = 500 * 1024 * 1024;
@@ -24,48 +30,28 @@ const newId = (kind) => kind[0] + (++seq).toString(36) + Math.random().toString(
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const mb = (n) => (n / 1024 / 1024).toFixed(1) + ' MB';
 
-// A small JPEG of an image or a video frame: shown in the list, and sent to Claude so it
-// can see the shots. Never the full file.
-function thumbOf(el, w, h) {
-  const scale = Math.min(1, 512 / Math.max(w, h));
-  const c = document.createElement('canvas');
-  c.width = Math.max(1, Math.round(w * scale)); c.height = Math.max(1, Math.round(h * scale));
-  c.getContext('2d').drawImage(el, 0, 0, c.width, c.height);
-  const url = c.toDataURL('image/jpeg', 0.72);
-  return { url, mediaType: 'image/jpeg', data: url.split(',')[1] };
-}
-
-function probeImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight, thumb: thumbOf(img, img.naturalWidth, img.naturalHeight) });
-    img.onerror = () => reject(new Error('That image could not be read.'));
-    img.src = src;
-  });
-}
-
-function probeVideo(src) {
-  return new Promise((resolve, reject) => {
-    const v = document.createElement('video');
-    v.muted = true; v.preload = 'auto'; v.playsInline = true;
-    v.onloadedmetadata = () => { v.currentTime = Math.min(0.5, (v.duration || 1) / 2); };
-    v.onseeked = () => resolve({ width: v.videoWidth, height: v.videoHeight, seconds: v.duration, thumb: thumbOf(v, v.videoWidth, v.videoHeight) });
-    v.onerror = () => reject(new Error('That video could not be read. MP4 (H.264) and MOV from a phone are safest.'));
-    v.src = src;
-  });
-}
-
-async function probeAudio(file) {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  try {
-    const buf = await ctx.decodeAudioData(await file.arrayBuffer());
-    const beat = detectTempo(buf.getChannelData(0), buf.sampleRate);
-    return { seconds: buf.duration, beat };
-  } catch {
-    throw new Error('That audio file could not be read. MP3, M4A or WAV work.');
-  } finally {
-    ctx.close();
+// The brand kit as builder assets, ids prefixed so they never meet an upload's. Images are
+// copied to blob: URLs for the same canvas reason as library images; music streams from
+// its Blob URL (the store sends CORS headers), since a brand may keep a lot of it.
+async function loadKit(brand) {
+  const d = await fetch('/api/brand-kit?brand=' + encodeURIComponent(brand)).then((r) => r.json());
+  if (d.error) throw new Error(d.error);
+  const out = [];
+  for (const a of d.assets || []) {
+    const id = 'k' + a.id;
+    const base = { id, name: a.name, title: '', origin: 'kit', kitId: a.id, ...a.meta };
+    if (a.kind === 'music') {
+      out.push({ ...base, kind: 'audio', src: a.url, beat: a.meta.bpm ? { bpm: a.meta.bpm, period: a.meta.period, offset: a.meta.offset } : null });
+    } else if (a.kind === 'font') {
+      await loadKitFont(a).catch(() => null);
+      out.push({ ...base, kind: 'font', family: kitFontFamily(a.id) });
+    } else {
+      const res = await fetch(a.url).catch(() => null);
+      if (!res || !res.ok) continue;
+      out.push({ ...base, kind: a.kind, src: URL.createObjectURL(await res.blob()) });
+    }
   }
+  return out;
 }
 
 /** An uploaded file as a builder asset. */
@@ -110,13 +96,33 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   const abort = useRef(null);
   const sendRun = useRef(0);
   const fileInput = useRef(null);
+  const [kit, setKit] = useState([]);
+  const [kitState, setKitState] = useState('loading');  // loading | ready | failed
 
-  const byId = useMemo(() => Object.fromEntries(assets.map((a) => [a.id, a])), [assets]);
+  // A new store means a new kit, and options made from the old store's assets go.
+  useEffect(() => {
+    let live = true;
+    setKitState('loading'); setOptions([]); setCurrent(''); setRender(null); setSend(null);
+    loadKit(brand).then((k) => { if (live) { setKit(k); setKitState('ready'); } else releaseAssets(k); })
+      .catch(() => { if (live) { setKit([]); setKitState('failed'); } });
+    return () => { live = false; setKit((k) => { releaseAssets(k.filter((a) => a.kind !== 'audio')); return []; }); };
+  }, [brand]);
+
+  // Everything a plan can point at: the person's assets, then the kit.
+  const all = useMemo(() => [...assets, ...kit], [assets, kit]);
+  const byId = useMemo(() => Object.fromEntries(all.map((a) => [a.id, a])), [all]);
+  const fonts = useMemo(() => Object.fromEntries(kit.filter((a) => a.kind === 'font').map((a) => [a.id, a.family])), [kit]);
+  const kitOf = (kind) => kit.filter((a) => a.kind === kind);
+  const kitSongs = kit.filter((a) => a.kind === 'audio');
+  const defaults = useMemo(() => ({
+    font: (kit.find((a) => a.kind === 'font') || {}).id || null,
+    endcard: (kit.find((a) => a.kind === 'endcard') || {}).id || null,
+  }), [kit]);
   const visuals = assets.filter((a) => a.kind !== 'audio');
   const firstSongBeat = useMemo(() => {
-    const s = assets.find((a) => a.kind === 'audio');
+    const s = assets.find((a) => a.kind === 'audio') || kitSongs[0];
     return s && s.beat ? { asset: s.id, ...s.beat } : null;
-  }, [assets]);
+  }, [assets, kit]);
   const opt = options.find((o) => o.key === current) || null;
   const plan = opt ? opt.plan : null;
   const stamp = plan ? JSON.stringify(plan) : '';
@@ -124,7 +130,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   const renderStale = render && opt && render.key === opt.key && render.stamp !== stamp && render.status === 'done';
   const dims = ASPECTS[(plan && plan.aspect) || aspect];
   const frames = plan ? timeline(plan).total : 1;
-  const inputProps = useMemo(() => ({ plan, assets: byId, brandName, accent }), [plan, byId, brandName, accent]);
+  const inputProps = useMemo(() => ({ plan, assets: byId, brandName, accent, fonts }), [plan, byId, brandName, accent, fonts]);
 
   async function addFiles(files) {
     setAddError(''); setAdding(true);
@@ -150,7 +156,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
     releaseAssets(assets.filter((a) => a.id === id));
     setAssets((xs) => xs.filter((a) => a.id !== id));
     // Plans pointing at it drop that shot; one left with nothing goes.
-    setOptions((os) => os.map((o) => ({ ...o, plan: normalizePlan(o.plan, assets.filter((a) => a.id !== id)) })).filter((o) => o.plan));
+    setOptions((os) => os.map((o) => ({ ...o, plan: normalizePlan(o.plan, all.filter((a) => a.id !== id)) })).filter((o) => o.plan));
   }
 
   function move(i, dir) {
@@ -171,7 +177,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
 
   function makeTemplateCuts() {
     setPlanError('');
-    addOptions(templatePlans(assets, { aspect, beat: firstSongBeat, brandName }), 'template');
+    addOptions(templatePlans(all, { aspect, beat: firstSongBeat, brandName, defaults }), 'template');
   }
 
   async function planWithClaude() {
@@ -180,14 +186,16 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
       const { ok, d } = await post({
         action: 'plan-video', brand, aspect, notes, beat: firstSongBeat,
         previous: options.filter((o) => o.source === 'claude').map((o) => o.plan.title + ': ' + o.plan.why),
-        assets: assets.map((a) => ({
+        assets: all.filter((a) => a.kind !== 'font').map((a) => ({
           id: a.id, kind: a.kind, title: a.title, name: a.name, seconds: a.seconds, width: a.width, height: a.height,
+          approved: a.origin === 'kit',
           thumb: a.thumb ? { mediaType: a.thumb.mediaType, data: a.thumb.data } : null,
         })),
       });
       if (!ok) return setPlanError(d.error || 'Claude could not plan the cuts.');
       // Checked again here against the assets as they are now.
-      addOptions((d.plans || []).map((p) => normalizePlan(p, assets)).filter(Boolean), 'claude');
+      // The font is the brand's choice, not Claude's.
+      addOptions((d.plans || []).map((p) => normalizePlan({ ...p, font: p.font || defaults.font }, all)).filter(Boolean), 'claude');
     } catch {
       setPlanError('Request failed.');
     } finally {
@@ -199,7 +207,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   // edits are re-checked at once. The render normalizes everything again.
   function editPlan(patch, { raw = false } = {}) {
     setOptions((os) => os.map((o) => (o.key !== current ? o
-      : { ...o, plan: raw ? { ...o.plan, ...patch } : normalizePlan({ ...o.plan, ...patch }, assets) || o.plan })));
+      : { ...o, plan: raw ? { ...o.plan, ...patch } : normalizePlan({ ...o.plan, ...patch }, all) || o.plan })));
   }
   function editScene(i, patch, opts) {
     editPlan({ scenes: plan.scenes.map((s, k) => (k === i ? { ...s, ...patch } : s)) }, opts);
@@ -225,10 +233,13 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
         const why = check.issues.filter((x) => x.severity === 'error').map((x) => x.message).join(' ');
         throw new Error('This browser cannot render video: ' + (why || 'no WebCodecs') + '. Use a recent Chrome or Edge on a computer.');
       }
+      // Kit fonts must be in document.fonts before the first frame is drawn.
+      await Promise.all(kit.filter((a) => a.kind === 'font').map((a) => document.fonts.load('48px "' + a.family + '"').catch(() => null)));
+      const final = normalizePlan(plan, all);
       const { getBlob } = await renderMediaOnWeb({
         composition: { id: 'ad', component: AdVideo, width: dims.width, height: dims.height, fps: FPS,
-          durationInFrames: timeline(normalizePlan(plan, assets)).total },
-        inputProps: { ...inputProps, plan: normalizePlan(plan, assets) },
+          durationInFrames: timeline(final).total },
+        inputProps: { ...inputProps, plan: final },
         container: 'mp4',
         videoBitrate: 'high',
         signal: ctl.signal,
@@ -314,6 +325,14 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
           <span className="ledger-note">{assets.length} of {MAX_ASSETS}{busyAdding ? ' · loading from the library...' : ''}</span>
         </div>
         {addError && <div className="login-error" style={{ marginBottom: 10 }}>{addError}</div>}
+        <div className="ledger-note" style={{ marginBottom: 10 }}>
+          {kitState === 'loading' ? 'Loading the ' + brandName + ' brand kit...'
+            : kitState === 'failed' ? 'Could not load the brand kit.'
+            : kit.length === 0 ? 'No brand kit yet. Add end cards, logos, fonts and approved music under ' + brandName + ' in Settings.'
+            : 'Brand kit: ' + [['endcard', 'end card'], ['logo', 'logo'], ['font', 'font'], ['audio', 'song']]
+              .map(([k, label]) => { const n = kit.filter((a) => a.kind === k).length; return n ? n + ' ' + label + (n === 1 ? '' : 's') : null; })
+              .filter(Boolean).join(', ') + '. Edit it in Settings.'}
+        </div>
 
         {assets.length === 0 ? (
           <div className="ledger-note">Nothing picked yet.</div>
@@ -405,6 +424,11 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                       }}>
                       <option value="">None (clips keep their own sound)</option>
                       {assets.filter((a) => a.kind === 'audio').map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      {kitSongs.length > 0 && (
+                        <optgroup label="Approved for this brand">
+                          {kitSongs.map((a) => <option key={a.id} value={a.id}>{a.name}{a.bpm ? ' · ' + a.bpm + ' BPM' : ''}</option>)}
+                        </optgroup>
+                      )}
                     </select>
                   </label>
                 </div>
@@ -422,7 +446,98 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                     );
                   })}
                 </div>
-                <div className="field-row">
+                <div className="as-extra">
+                  <label className="field">
+                    <span>Text that stays on through every shot (optional)</span>
+                    <input className="input" value={plan.caption ? plan.caption.text : ''} maxLength={CAPTION_MAX}
+                      placeholder="e.g. The Halloween drop is here"
+                      onChange={(e) => editPlan({ caption: e.target.value ? { position: 'top', style: 'plain', ...(plan.caption || {}), text: e.target.value } : null }, { raw: true })} />
+                  </label>
+                  {plan.caption && (
+                    <div className="field-row">
+                      <label className="field">
+                        <span>Where</span>
+                        <select className="input" value={plan.caption.position} onChange={(e) => editPlan({ caption: { ...plan.caption, position: e.target.value } })}>
+                          {Object.entries(CAPTION_POSITIONS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        </select>
+                      </label>
+                      <label className="field">
+                        <span>Look</span>
+                        <select className="input" value={plan.caption.style} onChange={(e) => editPlan({ caption: { ...plan.caption, style: e.target.value } })}>
+                          {Object.entries(CAPTION_STYLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        </select>
+                      </label>
+                    </div>
+                  )}
+                  {plan.caption && plan.scenes.some((s) => s.text) && (
+                    <div className="ledger-note" style={{ marginTop: -4, marginBottom: 8 }}>
+                      Some shots also have their own text. Clear it above if the two crowd each other.
+                      {' '}<button type="button" className="link-inline" onClick={() => editPlan({ scenes: plan.scenes.map((x) => ({ ...x, text: '' })) })}>Clear all shot text</button>
+                    </div>
+                  )}
+
+                  <div className="field-row">
+                    <label className="field">
+                      <span>Font</span>
+                      <select className="input" value={plan.font || ''} onChange={(e) => editPlan({ font: e.target.value || null })}>
+                        <option value="">Template default</option>
+                        {kitOf('font').map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>Logo overlay</span>
+                      <select className="input" value={plan.logo ? plan.logo.asset : ''}
+                        onChange={(e) => editPlan({ logo: e.target.value ? { position: 'top-right', size: 'small', ...(plan.logo || {}), asset: e.target.value } : null })}>
+                        <option value="">None</option>
+                        {kitOf('logo').map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                  {plan.logo && (
+                    <div className="field-row">
+                      <label className="field">
+                        <span>Logo position</span>
+                        <select className="input" value={plan.logo.position} onChange={(e) => editPlan({ logo: { ...plan.logo, position: e.target.value } })}>
+                          {Object.entries(LOGO_POSITIONS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        </select>
+                      </label>
+                      <label className="field">
+                        <span>Logo size</span>
+                        <select className="input" value={plan.logo.size} onChange={(e) => editPlan({ logo: { ...plan.logo, size: e.target.value } })}>
+                          {Object.keys(LOGO_SIZES).map((k) => <option key={k} value={k}>{k[0].toUpperCase() + k.slice(1)}</option>)}
+                        </select>
+                      </label>
+                    </div>
+                  )}
+
+                  <div className="li-name" style={{ margin: '4px 0 6px' }}>End card</div>
+                  {kitOf('endcard').length > 0 && (
+                    <div className="as-cards">
+                      {kitOf('endcard').map((a) => {
+                        const at = plan.end.cards.indexOf(a.id);
+                        return (
+                          <button key={a.id} type="button" className={'mk-item' + (at >= 0 ? ' picked' : '')} title={a.name}
+                            onClick={() => editPlan({ end: { ...plan.end, cards: at >= 0 ? plan.end.cards.filter((x) => x !== a.id) : [...plan.end.cards, a.id] } })}>
+                            {at >= 0 && <span className="ad-pos">{at + 1}</span>}
+                            <img className="as-card-thumb" src={a.src} alt="" />
+                            <span className="mk-title">{a.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <label className="check">
+                    <input type="checkbox" checked={plan.end.generated !== false} disabled={!plan.end.cards.length}
+                      onChange={(e) => editPlan({ end: { ...plan.end, generated: e.target.checked } })} />
+                    {plan.end.cards.length ? 'Then the headline and button card' : 'Headline and button card'}
+                  </label>
+                  <div className="ledger-note" style={{ marginBottom: 8 }}>
+                    {kitOf('endcard').length
+                      ? 'Tick end card images to play them in that order, ' + 2 + 's each.'
+                      : kitState === 'loading' ? 'Loading the brand kit...' : 'Add end card images to the brand kit in Settings to use your own.'}
+                  </div>
+                </div>
+                {plan.end.generated !== false && <div className="field-row">
                   <label className="field">
                     <span>End card headline</span>
                     <input className="input" value={plan.end.headline} maxLength={60} onChange={(e) => editPlan({ end: { ...plan.end, headline: e.target.value } }, { raw: true })} />
@@ -431,7 +546,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                     <span>End card button</span>
                     <input className="input" value={plan.end.cta} maxLength={24} onChange={(e) => editPlan({ end: { ...plan.end, cta: e.target.value } }, { raw: true })} />
                   </label>
-                </div>
+                </div>}
 
                 <div className="reply-actions" style={{ marginTop: 6 }}>
                   <button className="btn btn-primary" type="button" onClick={doRender} disabled={(render && render.status === 'rendering') || sending}>
