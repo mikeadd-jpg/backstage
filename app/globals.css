@@ -1102,7 +1102,11 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .as-option { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .as-preview { width: 100%; max-width: 300px; max-height: 560px; margin: 0 auto; border-radius: 10px; overflow: hidden; background: #000; }
 .as-scenes { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; max-height: 340px; overflow-y: auto; }
-.as-scene { display: grid; grid-template-columns: 44px minmax(0, 1fr) 76px; gap: 8px; align-items: center; }
+.as-scene { display: grid; grid-template-columns: 44px minmax(0, 1fr) 72px 118px; gap: 8px; align-items: center; }
+.as-trans { font-size: 12px; padding-left: 6px; padding-right: 4px; }
+span.as-trans { text-align: center; }
+.as-allsecs { display: flex; gap: 6px; align-items: center; }
+.as-allsecs .as-secs { width: 76px; }
 .as-secs { text-align: right; }
 .as-result { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
 @media (min-width: 900px) {
@@ -1153,3 +1157,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .kit-hex { padding: 3px 6px; font-size: 12px; font-family: 'Space Mono', monospace; }
 .kit-fontroles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0 10px; }
 .kit-looks { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 10px; }
+@media (max-width: 560px) {
+  .as-scene { grid-template-columns: 44px minmax(0, 1fr) 72px; }
+  .as-scene .as-trans { grid-column: 2 / 4; }
+}

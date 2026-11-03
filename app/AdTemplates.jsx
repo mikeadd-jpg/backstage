@@ -12,9 +12,10 @@
 // already loaded into the page (document.fonts) under its kit family name. Every image
 // src is a blob: URL made by the tab, because a cross-origin image would taint the canvas.
 import { useEffect, useRef, useState } from 'react';
-import { AbsoluteFill, Sequence, interpolate, spring, useCurrentFrame, useDelayRender, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Sequence, interpolate, random, spring, useCurrentFrame, useDelayRender, useVideoConfig } from 'remotion';
 import { Audio, Video } from '@remotion/media';
 import { timeline, FPS, LOGO_SIZES, FILTERS } from '../lib/adPlans.js';
+import { IG_STYLES } from '../lib/igText.js';
 import { resolveStyle } from '../lib/brandStyle.js';
 
 const SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif';
@@ -53,7 +54,9 @@ function StillImg({ src, style }) {
 // saved style (lib/brandStyle.js): colours, which font does which job, the look rules.
 // Without a style everything falls back to the brand accent and the templates' own type.
 // The plan's `font`, when set, overrides the headline font for this one ad.
-export default function AdVideo({ plan, assets, brandName, accent, fonts = {}, style = null }) {
+// `fx` holds the effect textures the tab makes once (lib/fxTextures in app/AdStudio.jsx):
+// noise frames, scanlines, a vignette and film scratches, all blob: URLs.
+export default function AdVideo({ plan, assets, brandName, accent, fonts = {}, style = null, fx = null }) {
   const { durationInFrames, width, height } = useVideoConfig();
   if (!plan) return <AbsoluteFill style={{ backgroundColor: '#000' }} />;
   const tl = timeline(plan);
@@ -61,7 +64,8 @@ export default function AdVideo({ plan, assets, brandName, accent, fonts = {}, s
   const st = resolveStyle(style, fonts, accent);
   if (plan.font && fonts[plan.font]) st.fonts = { ...st.fonts, headline: '"' + fonts[plan.font] + '", ' };
   const logo = plan.logo && assets[plan.logo.asset];
-  const look = FILTERS[plan.filter] ? FILTERS[plan.filter].css : '';
+  const lookDef = FILTERS[plan.filter] || null;
+  const ig = plan.textStyle && plan.textStyle !== 'brand' ? { variant: plan.textStyle, box: plan.textBox || 'white' } : null;
   return (
     <AbsoluteFill style={{ backgroundColor: '#000' }}>
       {tl.scenes.map((s) => {
@@ -70,14 +74,14 @@ export default function AdVideo({ plan, assets, brandName, accent, fonts = {}, s
         return (
           <Sequence key={s.index} from={s.start} durationInFrames={s.frames} premountFor={FPS}>
             <Scene template={plan.template} scene={s} asset={a} first={s.index === 0}
-              overlap={tl.overlap} muted={Boolean(song)} st={st} look={look} />
+              muted={Boolean(song)} st={st} look={lookDef} fx={fx} ig={ig} />
           </Sequence>
         );
       })}
       {/* Drawn after the shots, so they sit on top and carry on through every swap. */}
       {plan.caption && (
         <Sequence from={0} durationInFrames={tl.endStart} name="caption">
-          <Caption caption={plan.caption} st={st}
+          <Caption caption={plan.caption} st={st} ig={ig}
             under={logo && plan.logo.position.startsWith('top') ? logoBox(plan.logo, logo, width, height) : null} />
         </Sequence>
       )}
@@ -104,8 +108,9 @@ export default function AdVideo({ plan, assets, brandName, accent, fonts = {}, s
   );
 }
 
-function Scene({ template, scene, asset, first, overlap, muted, st, look }) {
+function Scene({ template, scene, asset, first, muted, st, look, fx, ig }) {
   const frame = useCurrentFrame();
+  const { width, height } = useVideoConfig();
   const len = scene.frames;
   // Motion per template: a punch-in that settles for quick cuts, a slow push for the
   // spotlight, a drift for the story.
@@ -113,52 +118,132 @@ function Scene({ template, scene, asset, first, overlap, muted, st, look }) {
   if (template === 'beat') scale = interpolate(frame, [0, 5, len], [1.14, 1.04, 1.0], clamp);
   else if (template === 'spotlight') scale = interpolate(frame, [0, len], [1.0, 1.09], clamp);
   else { scale = interpolate(frame, [0, len], [1.06, 1.12], clamp); x = interpolate(frame, [0, len], [-14, 14], clamp); }
-  const opacity = template === 'story' && !first ? interpolate(frame, [0, overlap], [0, 1], clamp) : 1;
-  const motion = { transform: 'translateX(' + x + 'px) scale(' + scale + ')', transformOrigin: 'center center' };
+
+  // How this shot arrives over the one before (lib/adPlans.js TRANSITIONS).
+  const { type, frames: ov } = scene.enter || { type: 'cut', frames: 0 };
+  const p = ov ? interpolate(frame, [0, ov], [0, 1], { ...clamp, easing: easeOut }) : 1;
+  let opacity = 1, tx = 0, ty = 0, zoom = 1, blur = 0, dip = 0;
+  if (type === 'crossfade') opacity = p;
+  else if (type === 'dip') { dip = interpolate(frame, [0, ov / 2, ov], [1, 1, 0], clamp); opacity = interpolate(frame, [0, ov / 2], [0, 1], clamp); }
+  else if (type === 'slideLeft') tx = (1 - p) * width;
+  else if (type === 'slideUp') ty = (1 - p) * height;
+  else if (type === 'zoom') { zoom = 1 + (1 - p) * 0.35; opacity = p; }
+  else if (type === 'whip') { tx = (1 - p) * width; blur = (1 - p) * 24; }
+  const enter = { opacity, transform: 'translate(' + tx + 'px, ' + ty + 'px) scale(' + zoom + ')', transformOrigin: 'center center' };
+
+  // Effects that move the picture itself: flicker (brightness) and jitter (shake).
+  const f = look && look.fx ? look.fx : {};
+  const shake = f.jitter ? { dx: (random('jx' + frame) - 0.5) * 2 * f.jitter, dy: (random('jy' + frame) - 0.5) * 2 * f.jitter } : { dx: 0, dy: 0 };
+  const flicker = f.flicker ? 1 + (random('fl' + frame) - 0.5) * 2 * f.flicker : 1;
+  const css = [look ? look.css : '', flicker !== 1 ? 'brightness(' + flicker.toFixed(3) + ')' : '', blur ? 'blur(' + blur.toFixed(1) + 'px)' : ''].filter(Boolean).join(' ');
+  const motion = { transform: 'translate(' + (x + shake.dx) + 'px, ' + shake.dy + 'px) scale(' + scale + ')', transformOrigin: 'center center' };
 
   return (
-    <AbsoluteFill style={{ opacity }}>
-      <Media asset={asset} scene={scene} motion={motion} muted={muted} look={look} />
-      {template === 'beat' && !first && <Flash />}
-      {scene.text && template === 'beat' && (st.hasSticker ? <Sticker text={scene.text} st={st} /> : <BeatText text={scene.text} st={st} />)}
-      {scene.text && template === 'spotlight' && <SpotlightBar text={scene.text} st={st} />}
-      {scene.text && template === 'story' && <StoryCaption text={scene.text} st={st} />}
+    <AbsoluteFill style={enter}>
+      {dip > 0 && <AbsoluteFill style={{ backgroundColor: '#000' }} />}
+      <Media asset={asset} scene={scene} motion={motion} muted={muted} css={css} />
+      {look && look.fx && fx && <Effects fx={f} tex={fx} />}
+      {type === 'flash' && !first && <Flash />}
+      {scene.text && ig && <IgText text={scene.text} ig={ig} at={template === 'beat' ? 'center' : 'bottom'} />}
+      {scene.text && !ig && template === 'beat' && (st.hasSticker ? <Sticker text={scene.text} st={st} /> : <BeatText text={scene.text} st={st} />)}
+      {scene.text && !ig && template === 'spotlight' && <SpotlightBar text={scene.text} st={st} />}
+      {scene.text && !ig && template === 'story' && <StoryCaption text={scene.text} st={st} />}
+      {dip > 0 && <AbsoluteFill style={{ backgroundColor: '#000', opacity: dip }} />}
     </AbsoluteFill>
   );
 }
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 
-// Product shots are mostly square and the frame is mostly tall, so cropping to fill would
-// cut the print off. An image whose shape is well off the frame's sits whole on a blurred,
-// darkened copy of itself; one that is close fills the frame. Video always fills. The
-// plan's filter (`look`) goes on each picture itself, never on text or the logo.
-function Media({ asset, scene, motion, muted, look }) {
-  const { width, height } = useVideoConfig();
-  const f = (extra) => [extra, look].filter(Boolean).join(' ') || undefined;
+// The picture always fills the whole frame, edge to edge: anything off the frame's shape is
+// cropped to fit rather than letterboxed. `css` is the look's filter plus any flicker.
+function Media({ asset, scene, motion, muted, css }) {
   if (asset.kind === 'video') {
     return (
-      <AbsoluteFill style={{ ...motion, filter: f() }}>
+      <AbsoluteFill style={{ ...motion, filter: css || undefined }}>
         <Video src={asset.src} objectFit="cover" muted={muted} trimBefore={Math.round((scene.from || 0) * FPS)}
           style={{ width: '100%', height: '100%' }} />
       </AbsoluteFill>
     );
   }
-  const frameRatio = width / height;
-  const ratio = asset.width && asset.height ? asset.width / asset.height : frameRatio;
-  const fits = Math.abs(ratio / frameRatio - 1) < 0.18;
-  if (fits) {
-    return (
-      <AbsoluteFill style={motion}>
-        <StillImg src={asset.src} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: f() }} />
-      </AbsoluteFill>
-    );
-  }
+  return (
+    <AbsoluteFill style={motion}>
+      <StillImg src={asset.src} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: css || undefined }} />
+    </AbsoluteFill>
+  );
+}
+
+// Grain that moves (a different noise frame, shifted, every frame), scanlines, a vignette,
+// a VHS tracking band and old film scratches, over the picture and under the words. All
+// textures are mounted for the whole shot and shown by opacity, so a frame never waits
+// on an image loading mid-shot.
+function Effects({ fx, tex }) {
+  const frame = useCurrentFrame();
+  const { height } = useVideoConfig();
+  const pick = Math.floor(random('n' + frame) * tex.noise.length);
+  const ox = Math.round((random('nx' + frame) - 0.5) * 60), oy = Math.round((random('ny' + frame) - 0.5) * 60);
+  const band = (frame * 9) % (height * 2.2) - height * 0.4;
+  const scratchOn = fx.scratches && random('s' + Math.floor(frame / 3)) < 0.45;
+  const scratchX = (random('sx' + Math.floor(frame / 3)) * 100).toFixed(1);
   return (
     <AbsoluteFill>
-      <StillImg src={asset.src} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: f('blur(48px) brightness(0.55)'), transform: 'scale(1.2)' }} />
-      <AbsoluteFill style={{ ...motion, justifyContent: 'center', alignItems: 'center' }}>
-        <StillImg src={asset.src} style={{ width: '100%', height: '100%', objectFit: 'contain', filter: f() }} />
-      </AbsoluteFill>
+      {fx.grain > 0 && tex.noise.map((src, i) => (
+        <AbsoluteFill key={i} style={{ opacity: i === pick ? fx.grain : 0, mixBlendMode: 'overlay', transform: 'translate(' + ox + 'px, ' + oy + 'px) scale(1.08)' }}>
+          <StillImg src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </AbsoluteFill>
+      ))}
+      {fx.scanlines > 0 && (
+        <AbsoluteFill style={{ opacity: fx.scanlines, mixBlendMode: 'multiply' }}>
+          <StillImg src={tex.scanlines} style={{ width: '100%', height: '100%', objectFit: 'fill' }} />
+        </AbsoluteFill>
+      )}
+      {fx.tracking && (
+        <div style={{
+          position: 'absolute', left: 0, right: 0, top: band, height: Math.round(height * 0.07), mixBlendMode: 'screen', opacity: 0.5,
+          backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.28) 45%, rgba(200,220,255,0.12) 60%, rgba(255,255,255,0) 100%)',
+        }} />
+      )}
+      {fx.scratches && tex.scratches.map((src, i) => (
+        <AbsoluteFill key={'s' + i} style={{ opacity: scratchOn && i === (frame >> 2) % tex.scratches.length ? 0.55 : 0, transform: 'translateX(' + scratchX + '%)', mixBlendMode: 'screen' }}>
+          <StillImg src={src} style={{ width: '100%', height: '100%', objectFit: 'fill' }} />
+        </AbsoluteFill>
+      ))}
+      {fx.vignette > 0 && (
+        <AbsoluteFill style={{ opacity: fx.vignette }}>
+          <StillImg src={tex.vignette} style={{ width: '100%', height: '100%', objectFit: 'fill' }} />
+        </AbsoluteFill>
+      )}
     </AbsoluteFill>
+  );
+}
+
+// Instagram's own story text: a label hugging the words. `at` is where the template puts
+// its text; the caption passes its own position.
+function IgText({ text, ig, at }) {
+  const frame = useCurrentFrame();
+  const { height } = useVideoConfig();
+  const o = interpolate(frame, [2, 10], [0, 1], clamp);
+  const justify = at === 'top' ? 'flex-start' : at === 'center' ? 'center' : 'flex-end';
+  const pad = at === 'top' ? { paddingTop: Math.round(height * 0.15) } : at === 'bottom' ? { paddingBottom: Math.round(height * 0.24) } : {};
+  return (
+    <AbsoluteFill style={{ justifyContent: justify, alignItems: 'center', padding: '0 60px', ...pad }}>
+      <IgLabel text={text} ig={ig} style={{ opacity: o }} />
+    </AbsoluteFill>
+  );
+}
+
+export function IgLabel({ text, ig, style }) {
+  const { height } = useVideoConfig();
+  const v = IG_STYLES[ig.variant] || IG_STYLES['ig-classic'];
+  const box = ig.box === 'black' ? { backgroundColor: '#000', color: '#fff' }
+    : ig.box === 'none' ? { color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.55)' }
+    : { backgroundColor: '#fff', color: '#000' };
+  return (
+    <div style={{
+      fontFamily: v.font, fontWeight: v.weight, textTransform: v.upper ? 'uppercase' : 'none', letterSpacing: v.tracking,
+      fontSize: Math.round(height * v.size), lineHeight: 1.18, textAlign: 'center', maxWidth: '92%',
+      padding: ig.box === 'none' ? 0 : v.pad.map((n) => Math.round(n * height / 1920) + 'px').join(' '),
+      borderRadius: Math.round(v.radius * height / 1920), ...box, ...style,
+    }}>{text}</div>
   );
 }
 
@@ -269,7 +354,7 @@ function EndCard({ end, brandName, st, fadeIn }) {
 // One line that stays on screen from the first shot to the end card, whatever swaps
 // underneath. Fades in once, at the start, and never again.
 // `under` is the logo's box when the logo is at the top, so a top caption sits below it.
-function Caption({ caption, st, under }) {
+function Caption({ caption, st, under, ig }) {
   const frame = useCurrentFrame();
   const { height } = useVideoConfig();
   const o = interpolate(frame, [4, 16], [0, 1], clamp);
@@ -277,6 +362,13 @@ function Caption({ caption, st, under }) {
   const pad = caption.position === 'top' ? { paddingTop: Math.max(Math.round(height * 0.15), under ? under.top + under.h + 28 : 0) }
     : caption.position === 'bottom' ? { paddingBottom: Math.round(height * 0.24) } : {};
   const bar = caption.style === 'bar';
+  if (ig) {
+    return (
+      <AbsoluteFill style={{ justifyContent: justify, alignItems: 'center', padding: '0 60px', ...pad }}>
+        <IgLabel text={caption.text} ig={ig} style={{ opacity: o }} />
+      </AbsoluteFill>
+    );
+  }
   return (
     <AbsoluteFill style={{ justifyContent: justify, alignItems: 'center', padding: '0 64px', ...pad }}>
       <div style={{
@@ -317,8 +409,8 @@ function LogoOverlay({ logo, asset }) {
   );
 }
 
-// A brand kit end card image, full frame. Sized for the ad it fills; a different shape
-// sits whole on a dark backdrop rather than being cropped, since it may carry text.
+// A brand kit end card image, full frame, edge to edge like every picture. Make end cards
+// the ad's shape: one of another shape is cropped to fill.
 function ImageCard({ asset, frames, fadeIn, bg = '#0b0b10' }) {
   const frame = useCurrentFrame();
   const o = interpolate(frame, [0, fadeIn], [0, 1], clamp);
@@ -326,7 +418,7 @@ function ImageCard({ asset, frames, fadeIn, bg = '#0b0b10' }) {
   return (
     <AbsoluteFill style={{ backgroundColor: bg, opacity: o }}>
       <AbsoluteFill style={{ transform: 'scale(' + scale + ')' }}>
-        <StillImg src={asset.src} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        <StillImg src={asset.src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </AbsoluteFill>
     </AbsoluteFill>
   );

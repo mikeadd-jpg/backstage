@@ -748,9 +748,25 @@ songs, then hands it to the same form as a Canva video (headline, link, text, bu
   (`lib/adVideo.js`, action `plan-video`, `DRAFT_MODEL`, shown 512px thumbnails, answers
   through a tool). Quick cuts land on the beat: `detectTempo` reads the song in the browser.
   Same copy rules as `lib/adcopy.js`: no invented offers, no other brands, no dashes.
-- **Filters** (`FILTERS` in `lib/adPlans.js`, `plan.filter`) are CSS filter presets on the
-  pictures only, never text, logo or end cards. They render in Chrome and Edge; Safari
-  renders unfiltered. Claude may pick one.
+- **Looks** (`FILTERS` in `lib/adPlans.js`, `plan.filter`, "Look" in the editor) are a CSS
+  filter plus, for VHS, Old movie, Grainy and Faded, an `fx` layer drawn over each picture
+  and under its words: moving static (four noise frames picked and shifted per frame with
+  Remotion's seeded `random`, so a render is repeatable), scanlines, a vignette, a rolling
+  VHS band, film scratches, flicker and jitter. The textures are drawn in the browser once
+  per tab (`fxTextures` in `app/mediaProbe.js`), never stored. Pictures only, never text,
+  logo or end cards. CSS filters render in Chrome and Edge; Safari renders unfiltered.
+- **Every picture fills the frame edge to edge** (`objectFit: cover`), end card images too.
+  The blurred letterbox backdrop is gone on purpose: the owner wants no bars.
+- **Transitions** (`TRANSITIONS`): cut, flash, crossfade, dip to black, slide left/up, zoom,
+  whip. Each template has a default (`TEMPLATE_TRANSITION`); a plan or a single shot can
+  override it. A transition overlaps the two shots by its `frames`, never more than half of
+  either, and `timeline()` hands each shot an `enter` the Scene animates.
+- **Shot length is SHOT_MIN to SHOT_MAX (0.3 to 8s) for any template.** The template ranges
+  are suggestions only, since "every product 1 second" must work in Product spotlight too.
+  "Apply to all" sets every shot at once.
+- **Text style** (`plan.textStyle`, `plan.textBox`): the brand style, or Instagram's story
+  text (`lib/igText.js`: Classic, Serif, Strong) in a white box, black box or none. It
+  covers shot text and the caption, not the end card. System fonts only.
 - **A plan can also carry** a `caption` (one line that stays up through every shot, drawn
   after the shots so swaps happen underneath), a `logo` overlay, a brand `font`, and an end
   made of brand kit images (`end.cards`, 2s each) and/or the generated headline card

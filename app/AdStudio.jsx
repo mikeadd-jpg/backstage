@@ -18,9 +18,10 @@ import AdVideo from './AdTemplates.jsx';
 import {
   ASPECTS, TEMPLATES, TEMPLATE_KEYS, FPS, CHUNK_BYTES, timeline, planSeconds, templatePlans, normalizePlan,
   CAPTION_POSITIONS, CAPTION_STYLES, CAPTION_MAX, LOGO_POSITIONS, LOGO_SIZES, FILTERS,
+  TRANSITIONS, TEMPLATE_TRANSITION, TEXT_STYLES, TEXT_BOXES, SHOT_MIN, SHOT_MAX,
 } from '../lib/adPlans.js';
 import { kitFontFamily, loadKitFont } from './BrandKit.jsx';
-import { probeImage, probeVideo, probeAudio, renderableImage } from './mediaProbe.js';
+import { probeImage, probeVideo, probeAudio, renderableImage, fxTextures } from './mediaProbe.js';
 
 const MAX_ASSETS = 20;
 const MAX_UPLOAD = 500 * 1024 * 1024;
@@ -100,6 +101,9 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   const [kit, setKit] = useState([]);
   const [kitState, setKitState] = useState('loading');  // loading | ready | failed
   const [kitStyle, setKitStyle] = useState(null);       // the brand's saved style, or null
+  const [fx, setFx] = useState(null);                   // effect textures for the looks
+  const [allSecs, setAllSecs] = useState('1');
+  useEffect(() => { fxTextures().then(setFx).catch(() => {}); }, []);
 
   // A new store means a new kit, and options made from the old store's assets go.
   useEffect(() => {
@@ -131,7 +135,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   const renderStale = render && opt && render.key === opt.key && render.stamp !== stamp && render.status === 'done';
   const dims = ASPECTS[(plan && plan.aspect) || aspect];
   const frames = plan ? timeline(plan).total : 1;
-  const inputProps = useMemo(() => ({ plan, assets: byId, brandName, accent, fonts, style: kitStyle }), [plan, byId, brandName, accent, fonts, kitStyle]);
+  const inputProps = useMemo(() => ({ plan, assets: byId, brandName, accent, fonts, style: kitStyle, fx }), [plan, byId, brandName, accent, fonts, kitStyle, fx]);
 
   async function addFiles(files) {
     setAddError(''); setAdding(true);
@@ -237,6 +241,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
       // Kit fonts must be in document.fonts before the first frame is drawn.
       await Promise.all(kit.filter((a) => a.kind === 'font').map((a) => document.fonts.load('48px "' + a.family + '"').catch(() => null)));
       const final = normalizePlan(plan, all);
+      if (final.filter && FILTERS[final.filter].fx && !fx) throw new Error('The look is still being prepared. Try again in a second.');
       const { getBlob } = await renderMediaOnWeb({
         composition: { id: 'ad', component: AdVideo, width: dims.width, height: dims.height, fps: FPS,
           durationInFrames: timeline(final).total },
@@ -433,6 +438,28 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                     </select>
                   </label>
                 </div>
+                <div className="field-row as-bulk">
+                  <label className="field">
+                    <span>Transition between shots</span>
+                    <select className="input" value={plan.transition || ''} onChange={(e) => editPlan({ transition: e.target.value || null })}>
+                      <option value="">{TRANSITIONS[TEMPLATE_TRANSITION[plan.template]].label} (template default)</option>
+                      {Object.entries(TRANSITIONS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                    </select>
+                  </label>
+                  <form className="field" onSubmit={(e) => {
+                    e.preventDefault();
+                    const n = Number(allSecs);
+                    if (n > 0) editPlan({ scenes: plan.scenes.map((x) => ({ ...x, seconds: n })) });
+                  }}>
+                    <span>Every shot</span>
+                    <span className="as-allsecs">
+                      <input className="input as-secs" type="number" step="0.1" min={SHOT_MIN} max={SHOT_MAX} value={allSecs}
+                        onChange={(e) => setAllSecs(e.target.value)} aria-label="Seconds for every shot" />
+                      <span className="li-sub">s</span>
+                      <button className="btn btn-ghost" type="submit">Apply to all</button>
+                    </span>
+                  </form>
+                </div>
                 <div className="as-scenes">
                   {plan.scenes.map((s, i) => {
                     const a = byId[s.asset];
@@ -441,13 +468,36 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                         <img className="as-thumb" src={a ? (a.kind === 'image' ? a.src : a.thumb && a.thumb.url) : ''} alt="" />
                         <input className="input" value={s.text} placeholder="no text" maxLength={TEMPLATES[plan.template].textMax}
                           onChange={(e) => editScene(i, { text: e.target.value }, { raw: true })} aria-label={'Text on shot ' + (i + 1)} />
-                        <input className="input as-secs" type="number" step="0.1" min={TEMPLATES[plan.template].min} max={TEMPLATES[plan.template].max}
+                        <input className="input as-secs" type="number" step="0.1" min={SHOT_MIN} max={SHOT_MAX}
                           value={s.seconds} onChange={(e) => editScene(i, { seconds: Number(e.target.value) })} aria-label={'Seconds for shot ' + (i + 1)} />
+                        {i === 0 ? <span className="as-trans li-sub">start</span> : (
+                          <select className="input as-trans" value={s.transition || ''} title="Transition into this shot"
+                            onChange={(e) => editScene(i, { transition: e.target.value || undefined })} aria-label={'Transition into shot ' + (i + 1)}>
+                            <option value="">Same as all</option>
+                            {Object.entries(TRANSITIONS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                          </select>
+                        )}
                       </div>
                     );
                   })}
                 </div>
                 <div className="as-extra">
+                  <div className="field-row">
+                    <label className="field">
+                      <span>Text style</span>
+                      <select className="input" value={plan.textStyle || 'brand'} onChange={(e) => editPlan({ textStyle: e.target.value })}>
+                        {Object.entries(TEXT_STYLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                      </select>
+                    </label>
+                    {plan.textStyle && plan.textStyle !== 'brand' && (
+                      <label className="field">
+                        <span>Box</span>
+                        <select className="input" value={plan.textBox || 'white'} onChange={(e) => editPlan({ textBox: e.target.value })}>
+                          {Object.entries(TEXT_BOXES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                        </select>
+                      </label>
+                    )}
+                  </div>
                   <label className="field">
                     <span>Text that stays on through every shot (optional)</span>
                     <input className="input" value={plan.caption ? plan.caption.text : ''} maxLength={CAPTION_MAX}
@@ -462,12 +512,12 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                           {Object.entries(CAPTION_POSITIONS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                         </select>
                       </label>
-                      <label className="field">
+                      {(!plan.textStyle || plan.textStyle === 'brand') && <label className="field">
                         <span>Look</span>
                         <select className="input" value={plan.caption.style} onChange={(e) => editPlan({ caption: { ...plan.caption, style: e.target.value } })}>
                           {Object.entries(CAPTION_STYLES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                         </select>
-                      </label>
+                      </label>}
                     </div>
                   )}
                   {plan.caption && plan.scenes.some((s) => s.text) && (
@@ -486,7 +536,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                       </select>
                     </label>
                     <label className="field">
-                      <span>Filter</span>
+                      <span>Look</span>
                       <select className="input" value={plan.filter || ''} onChange={(e) => editPlan({ filter: e.target.value || null })}>
                         <option value="">None</option>
                         {Object.entries(FILTERS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
