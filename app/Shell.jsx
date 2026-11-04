@@ -1,6 +1,6 @@
 'use client';
 // The app frame: a grouped sidebar on desktop (an icon rail on tablets), a slim title bar
-// and bottom tabs on phones, a Create chooser, and an account menu that holds Settings,
+// and bottom tabs on phones, a Marketing chooser, and an account menu that holds Settings,
 // Users and Sign out. Everything shown is filtered by the person's role (lib/roles.js);
 // the server enforces the same rules route by route, so this filtering is about
 // clutter, not security.
@@ -45,14 +45,14 @@ export function Icon({ name, size = 18 }) {
 export const DESTINATIONS = {
   // First, so it is where people land; anyone without it starts on their first screen.
   home:      { area: 'home',      label: 'Home',      icon: 'home',      group: 'Start' },
-  inbox:     { area: 'inbox',     label: 'Inbox',     icon: 'inbox',     group: 'Work', blurb: 'Customer emails and drafted replies' },
-  risk:      { area: 'risk',      label: 'At risk',   icon: 'risk',      group: 'Work', blurb: 'Orders that may not arrive' },
-  approvals: { area: 'approvals', label: 'Approvals', icon: 'approvals', group: 'Work', blurb: 'Print files waiting for a yes' },
-  products:  { area: 'products',  label: 'Products',  icon: 'products',  group: 'Create', blurb: 'Printify drafts from a design' },
-  mockups:   { area: 'mockups',   label: 'Mockups',   icon: 'mockups',   group: 'Create', blurb: 'Lifestyle shots for a live product' },
-  ads:       { area: 'ads',       label: 'Ads',       icon: 'ads',       group: 'Create', blurb: 'Carousel ads from the Meta image library' },
-  inspiration: { area: 'inspiration', label: 'Inspiration', icon: 'inspiration', group: 'Create', blurb: 'Competitor ads, and how to make our own' },
-  drafts:    { area: 'drafts',    label: 'Drafts',    icon: 'drafts',    group: 'Create', blurb: 'Saved mockups and ads' },
+  inbox:     { area: 'inbox',     label: 'Inbox',     icon: 'inbox',     group: 'Operations', blurb: 'Customer emails and drafted replies' },
+  risk:      { area: 'risk',      label: 'At risk',   icon: 'risk',      group: 'Operations', blurb: 'Orders that may not arrive' },
+  approvals: { area: 'approvals', label: 'Approvals', icon: 'approvals', group: 'Operations', blurb: 'Print files waiting for a yes' },
+  products:  { area: 'products',  label: 'Products',  icon: 'products',  group: 'Operations', blurb: 'Printify drafts from a design' },
+  inspiration: { area: 'inspiration', label: 'Inspiration', icon: 'inspiration', group: 'Marketing', blurb: 'Competitor ads, and how to make our own' },
+  mockups:   { area: 'mockups',   label: 'Mockups',   icon: 'mockups',   group: 'Marketing', blurb: 'Lifestyle shots for a live product' },
+  ads:       { area: 'ads',       label: 'Ads',       icon: 'ads',       group: 'Marketing', blurb: 'Carousel ads from the Meta image library' },
+  drafts:    { area: 'drafts',    label: 'Drafts',    icon: 'drafts',    group: 'Marketing', blurb: 'Saved mockups and ads' },
   profit:    { area: 'profit',    label: 'Profit',    icon: 'profit',    group: 'Insights', blurb: 'Revenue, costs and margin' },
   attribution: { area: 'attribution', label: 'Attribution', icon: 'attribution', group: 'Insights', blurb: 'Where revenue comes from' },
   email:     { area: 'email',     label: 'Email',     icon: 'email',     group: 'Insights', blurb: 'List growth, flows and campaigns' },
@@ -62,7 +62,7 @@ export const DESTINATIONS = {
   settings:  { area: 'settings',  label: 'Settings',  icon: 'settings',  group: 'Account' },
   users:     { area: 'users',     label: 'Users',     icon: 'users',     group: 'Account' },
 };
-const GROUPS = ['Start', 'Work', 'Create', 'Insights'];
+const GROUPS = ['Start', 'Operations', 'Marketing', 'Insights'];
 const UNLABELLED = ['Start'];
 
 /** Destinations this person may open, in menu order. */
@@ -139,27 +139,27 @@ export default function Shell({ me, current, go, badges = {}, children }) {
   const [menu, setMenu] = useState(null);       // null | 'side' | 'top'
   const [chooser, setChooser] = useState(null);  // null | 'work' | 'create' | 'insights'
   const allowed = allowedDestinations(me);
-  const createKeys = ['products', 'mockups', 'ads', 'inspiration', 'drafts'].filter((k) => allowed.includes(k));
+  const createKeys = ['inspiration', 'mockups', 'ads', 'drafts'].filter((k) => allowed.includes(k));
 
-  // Bottom tabs on phones, five at most: Work screens, then Create and Insights. A group
+  // Bottom tabs on phones, five at most: Operations screens, then Marketing and Insights. A group
   // with several screens folds into one tab that opens a chooser, but only when there are
-  // other tabs beside it: a Creative's only tab would otherwise be Create, and a lone tab
-  // hides the bar, leaving no way between Products and Mockups.
+  // other tabs beside it: a Creative's only tab would otherwise be Marketing, and a lone tab
+  // hides the bar.
   const insightKeys = ['profit', 'attribution', 'email', 'traffic', 'orders'].filter((k) => allowed.includes(k));
   const homeTab = allowed.includes('home') ? [{ key: 'home', ...DESTINATIONS.home }] : [];
-  const workKeys = ['inbox', 'risk', 'approvals'].filter((k) => allowed.includes(k));
+  const workKeys = ['inbox', 'risk', 'approvals', 'products'].filter((k) => allowed.includes(k));
   const groupTabs = (keys, fold) => (keys.length > 1 && fold ? [fold] : keys.map((k) => ({ key: k, ...DESTINATIONS[k] })));
   const others = (n) => homeTab.length + workKeys.length + n > 0;
   const tail = [
-    ...groupTabs(createKeys, others(insightKeys.length) ? { key: 'create', label: 'Create', icon: 'create' } : null),
+    ...groupTabs(createKeys, others(insightKeys.length) ? { key: 'create', label: 'Marketing', icon: 'create' } : null),
     ...groupTabs(insightKeys, others(createKeys.length) ? { key: 'insights', label: 'Insights', icon: 'insights' } : null),
   ];
-  // Home plus three Work screens plus Create and Insights is six; past five, Work folds
-  // too. Home already lists whatever in Work needs attention, and the fold keeps a badge.
+  // Home plus the Operations screens plus Marketing and Insights is past five, so Operations folds
+  // too. Home already lists whatever in Operations needs attention, and the fold keeps a badge.
   const workFolds = homeTab.length + workKeys.length + tail.length > 5 && workKeys.length > 1;
-  const workTabs = workFolds ? [{ key: 'work', label: 'Work', icon: 'work' }] : workKeys.map((k) => ({ key: k, ...DESTINATIONS[k] }));
+  const workTabs = workFolds ? [{ key: 'work', label: 'Operations', icon: 'work' }] : workKeys.map((k) => ({ key: k, ...DESTINATIONS[k] }));
   const tabs = [...homeTab, ...workTabs, ...tail];
-  const FOLDS = { work: { title: 'Work', keys: workKeys }, create: { title: 'Create', keys: createKeys }, insights: { title: 'Insights', keys: insightKeys } };
+  const FOLDS = { work: { title: 'Operations', keys: workKeys }, create: { title: 'Marketing', keys: createKeys }, insights: { title: 'Insights', keys: insightKeys } };
   const title = (DESTINATIONS[current] || {}).label || 'Backstage';
 
   return (

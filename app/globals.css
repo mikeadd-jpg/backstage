@@ -1251,3 +1251,23 @@ span.as-trans { text-align: center; }
 .mp-row { display: flex; gap: 8px; align-items: center; font-size: 13px; }
 .mp-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mp-markets { font-size: 11px; opacity: 0.7; letter-spacing: 0.04em; }
+
+/* Image builder: words, button and logo placed by hand (app/StillStudio.jsx). */
+.si-stage { position: relative; }
+.si-drag { position: absolute; inset: 0; touch-action: none; }
+.si-dot { position: absolute; transform: translate(-50%, -50%); width: 18px; height: 18px; padding: 0; border-radius: 50%;
+  border: 2px solid #fff; background: rgba(109, 40, 217, .85); box-shadow: 0 1px 4px rgba(0,0,0,.5); cursor: grab; }
+.si-dot.on { background: #f59e0b; width: 22px; height: 22px; }
+.si-dot:active { cursor: grabbing; }
+.si-dot span { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 3px; white-space: nowrap;
+  font-size: 10px; font-weight: 600; color: #fff; background: rgba(0,0,0,.65); padding: 1px 5px; border-radius: 4px; pointer-events: none; }
+.si-dot:not(.on) span { display: none; }
+.si-stage:hover .si-dot span { display: block; }
+.si-words { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 6px 0 10px; }
+.si-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.si-chips .chip { padding: 6px 11px; }
+.si-check { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 8px; }
+.si-color { display: flex; gap: 6px; align-items: center; }
+.si-color input[type=color] { width: 40px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+.si-words input[type=range] { width: 100%; }
+.btn-link { background: none; border: 0; padding: 0; color: var(--accent, #6D28D9); font: inherit; text-decoration: underline; cursor: pointer; }

@@ -143,23 +143,3 @@ export function fxTextures() {
   })();
   return fxPromise;
 }
-
-// A full-frame checkerboard in two brand colours, for the framed poster's border (the web
-// renderer draws only plain linear gradients, so a pattern has to be an image). Cached per
-// colour pair and size.
-const checkers = new Map();
-export function checkerTexture(a, b, width = 1080, height = 1920, cell = 30) {
-  const key = [a, b, width, height, cell].join('|');
-  if (!checkers.has(key)) {
-    checkers.set(key, new Promise((resolve) => {
-      const c = document.createElement('canvas');
-      c.width = width; c.height = height;
-      const g = c.getContext('2d');
-      g.fillStyle = a; g.fillRect(0, 0, width, height);
-      g.fillStyle = b;
-      for (let y = 0; y < height; y += cell) for (let x = (y / cell) % 2 ? cell : 0; x < width; x += cell * 2) g.fillRect(x, y, cell, cell);
-      c.toBlob((blob) => resolve(URL.createObjectURL(blob)), 'image/png');
-    }));
-  }
-  return checkers.get(key);
-}

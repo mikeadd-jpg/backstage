@@ -10,9 +10,8 @@ import { useEffect, useState } from 'react';
 import { AbsoluteFill, useDelayRender } from 'remotion';
 import AdVideo from '../app/AdTemplates.jsx';
 import StillAd from '../app/StillTemplates.jsx';
-import { fxTextures, checkerTexture } from '../app/mediaProbe.js';
+import { fxTextures } from '../app/mediaProbe.js';
 import { FILTERS } from '../lib/adPlans.js';
-import { resolveStyle } from '../lib/brandStyle.js';
 
 // Loads the kit fonts and whatever textures the plan needs, holding the frame until done.
 // A font or texture that fails is reported in the log and the render carries on without
@@ -22,7 +21,7 @@ import { resolveStyle } from '../lib/brandStyle.js';
 // the Liberation fonts installed in the snapshot.
 const STAND_INS = [{ family: 'Impact', url: 'https://cdn.jsdelivr.net/npm/@fontsource/anton@5.2.5/files/anton-latin-400-normal.woff2' }];
 
-function usePrepared({ kitFonts = [], plan, checker }) {
+function usePrepared({ kitFonts = [], plan }) {
   const { delayRender, continueRender, cancelRender } = useDelayRender();
   const [handle] = useState(() => delayRender('Loading fonts and textures', { timeoutInMilliseconds: 60000 }));
   const [ready, setReady] = useState(null);
@@ -35,8 +34,7 @@ function usePrepared({ kitFonts = [], plan, checker }) {
       }));
       const look = plan && plan.filter ? FILTERS[plan.filter] : null;
       const fx = look && look.fx ? await fxTextures().catch(() => null) : null;
-      const chk = checker ? await checkerTexture(...checker).catch(() => null) : null;
-      if (live) { setReady({ fx, checker: chk }); continueRender(handle); }
+      if (live) { setReady({ fx }); continueRender(handle); }
     })().catch((err) => cancelRender(err));
     return () => { live = false; };
   }, []);
@@ -51,13 +49,10 @@ export function ServerAd(props) {
 }
 
 export function ServerStill(props) {
-  // The framed poster's checker border, in the brand's background and text colours, as the
-  // image builder makes it.
-  const st = resolveStyle(props.style, props.fonts || {}, props.accent);
-  const checker = props.plan && props.plan.template === 'poster'
-    ? [st.colors.background, st.colors.text, props.width, props.height, Math.round(30 * props.width / 1080)] : null;
-  const ready = usePrepared({ ...props, checker });
+  // The poster's checkerboard is drawn by the template itself now, so only the looks need
+  // a texture.
+  const ready = usePrepared(props);
   if (!ready) return <AbsoluteFill style={{ backgroundColor: '#000' }} />;
   return <StillAd plan={props.plan} assets={props.assets} brandName={props.brandName} accent={props.accent}
-    fonts={props.fonts} style={props.style} tex={{ fx: ready.fx, checker: ready.checker }} />;
+    fonts={props.fonts} style={props.style} tex={{ fx: ready.fx }} />;
 }

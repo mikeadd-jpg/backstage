@@ -11,10 +11,9 @@ import { persistAssets, storeRender, saveDraft as saveDraftApi, startServerRende
 import { Thumbnail } from '@remotion/player';
 import StillAd from './StillTemplates.jsx';
 import { loadKit, assetFromFile, releaseAssets } from './AdStudio.jsx';
-import { fxTextures, checkerTexture } from './mediaProbe.js';
+import { fxTextures } from './mediaProbe.js';
 import { ASPECTS, FILTERS, TEXT_STYLES, TEXT_BOXES } from '../lib/adPlans.js';
-import { STILL_TEMPLATES, STILL_KEYS, GRID_GAPS, normalizeStill, templateStills } from '../lib/stillPlans.js';
-import { resolveStyle, contrast } from '../lib/brandStyle.js';
+import { STILL_TEMPLATES, STILL_KEYS, GRID_GAPS, TEXT_ALIGNS, TEXT_COLORS, TEXT_BOXES_BG, TEXT_DEFAULTS, normalizeStill, templateStills } from '../lib/stillPlans.js';
 
 const MAX_ASSETS = 20;
 const dimsOf = (p) => ASPECTS[p && p.aspect] || ASPECTS['9:16'];
@@ -36,13 +35,13 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
   const [kitStyle, setKitStyle] = useState(null);
   const [kitState, setKitState] = useState('loading');
   const [fx, setFx] = useState(null);
-  const [checker, setChecker] = useState(null);
   const [options, setOptions] = useState([]);          // [{ key, source, plan }]
   const [current, setCurrent] = useState('');
   const [planning, setPlanning] = useState(false);
   const [planError, setPlanError] = useState('');
   const [render, setRender] = useState(null);          // { key, stamp, status, blob, url, error }
   const [send, setSend] = useState(null);              // { key, stage, error }
+  const [sel, setSel] = useState('headline');          // the placed element being edited
   const fileInput = useRef(null);
 
   useEffect(() => { fxTextures().then(setFx).catch(() => {}); }, []);
@@ -59,18 +58,12 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
   const byId = useMemo(() => Object.fromEntries(all.map((a) => [a.id, a])), [all]);
   const fonts = useMemo(() => Object.fromEntries(kit.filter((a) => a.kind === 'font').map((a) => [a.id, a.family])), [kit]);
   const logos = kit.filter((a) => a.kind === 'logo');
-  const st = useMemo(() => resolveStyle(kitStyle, fonts, accent), [kitStyle, fonts, accent]);
 
   const opt = options.find((o) => o.key === current) || null;
   const plan = opt ? opt.plan : null;
   const dims = ASPECTS[(plan && plan.aspect) || aspect];
 
-  // The poster's checker border, in this brand's two quietest colours, at the plan's size.
-  useEffect(() => {
-    checkerTexture(st.colors.background, st.colors.text, dims.width, dims.height, Math.round(30 * dims.width / 1080)).then(setChecker).catch(() => {});
-  }, [st.colors.background, st.colors.text, dims.width, dims.height]);
-
-  const tex = useMemo(() => ({ fx, checker }), [fx, checker]);
+  const tex = useMemo(() => ({ fx }), [fx]);
   const inputProps = useMemo(() => ({ plan, assets: byId, brandName, accent, fonts, style: kitStyle, tex }), [plan, byId, brandName, accent, fonts, kitStyle, tex]);
   const stamp = plan ? JSON.stringify(plan) : '';
   const rendered = render && opt && render.key === opt.key && render.stamp === stamp && render.status === 'done' ? render : null;
@@ -171,17 +164,9 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
     const made = addOptions([plan], 'draft');
     if (made[0]) setOptions((os) => os.map((x) => (x.key === made[0].key ? { ...x, draftId: openDraft.id } : x)));
   }, [openDraft, kitState, all]);
-  const byInk = logos.slice().sort((x, y) => (y.ink ?? 0.5) - (x.ink ?? 0.5));
-  const lightness = (hex) => contrast(hex, '#000000') > contrast(hex, '#FFFFFF');
-  const defaults = {
-    logoLight: (byInk[0] || {}).id || null,
-    logoDark: (byInk[byInk.length - 1] || {}).id || null,
-    primaryIsLight: lightness(st.colors.primary),
-    backgroundIsLight: lightness(st.colors.background),
-  };
   function makeTemplates() {
     setPlanError('');
-    addOptions(templateStills(all, { aspect, brandName, defaults }), 'template');
+    addOptions(templateStills(all, { aspect, brandName }), 'template');
   }
 
   async function planWithClaude() {
@@ -210,6 +195,16 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
     setOptions((os) => os.map((o) => (o.key !== current ? o
       : { ...o, plan: raw ? { ...o.plan, ...patch } : normalizeStill({ ...o.plan, ...patch }, all) || o.plan })));
   }
+  // One placed element's settings (lib/stillPlans.js, `text`), changed and re-checked.
+  function setText(el, patch) {
+    const detach = el === 'sub' && ('x' in patch || 'y' in patch) ? { attach: false } : {};
+    edit({ text: { ...plan.text, [el]: { ...plan.text[el], ...patch, ...detach } } });
+  }
+  function resetSpot(el) {
+    const d = TEXT_DEFAULTS[plan.template][el];
+    edit({ text: { ...plan.text, [el]: { ...plan.text[el], x: d.x, y: d.y, w: d.w, align: d.align, v: d.v, size: 1, attach: !!d.attach } } });
+  }
+
   function setSlot(i, id) {
     const images = plan.images.slice();
     images[i] = id;
@@ -331,9 +326,13 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
 
           {plan && (
             <div className="as-option" style={{ marginTop: 14 }}>
-              <div className="as-preview si-preview" style={{ aspectRatio: dims.width + ' / ' + dims.height }}>
-                <Thumbnail component={StillAd} inputProps={inputProps} frameToDisplay={0} durationInFrames={1} fps={30}
-                  compositionWidth={dims.width} compositionHeight={dims.height} style={{ width: '100%', height: '100%' }} />
+              <div>
+                <div className="as-preview si-preview si-stage" style={{ aspectRatio: dims.width + ' / ' + dims.height }}>
+                  <Thumbnail component={StillAd} inputProps={inputProps} frameToDisplay={0} durationInFrames={1} fps={30}
+                    compositionWidth={dims.width} compositionHeight={dims.height} style={{ width: '100%', height: '100%' }} />
+                  <DragLayer plan={plan} sel={sel} onPick={setSel} onMove={setText} />
+                </div>
+                <div className="ledger-note" style={{ textAlign: 'center', marginTop: 6 }}>Drag the dots to move the words, button and logo.</div>
               </div>
               <div className="as-edit">
                 {plan.why && <div className="li-sub" style={{ marginBottom: 8 }}>{opt.source === 'claude' ? 'Planned by Claude' : 'Template'} · {plan.why}</div>}
@@ -362,30 +361,7 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
                     </label>
                   ))}
                 </div>
-                <label className="field">
-                  <span>Headline</span>
-                  <input className="input" value={plan.headline} maxLength={tmpl.headline} onChange={(e) => edit({ headline: e.target.value }, { raw: true })} />
-                </label>
-                {tmpl.sub > 0 && (
-                  <label className="field">
-                    <span>{plan.template === 'offer' ? 'Offer bar' : plan.template === 'drop' ? 'Bottom bar' : 'Line under the headline'}</span>
-                    <input className="input" value={plan.sub} maxLength={tmpl.sub} onChange={(e) => edit({ sub: e.target.value }, { raw: true })}
-                      placeholder={plan.template === 'offer' ? 'e.g. Up to 60% off (only if the offer is real)' : ''} />
-                  </label>
-                )}
-                <div className="field-row">
-                  <label className="field">
-                    <span>Button</span>
-                    <input className="input" value={plan.cta} maxLength={24} placeholder="none" onChange={(e) => edit({ cta: e.target.value }, { raw: true })} />
-                  </label>
-                  <label className="field">
-                    <span>Logo</span>
-                    <select className="input" value={plan.logo || ''} onChange={(e) => edit({ logo: e.target.value || null })}>
-                      <option value="">None</option>
-                      {logos.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-                    </select>
-                  </label>
-                </div>
+                <WordsEditor plan={plan} tmpl={tmpl} sel={sel} setSel={setSel} logos={logos} edit={edit} setText={setText} resetSpot={resetSpot} />
                 <div className="field-row">
                   <label className="field">
                     <span>Text style</span>
@@ -465,5 +441,164 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
         </div>
       )}
     </>
+  );
+}
+
+// ---- words, button and logo ------------------------------------------------------------
+
+const ELEMENTS = { headline: 'Headline', sub: 'Line under', cta: 'Button', logo: 'Logo' };
+const pct = (n) => Math.round(n * 100) + '%';
+
+// Settings for one placed element at a time (chips pick which): on or off, the words,
+// size, alignment, position, width, colour and a box behind it.
+function WordsEditor({ plan, tmpl, sel, setSel, logos, edit, setText, resetSpot }) {
+  const els = Object.keys(ELEMENTS).filter((el) => el !== 'sub' || tmpl.sub > 0);
+  const el = els.includes(sel) ? sel : 'headline';
+  const cfg = plan.text[el];
+  const isText = el === 'headline' || el === 'sub';
+  const on = el === 'logo' ? !!plan.logo : cfg.show;
+  const maxLen = el === 'headline' ? tmpl.headline : el === 'sub' ? tmpl.sub : 24;
+  const custom = /^#/.test(cfg.color || '');
+  const rides = el === 'sub' && cfg.attach && plan.text.headline.show && !!plan.headline;
+  return (
+    <div className="si-words">
+      <div className="si-chips">
+        {els.map((k) => {
+          const lit = k === 'logo' ? !!plan.logo : plan.text[k].show && !!plan[k];
+          return (
+            <button key={k} type="button" className={'chip' + (k === el ? ' active' : '')} onClick={() => setSel(k)}>
+              <span className="mini-dot" style={{ background: lit ? 'var(--green)' : 'var(--faint)' }} />{ELEMENTS[k]}
+            </button>
+          );
+        })}
+      </div>
+
+      {el === 'logo' ? (
+        <label className="field">
+          <span>Logo</span>
+          <select className="input" value={plan.logo || ''} onChange={(e) => edit({ logo: e.target.value || null })}>
+            <option value="">Off</option>
+            {logos.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+          </select>
+        </label>
+      ) : (
+        <>
+          <label className="si-check">
+            <input type="checkbox" checked={cfg.show} onChange={(e) => setText(el, { show: e.target.checked })} />
+            <span>Show the {ELEMENTS[el].toLowerCase()}</span>
+          </label>
+          <label className="field">
+            <span>{el === 'cta' ? 'Button text' : 'Words'}</span>
+            <input className="input" value={plan[el]} maxLength={maxLen}
+              placeholder={el === 'sub' && plan.template === 'offer' ? 'e.g. Up to 60% off (only if the offer is real)' : el === 'cta' ? 'e.g. Shop now' : ''}
+              onChange={(e) => edit({ [el]: e.target.value, ...(e.target.value && !cfg.show ? { text: { ...plan.text, [el]: { ...cfg, show: true } } } : {}) }, { raw: true })} />
+          </label>
+        </>
+      )}
+
+      {on && (
+        <>
+          <div className="field-row">
+            <label className="field">
+              <span>Size · {pct(cfg.size)}</span>
+              <input type="range" min={0.4} max={2.5} step={0.05} value={cfg.size} onChange={(e) => setText(el, { size: Number(e.target.value) })} />
+            </label>
+            <label className="field">
+              <span>Align</span>
+              <select className="input" value={cfg.align} onChange={(e) => setText(el, { align: e.target.value })}>
+                {Object.entries(TEXT_ALIGNS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </label>
+          </div>
+          {rides ? (
+            <div className="ledger-note" style={{ margin: '2px 0 10px' }}>
+              Sits under the headline and moves with it.{' '}
+              <button className="btn-link" type="button" onClick={() => setText('sub', { x: cfg.x, y: cfg.y })}>Place it on its own</button>
+            </div>
+          ) : (
+          <div className="field-row">
+            <label className="field">
+              <span>Across · {Math.round(cfg.x)}%</span>
+              <input type="range" min={0} max={100} step={0.5} value={cfg.x} onChange={(e) => setText(el, { x: Number(e.target.value) })} />
+            </label>
+            <label className="field">
+              <span>Down · {Math.round(cfg.y)}%</span>
+              <input type="range" min={0} max={100} step={0.5} value={cfg.y} onChange={(e) => setText(el, { y: Number(e.target.value) })} />
+            </label>
+          </div>
+          )}
+          {el !== 'logo' && (
+            <div className="field-row">
+              {isText && !rides && (
+                <label className="field">
+                  <span>Width · {Math.round(cfg.w)}%</span>
+                  <input type="range" min={20} max={100} step={1} value={cfg.w} onChange={(e) => setText(el, { w: Number(e.target.value) })} />
+                </label>
+              )}
+              <label className="field">
+                <span>{el === 'cta' ? 'Button colour' : 'Colour'}</span>
+                <div className="si-color">
+                  <select className="input" value={custom ? '#' : cfg.color} onChange={(e) => setText(el, { color: e.target.value === '#' ? '#ffffff' : e.target.value })}>
+                    {Object.entries(TEXT_COLORS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    <option value="#">Custom...</option>
+                  </select>
+                  {custom && <input type="color" value={cfg.color} onChange={(e) => setText(el, { color: e.target.value })} aria-label="Custom colour" />}
+                </div>
+              </label>
+            </div>
+          )}
+          {isText && (
+            <div className="field-row">
+              <label className="field">
+                <span>Box behind</span>
+                <select className="input" value={cfg.bg} onChange={(e) => setText(el, { bg: e.target.value })}>
+                  {Object.entries(TEXT_BOXES_BG).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              </label>
+              {el === 'headline' && (
+                <label className="field">
+                  <span>Capitals</span>
+                  <select className="input" value={cfg.upper === undefined ? '' : cfg.upper ? 'up' : 'as'}
+                    onChange={(e) => setText(el, { upper: e.target.value === '' ? undefined : e.target.value === 'up' })}>
+                    <option value="">Brand style</option>
+                    <option value="up">ALL CAPS</option>
+                    <option value="as">As typed</option>
+                  </select>
+                </label>
+              )}
+            </div>
+          )}
+          <button className="btn btn-ghost" type="button" onClick={() => resetSpot(el)}>Reset position and size</button>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Dots over the preview, one per element that is on, dragged to move it. Positions are %
+// of the frame, so the preview's size does not matter; the centre snaps.
+function DragLayer({ plan, sel, onPick, onMove }) {
+  const ref = useRef(null);
+  const drag = useRef(null);
+  const headOn = plan.text.headline.show && !!plan.headline;
+  const spots = Object.keys(ELEMENTS).filter((el) => (el === 'logo' ? !!plan.logo
+    : plan.text[el] && plan.text[el].show && !!plan[el] && !(el === 'sub' && plan.text.sub.attach && headOn)));
+  const at = (e) => {
+    const r = ref.current.getBoundingClientRect();
+    const snap = (v) => (Math.abs(v - 50) < 1.5 ? 50 : Math.round(v * 2) / 2);
+    return { x: snap(Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100))), y: snap(Math.min(100, Math.max(0, ((e.clientY - r.top) / r.height) * 100))) };
+  };
+  return (
+    <div ref={ref} className="si-drag"
+      onPointerMove={(e) => { if (drag.current) { const p = at(e); onMove(drag.current, p); } }}
+      onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}>
+      {spots.map((el) => (
+        <button key={el} type="button" className={'si-dot' + (el === sel ? ' on' : '')} title={'Drag to move the ' + ELEMENTS[el].toLowerCase()}
+          style={{ left: plan.text[el].x + '%', top: plan.text[el].y + '%' }}
+          onPointerDown={(e) => { e.preventDefault(); ref.current.setPointerCapture(e.pointerId); drag.current = el; onPick(el); }}>
+          <span>{ELEMENTS[el]}</span>
+        </button>
+      ))}
+    </div>
   );
 }

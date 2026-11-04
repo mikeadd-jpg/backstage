@@ -95,13 +95,12 @@ a headline, what is going well, what needs work, and 3 to 5 concrete actions.
 
 ## Navigation (`app/Shell.jsx`)
 
-Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Work: Inbox, At risk, Approvals; Create: Products, Mockups, Ads, Inspiration;
-Insights: Profit, Attribution, Email, Traffic, Orders) at 1100px and up, an icon rail from 681 to 1099px, and on
-phones a title bar plus at most five bottom tabs: Create and Insights each fold into one
-tab with a chooser (and Work too, when Home would otherwise make six, carrying the summed
-badge) when the person has more than one screen in the group and other tabs
-beside it (a Creative keeps Products and Mockups as separate tabs, since a lone tab would
-hide the bar). Settings, Users and Sign out live in the account menu, not the main nav. The open
+Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Operations: Inbox, At risk, Approvals, Products; Marketing: Inspiration, Mockups,
+Ads, Drafts; Insights: Profit, Attribution, Email, Traffic, Orders) at 1100px and up, an icon rail from 681 to 1099px, and on
+phones a title bar plus at most five bottom tabs: Marketing and Insights each fold into one
+tab with a chooser (and Operations too, when the tabs would otherwise pass five, carrying the
+summed badge) when the person has more than one screen in the group and other tabs
+beside it (a lone tab would hide the bar). Settings, Users and Sign out live in the account menu, not the main nav. The open
 screen is the URL hash (`#inbox`, `#profit`), so refresh, links and the back button work;
 `#builder` still maps to Products for old links.
 
@@ -922,10 +921,24 @@ looks and `StillImg`, rendered as one frame with `renderStillOnWeb` on the devic
 
 - **Seven layouts** (`STILL_TEMPLATES`), modelled on retail ads the owner chose and drawn in
   each brand's style: headline over photo, framed poster (main action colour, checkerboard
-  border from `checkerTexture`), big headline with an offer bar, 2x2 and 3x3 grids (no gap,
+  border), big headline with an offer bar, 2x2 and 3x3 grids (no gap,
   thin lines, thick border), product card, and "new drop" over the brand name repeated as an
   outlined pattern. Sizes come from `u` = width / 1080, so every layout holds at 9:16, 4:5
   and 1:1.
+- **Words are placed, not laid out.** Each layout draws only the ground, the pictures and
+  their frame, leaving room for whichever words are on; the headline, the line under it,
+  the button and the logo are drawn on top at `plan.text[el]` (x, y as % of the frame, which
+  edge y names, width, size, colour, a box behind, on or off), dragged on the preview or set
+  with sliders. `TEXT_DEFAULTS` in `lib/stillPlans.js` holds each layout's starting spots;
+  switching layout resets positions (`text.for`). The line under rides with the headline
+  (`attach`) until it is moved on its own, so a long headline never runs into it. Plans
+  without `text` show whatever has words, so older drafts render as before.
+- **Template options start with the logo and the headline off** (the headline is filled in,
+  so ticking it shows something); Claude's plans show the copy it wrote.
+- **One treatment per picture** (`FramedPhoto`): a hard offset block for brands with offset
+  shadows, a keyline for brands with borders, otherwise a soft shadow, never a border plus an
+  offset. The poster's checkerboard is drawn as cells, one row all the way round with odd
+  counts on both sides so every corner matches; it used to be a cropped texture.
 - Options come from `templateStills` (one per layout, product title or brand name as the
   headline, never an offer) or Claude (`lib/stillPlan.js`, action `plan-still`, thumbnails,
   brand guidelines, same no-invented-offers rule as the ad copy). Each logo's lightness is
@@ -984,8 +997,7 @@ the device, so an ad started from a phone finishes with the page closed and land
 - **`remotion/` is the bundle's entry**: `Root.jsx` has the `ad` and `still` compositions
   sized by props, and `ServerAd.jsx` wraps the same `AdVideo` / `StillAd` the browser uses,
   making inside the render what a browser tab normally supplies: kit fonts (FontFace from
-  their Blob URLs), the looks' textures and the poster checker (`fxTextures`,
-  `checkerTexture`). `npm run build` bundles it into `.remotion/` first
+  their Blob URLs) and the looks' textures (`fxTextures`). `npm run build` bundles it into `.remotion/` first
   (`scripts/bundle-remotion.mjs`, no source maps) and `outputFileTracingIncludes` ships it
   with `/api/renders`. Headless Chrome draws full CSS, so filters, z-index and SVG all work
   there; the web renderer's limits still bind the templates because the browser path uses them.
