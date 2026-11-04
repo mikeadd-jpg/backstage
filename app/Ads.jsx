@@ -32,7 +32,7 @@ export default function Ads() {
   const [libs, setLibs] = useState({});                  // brand -> { images, products, shopUrl }
   const [loading, setLoading] = useState(false);
   const [onlyMockups, setOnlyMockups] = useState(true);
-  const [pickView, setPickView] = useState('products');   // 'products' | 'library'
+  const [pickView, setPickView] = useState('products');   // 'products' | 'recent' (mockups in Drafts) | 'library'
   const [picking, setPicking] = useState(false);          // a picture being copied in
   const [search, setSearch] = useState('');
 
@@ -513,7 +513,10 @@ export default function Ads() {
   function draftMade(handle, d) {
     setLibs((l) => {
       const cur = l[brand] || {};
-      return { ...l, [brand]: { ...cur, drafts: { ...(cur.drafts || {}), [handle]: [d, ...((cur.drafts || {})[handle] || [])] } } };
+      const product = (cur.products || []).find((p) => p.handle === handle);
+      const entry = { ...d, handle, productId: product ? product.id : null, title: product ? product.title : '' };
+      return { ...l, [brand]: { ...cur, drafts: { ...(cur.drafts || {}), [handle]: [d, ...((cur.drafts || {})[handle] || [])] },
+        recent: [entry, ...(cur.recent || []).filter((x) => x.id !== d.id)] } };
     });
   }
 
@@ -970,7 +973,7 @@ export default function Ads() {
                 {config.brands.map((b) => <option key={b.key} value={b.key}>{b.name}</option>)}
               </select>
             </label>
-            {mode !== 'video' ? (pickView === 'library' &&
+            {mode !== 'video' ? (pickView !== 'products' &&
               <label className="field">
                 <span>Search</span>
                 <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="product or file name" />
@@ -1076,8 +1079,45 @@ export default function Ads() {
           {mode !== 'video' && (
             <div className="tabs ap-tabs">
               <button type="button" className={'tab' + (pickView === 'products' ? ' active' : '')} onClick={() => setPickView('products')}>By product</button>
+              <button type="button" className={'tab' + (pickView === 'recent' ? ' active' : '')} onClick={() => setPickView('recent')}>Recent mockups</button>
               <button type="button" className={'tab' + (pickView === 'library' ? ' active' : '')} onClick={() => setPickView('library')}>Image library</button>
             </div>
+          )}
+          {mode !== 'video' && pickView === 'recent' && (
+            loading ? <div className="ledger-note">Loading mockups...</div> : (() => {
+              // Every mockup in Drafts for this store, newest first, pickable like any picture:
+              // a carousel copies it into the ad image library as it is picked.
+              const needle = search.trim().toLowerCase();
+              const list = (lib.recent || []).filter((d) => !needle || (d.title + ' ' + d.color).toLowerCase().includes(needle));
+              return (
+                <>
+                  {picking && <div className="ledger-note" style={{ marginBottom: 6 }}>Adding the picture...</div>}
+                  <div className="mk-picker-head">
+                    <span>Mockups in Drafts, newest first</span>
+                    <span className="acc-count">{list.length} shown</span>
+                  </div>
+                  <div className="mk-grid">
+                    {list.length === 0 && <div className="ledger-note">No mockups in Drafts for this store yet.</div>}
+                    {list.map((d) => {
+                      const pic = { handle: d.handle, title: d.title, productId: d.productId, source: 'draft', draftId: d.id, url: d.url,
+                        label: d.title || 'Mockup', lifestyle: true, side: d.side || null };
+                      const on = isPicked(pic);
+                      return (
+                        <button key={d.id} type="button" className={'mk-item' + (on ? ' picked' : '')} onClick={() => pickPicture(pic)} disabled={picking} title={d.title}>
+                          {on && <span className="ad-pos">✓</span>}
+                          <img className="mk-thumb" src={d.url} alt="" loading="lazy" />
+                          <span className="mk-title">{(d.favorite ? '★ ' : '') + (d.title || 'Mockup')}</span>
+                          <span className="ap-meta">
+                            {new Date(d.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            {d.check ? (d.check.pass ? ' · print ' : ' · ⚠ print ') + d.check.score + '/10' : ''}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()
           )}
           {mode !== 'video' && pickView === 'products' && (
             loading ? <div className="ledger-note">Loading products...</div> : (

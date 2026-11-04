@@ -842,7 +842,9 @@ templates through the API on Enterprise, and Kittl has no public API.
   cached 6 hours), newest, recently updated or name. A product shows its lifestyle shots
   in the ad library, its mockups in Drafts (by `source.handle`), and its Printify mockups per
   colour, and can make a new lifestyle shot in place through `/api/mockups` (one image,
-  saved to Drafts, print-checked after). A carousel needs every card in the library, so a
+  saved to Drafts, print-checked after). **"Recent mockups"** beside it lists every mockup in
+  Drafts for the store newest first (`recent` in the `library` payload, made-without-a-product
+  ones included). A carousel needs every card in the library, so a
   picture from Drafts or the store is copied in first (`url-to-meta`, only from our Blob
   store, Shopify's CDN and Printify's image host); picking it is the approval. The builders
   take it by URL instead, and a Drafts mockup used in an ad keeps its `draftId`, so cleanup

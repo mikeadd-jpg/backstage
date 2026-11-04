@@ -139,6 +139,19 @@ export async function POST(req) {
       if (index && index.stale) after(() => printifyMockupIndex(brand, { force: true }).catch(() => {}));
       const byHandle = new Map(products.map((p) => [p.handle, p]));
       const draftsByHandle = {};
+      // Every mockup in Drafts, newest first, for the picker's "Recent mockups" tab: shots
+      // made without a product are there too, which "By product" cannot show.
+      const recent = drafts.filter((d) => d.output && d.output.url).slice(0, 200).map((d) => {
+        const h = (d.source && d.source.handle) || '';
+        const p = h ? byHandle.get(h) : null;
+        return {
+          id: d.id, url: d.output.url, handle: h, productId: p ? p.id : (d.source && d.source.productId) || null,
+          title: (p && p.title) || (d.source && d.source.title) || d.title || '', color: (d.source && d.source.color) || '',
+          side: (d.source && d.source.side) || (/,\s*back$/i.test((d.source && d.source.color) || '') ? 'back' : null),
+          favorite: d.status === 'favorite', at: d.updatedAt || d.createdAt,
+          check: d.source && d.source.check ? { pass: d.source.check.pass, score: d.source.check.score } : null,
+        };
+      });
       for (const d of drafts) {
         const h = d.source && d.source.handle;
         if (!h || !d.output || !d.output.url) continue;
@@ -152,6 +165,7 @@ export async function POST(req) {
         shopUrl,
         sold: Boolean(sold),
         drafts: draftsByHandle,
+        recent,
         products: products.map((p) => {
           const m = mockupsFor(index, p.skus);
           return {
