@@ -8,7 +8,7 @@ import {
 } from '../../../lib/db.js';
 import { configRows } from '../../../lib/printers.js';
 import { REPLY_STRUCTURE, BRANDS } from '../../../lib/brands.js';
-import { notesFor, saveNotes } from '../../../lib/mockups.js';
+import { notesFor, saveNotes, modelsFor, saveModels } from '../../../lib/mockups.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,15 +17,18 @@ export async function GET(req) {
   if (gate.error) return gate.error;
   try {
     const brandKeys = Object.keys(BRANDS);
-    const [stores, config, voices, structure, notes] = await Promise.all([
+    const [stores, config, voices, structure, notes, models] = await Promise.all([
       getStores(), getAllProductConfig(), getAllVoices(), getSetting('cs_reply_structure'),
       Promise.all(brandKeys.map((b) => notesFor(b))),
+      Promise.all(brandKeys.map((b) => modelsFor(b))),
     ]);
     const mockupNotes = Object.fromEntries(brandKeys.map((b, i) => [b, notes[i]]));
+    const mockupModels = Object.fromEntries(brandKeys.map((b, i) => [b, models[i]]));
     return NextResponse.json({
       stores, config, voices, garments: configRows(),
       replyStructure: structure || REPLY_STRUCTURE,
       mockupNotes,
+      mockupModels,
     });
   } catch (err) {
     return NextResponse.json({ error: String(err.message || err) }, { status: 500 });
@@ -42,6 +45,10 @@ export async function POST(req) {
     else if (b.kind === 'mockupNotes') {
       if (!BRANDS[b.brandKey]) return NextResponse.json({ error: 'Unknown brand.' }, { status: 400 });
       await saveNotes(b.brandKey, b.notes);
+    }
+    else if (b.kind === 'mockupModels') {
+      if (!BRANDS[b.brandKey]) return NextResponse.json({ error: 'Unknown brand.' }, { status: 400 });
+      await saveModels(b.brandKey, b.models);
     }
     else if (b.kind === 'config') await upsertProductConfig({ brandKey: b.brandKey, garmentKey: b.garmentKey, priceCents: Math.round(Number(b.price) * 100), tags: b.tags });
     else if (b.kind === 'store') {

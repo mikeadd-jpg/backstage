@@ -531,6 +531,13 @@ pins the place for the run: `suggestScene` keeps every scene inside it and varie
 time and mood instead. It is session-only, and "Rewrite all scenes" re-rotates every card
 three at a time so later cards see where the earlier ones landed.
 
+**Models** (`mockup_models_<brand>`, `modelsFor` in `lib/mockups.js`, edited in Settings
+under each brand) say who wears the product: age, look, styling, the places they belong and
+the ones they never do. The scene writer, the competitor breakdown, the brief writer and the
+image model all get it, because without it Elder Emo got "a woman in pyjamas at a kitchen
+table". `DEFAULT_MODELS` holds Elder Emo's (mid-thirties, grown-up alternative, never at
+home in loungewear); the others are empty until written.
+
 **Store notes** (`mockup_notes_<brand>` in `app_settings`, edited in Settings) are standing
 direction for every shot in a store: Elder Emo "no tattoos", Wallspoke "frame the map
 tight". `generateMockup` reads them server side and `suggestScene` is told to respect them,

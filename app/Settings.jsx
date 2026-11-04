@@ -41,6 +41,7 @@ export default function Settings() {
   const [voices, setVoices] = useState({});
   const [structure, setStructure] = useState('');
   const [mockupNotes, setMockupNotes] = useState({});
+  const [mockupModels, setMockupModels] = useState({});
   const [cfg, setCfg] = useState({}); // `${brand}|${garment}` -> { price, tags }
   const [newStore, setNewStore] = useState({ name: '', brandKey: '', printifyShopId: '', isDefault: false, copyFrom: '' });
   const [storeMsg, setStoreMsg] = useState('');
@@ -91,6 +92,7 @@ export default function Settings() {
     setVoices(d.voices || {});
     setStructure(d.replyStructure || '');
     setMockupNotes(d.mockupNotes || {});
+    setMockupModels(d.mockupModels || {});
     const map = {};
     for (const c of d.config || []) map[c.brand_key + '|' + c.garment_key] = { price: (c.price_cents / 100).toFixed(2), tags: c.tags || '' };
     setCfg(map);
@@ -143,6 +145,20 @@ export default function Settings() {
                   onChange={(e) => setMockupNotes((n) => ({ ...n, [b]: e.target.value }))} />
                 <button className="btn btn-ghost" style={{ marginTop: 6, alignSelf: 'flex-start' }}
                   onClick={() => post({ kind: 'mockupNotes', brandKey: b, notes: mockupNotes[b] || '' }, 'Notes saved')}>Save notes</button>
+              </Section>
+            )}
+
+            {CS_BRANDS.includes(b) && (
+              <Section id={b + ':models'} title="Models" sub="Who wears the product in mockups and ads, and where">
+                <p className="pane-sub" style={{ marginTop: 0 }}>
+                  Age, look and styling of the people in the shots, the places they belong and the ones they never do. Every
+                  scene Claude writes and every image follows it, in Mockups, briefs and batches. Leave empty for none.
+                </p>
+                <textarea className="textarea" rows={9} value={mockupModels[b] || ''}
+                  placeholder={'Who: ...\nStyling: ...\nNot: ...\nPlaces that fit: ...\nNever: ...'}
+                  onChange={(e) => setMockupModels((n) => ({ ...n, [b]: e.target.value }))} />
+                <button className="btn btn-ghost" style={{ marginTop: 6, alignSelf: 'flex-start' }}
+                  onClick={() => post({ kind: 'mockupModels', brandKey: b, models: mockupModels[b] || '' }, 'Models saved')}>Save models</button>
               </Section>
             )}
 
