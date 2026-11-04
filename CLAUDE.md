@@ -538,6 +538,15 @@ image model all get it, because without it Elder Emo got "a woman in pyjamas at 
 table". `DEFAULT_MODELS` holds Elder Emo's (mid-thirties, grown-up alternative, never at
 home in loungewear); the others are empty until written.
 
+**The product is worn alone and worn properly** (`WORN_RULE` in `lib/mockups.js`, the owner's
+rule): a tee or hoodie is the only top, nothing over, under, half off or hung off it. It is in
+`HARD_RULES` and in the scene writer's rules, so it holds whatever a store's Models text says.
+Elder Emo's Models once asked for "a good jacket over the top layer", which put a jacket half
+off a shoulder in every shot; the saved row and the default were both changed on 2026-11-04.
+
+**Quality** in the Ads tab's shots defaults to `high`, with Extra high and Max offered
+(`SHOT_QUALITIES` in `app/LifestyleStep.jsx`, priced as `lib/spend.js`).
+
 **Store notes** (`mockup_notes_<brand>` in `app_settings`, edited in Settings) are standing
 direction for every shot in a store: Elder Emo "no tattoos", Wallspoke "frame the map
 tight". `generateMockup` reads them server side and `suggestScene` is told to respect them,

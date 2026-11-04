@@ -9,6 +9,7 @@
 // builder is open; the tab copies it into the ad library first when a carousel needs that.
 import { useEffect, useMemo, useState } from 'react';
 import { PRESENTATIONS, presentationLine } from '../lib/stillPlans.js';
+import { SHOT_QUALITIES } from './LifestyleStep.jsx';
 
 const SORTS = { best: 'Best sellers', new: 'Newest', updated: 'Recently updated', az: 'A to Z' };
 const PAGE = 60;
@@ -173,6 +174,7 @@ function MakeShot({ brand, product, onClose, onMade }) {
   const [used, setUsed] = useState([]);
   const [writing, setWriting] = useState(false);
   const [size, setSize] = useState('portrait');
+  const [quality, setQuality] = useState('high');
   const [shown, setShown] = useState(brand === 'wallspoke' ? 'room' : 'model');
   const [side, setSide] = useState(product.hasBack ? 'back' : 'front');
   const [state, setState] = useState(null);           // null | { busy } | { error } | { done }
@@ -194,7 +196,7 @@ function MakeShot({ brand, product, onClose, onMade }) {
   async function make() {
     setState({ busy: true });
     try {
-      const { ok, status, d } = await mockupsPost({ action: 'generate', brand, imageUrl: front, scene, size, quality: 'high',
+      const { ok, status, d } = await mockupsPost({ action: 'generate', brand, imageUrl: front, scene, size, quality,
         variationIndex: shown === 'model' || shown === 'room' ? 0 : undefined, notes: presentationLine(shown), side: product.hasBack ? side : undefined,
         product: { id: product.id, title: product.title, handle: product.handle, color: color + (side === 'back' ? ', back' : '') } });
       if (status === 403) return setState({ error: 'Making mockups needs the Mockups area on your role.' });
@@ -239,6 +241,12 @@ function MakeShot({ brand, product, onClose, onMade }) {
             <option value="landscape">Landscape</option>
           </select>
         </label>
+        <label className="field">
+          <span>Quality</span>
+          <select className="input" value={quality} onChange={(e) => setQuality(e.target.value)}>
+            {Object.entries(SHOT_QUALITIES).map(([k, v]) => <option key={k} value={k}>{v.label}, about ${v.cost.toFixed(2)}</option>)}
+          </select>
+        </label>
       </div>
       <img className="ap-front" src={front} alt="" />
       <label className="field">
@@ -254,7 +262,7 @@ function MakeShot({ brand, product, onClose, onMade }) {
       </div>
       {state && state.error && <div className="login-error" style={{ marginTop: 8 }}>{state.error}</div>}
       {state && state.done && <div className="ledger-note" style={{ marginTop: 8 }}>Made and saved to Drafts. It is under Mockups in Drafts above; check the print before you use it.</div>}
-      <div className="ledger-note" style={{ marginTop: 8 }}>One image at high quality, about $0.25. The print check runs after.</div>
+      <div className="ledger-note" style={{ marginTop: 8 }}>One image at {SHOT_QUALITIES[quality].label.toLowerCase().replace(' (slowest)', '')} quality, about ${SHOT_QUALITIES[quality].cost.toFixed(2)}. The print check runs after.</div>
     </div>
   );
 }

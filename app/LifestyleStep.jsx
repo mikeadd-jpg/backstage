@@ -18,7 +18,8 @@ import { PRESENTATIONS, presentationLine } from '../lib/stillPlans.js';
 
 // Spending guard for one press, the same number as MAX_PRODUCTS in /api/mockups.
 const MAX_SHOTS = 10;
-const SHOT_COST = 0.25;           // high quality, lib/spend.js
+// High is the default; the steps above it cost more and take longer (prices as lib/spend.js).
+export const SHOT_QUALITIES = { high: { label: 'High', cost: 0.25 }, xhigh: { label: 'Extra high', cost: 0.35 }, max: { label: 'Max (slowest)', cost: 0.5 } };
 const CONCURRENCY = 2;            // as in the Mockups tab: past two a rate limit is likelier than a speedup
 const WRITING = ['queued', 'writing'];
 
@@ -32,6 +33,7 @@ export default function LifestyleStep({ brand, picks, products, onMade }) {
   const [rows, setRows] = useState({});            // url -> { use, scene, used, state, error }
   const [shown, setShown] = useState(brand === 'wallspoke' ? 'room' : 'model');
   const [size, setSize] = useState('portrait');
+  const [quality, setQuality] = useState('high');
   const [error, setError] = useState('');
   const [open, setOpen] = useState(true);
   const rowsRef = useRef(rows);
@@ -120,7 +122,7 @@ export default function LifestyleStep({ brand, picks, products, onMade }) {
     const product = byHandle[p.handle] || {};
     update(p.url, { state: 'making', error: '' });
     try {
-      const { ok, status, d } = await mockupsPost({ action: 'generate', brand, imageUrl: p.url, scene: r.scene, size, quality: 'high',
+      const { ok, status, d } = await mockupsPost({ action: 'generate', brand, imageUrl: p.url, scene: r.scene, size, quality,
         variationIndex: shown === 'model' || shown === 'room' ? 0 : undefined, notes: presentationLine(shown),
         side: p.side === 'back' || p.side === 'front' ? p.side : undefined,
         product: { id: product.id, title: p.title || product.title, handle: p.handle, color: p.side === 'back' ? 'Back' : null } });
@@ -181,6 +183,12 @@ export default function LifestyleStep({ brand, picks, products, onMade }) {
                 <option value="landscape">Landscape</option>
               </select>
             </label>
+            <label className="field">
+              <span>Quality</span>
+              <select className="input" value={quality} onChange={(e) => setQuality(e.target.value)} disabled={running}>
+                {Object.entries(SHOT_QUALITIES).map(([k, v]) => <option key={k} value={k}>{v.label}, about ${v.cost.toFixed(2)}</option>)}
+              </select>
+            </label>
           </div>
 
           {picks.map((p, i) => {
@@ -226,7 +234,7 @@ export default function LifestyleStep({ brand, picks, products, onMade }) {
           </div>
           {error && <div className="login-error" style={{ marginTop: 8 }}>{error}</div>}
           <div className="ledger-note" style={{ marginTop: 8 }}>
-            {ticked.length > 0 ? ticked.length + ' paid image' + (ticked.length === 1 ? '' : 's') + ' at high quality, about $' + (ticked.length * SHOT_COST).toFixed(2) + ', two at a time. ' : ''}
+            {ticked.length > 0 ? ticked.length + ' paid image' + (ticked.length === 1 ? '' : 's') + ' at ' + SHOT_QUALITIES[quality].label.toLowerCase().replace(' (slowest)', '') + ' quality, about $' + (ticked.length * SHOT_QUALITIES[quality].cost).toFixed(2) + ', two at a time. ' : ''}
             Each new shot replaces its product shot in the ad, is saved to Drafts and print-checked after; the product shot stays on the left if you want it back.
           </div>
         </>
