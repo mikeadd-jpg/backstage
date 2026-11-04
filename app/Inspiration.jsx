@@ -498,7 +498,7 @@ function Competitors({ list, brands, onChanged }) {
               <div className="li-name">{c.name}</div>
               {c.pageId ? (
                 <div className="li-sub">
-                  Page {c.pageId} · checked {ago(c.checkedAt)}{c.capped ? ' · more ads than one run reads' : ''}
+                  Page {c.pageId} · checked {ago(c.checkedAt)}{c.capped && !c.error ? ' · more ads than one run reads' : ''}
                   {c.error && <span className="insp-err"> · {c.error}</span>}
                 </div>
               ) : (
