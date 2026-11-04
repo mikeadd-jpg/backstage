@@ -350,7 +350,11 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
                     </select>
                   </label>
                 </div>
-                <div className="li-name" style={{ margin: '2px 0 6px' }}>Pictures</div>
+                <div className="li-name" style={{ margin: '2px 0 2px' }}>Pictures</div>
+                <div className="ledger-note" style={{ marginBottom: 6 }}>
+                  To show a different product, add its picture from the panel on the left (By product: a shot in Meta or Drafts, or
+                  "Make a lifestyle shot"), then choose it here.
+                </div>
                 <div className="si-slots">
                   {plan.images.map((id, i) => (
                     <label key={i} className="si-slot">
