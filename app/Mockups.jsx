@@ -1,8 +1,11 @@
 'use client';
 // Pick up to ten live products, each gets its own card with a scene Claude writes for it
 // the moment it is picked, review or rotate the scenes, then generate every card in one
-// go. Each result is reviewed before it goes anywhere. Generated images are held here in
-// the browser and nowhere else, so leaving the tab discards anything not attached.
+// go. Each result is reviewed before it goes anywhere, and every result is also saved to
+// Drafts by the server as it is made, so closing the tab loses nothing.
+//
+// On Printify stores each product starts from its original Printify mockup in the colour
+// picked on its card (lib/printifyMockups.js), not from whatever image is on the listing.
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max', 'auto'];
@@ -163,7 +166,8 @@ export default function Mockups() {
     if (jobs.length >= maxProducts) return setError('Up to ' + maxProducts + ' products at a time. Remove one to add another.');
     const seeded = seed && seed.brand === brand;
     const job = {
-      key, brand, product: p, scene: seeded ? seed.scene : scenes[brand] || defaults[brand] || '',
+      key, brand, product: p, color: p.color || null, image: p.image,
+      scene: seeded ? seed.scene : scenes[brand] || defaults[brand] || '',
       notes: '', rotating: false, msg: seeded ? 'Scene from Inspiration.' : '', failures: [],
     };
     setJobs((js) => [...js, job]);
@@ -235,14 +239,17 @@ export default function Mockups() {
   async function generateOne(job, index) {
     try {
       const { ok, d } = await post({
-        action: 'generate', brand: job.brand, imageUrl: job.product.image, scene: job.scene,
+        action: 'generate', brand: job.brand, imageUrl: job.image || job.product.image, scene: job.scene,
         notes: job.notes, size, quality, variationIndex: index,
+        // For the draft the server saves: which product and colour this shot is of.
+        product: { id: job.product.id, title: job.product.title, handle: job.product.handle, color: job.color },
       });
       if (!ok) return { ok: false, error: d.error || 'Generation failed.' };
       shotSeq.current += 1;
       setShots((s) => [{
         key: job.key + '-' + shotSeq.current, jobKey: job.key, b64: d.b64, prompt: d.prompt || '',
-        variation: d.variation || '', product: job.product, brand: job.brand, dest: {},
+        variation: d.variation || '', product: { ...job.product, image: job.image || job.product.image }, brand: job.brand, dest: {},
+        draftId: d.draft ? d.draft.id : null,
       }, ...s]);
       return { ok: true };
     } catch {
@@ -377,11 +384,11 @@ export default function Mockups() {
         <div className="mk-compare">
           <figure>
             <img src={shot.product.image} alt="" />
-            <figcaption>Store image</figcaption>
+            <figcaption>{shot.product.source === 'printify' ? 'Printify mockup' : 'Store image'}</figcaption>
           </figure>
           <figure>
             <img src={'data:image/png;base64,' + shot.b64} alt="" />
-            <figcaption>Generated</figcaption>
+            <figcaption>Generated{shot.draftId ? ' · saved to Drafts' : ''}</figcaption>
           </figure>
         </div>
 
@@ -655,13 +662,28 @@ export default function Mockups() {
               return (
                 <div className="card mk-job" key={job.key}>
                   <div className="mk-job-head">
-                    <img className="mk-job-thumb" src={job.product.image} alt="" />
+                    <img className="mk-job-thumb" src={job.image || job.product.image} alt="" />
                     <div className="mk-job-title">
                       <div className="li-name">{job.product.title}</div>
-                      <div className="li-sub">{brandName(job.brand)}</div>
+                      <div className="li-sub">{brandName(job.brand)}{job.product.source === 'printify' ? ' · from the Printify mockup' : ''}</div>
                     </div>
                     <button className="btn btn-ghost" type="button" onClick={() => removeJob(job.key)} disabled={busy} title="Remove this product">&times;</button>
                   </div>
+
+                  {(job.product.colors || []).length > 1 && (
+                    <div className="field">
+                      <span>Colour to shoot</span>
+                      <div className="mk-colors">
+                        {job.product.colors.map((c) => (
+                          <button key={c.name} type="button" title={c.name} disabled={busy}
+                            className={'mk-color' + (c.name === job.color ? ' on' : '')}
+                            onClick={() => updateJob(job.key, { color: c.name, image: c.front })}>
+                            <span className="mk-swatch" style={{ background: c.hex || '#888' }} />{c.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <label className="field">
                     <span>Scene</span>

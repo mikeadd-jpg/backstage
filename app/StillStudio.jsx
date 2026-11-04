@@ -7,6 +7,7 @@
 // brand's Meta ad image library. The Ads tab's own form then builds a single image ad and,
 // optionally, a paused ad. Nothing is stored, the same rule as the video builder.
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { persistAssets, storeRender, saveDraft as saveDraftApi } from './draftsClient.js';
 import { Thumbnail } from '@remotion/player';
 import StillAd from './StillTemplates.jsx';
 import { loadKit, assetFromFile, releaseAssets } from './AdStudio.jsx';
@@ -16,6 +17,7 @@ import { STILL_TEMPLATES, STILL_KEYS, GRID_GAPS, normalizeStill, templateStills 
 import { resolveStyle, contrast } from '../lib/brandStyle.js';
 
 const MAX_ASSETS = 20;
+const dimsOf = (p) => ASPECTS[p && p.aspect] || ASPECTS['9:16'];
 let seq = 0;
 const newKey = () => 'st' + (++seq).toString(36) + Math.random().toString(36).slice(2, 5);
 const mb = (n) => (n / 1024 / 1024).toFixed(1) + ' MB';
@@ -25,7 +27,7 @@ const toB64 = (blob) => new Promise((resolve) => {
   fr.readAsDataURL(blob);
 });
 
-export default function StillStudio({ brand, brandName, accent, assets, setAssets, post, onSent, onReset, busyAdding }) {
+export default function StillStudio({ brand, brandName, accent, assets, setAssets, post, onSent, onReset, busyAdding, openDraft = null }) {
   const [aspect, setAspect] = useState('4:5');
   const [notes, setNotes] = useState('');
   const [adding, setAdding] = useState(false);
@@ -90,7 +92,48 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
     const made = plans.map((p) => ({ key: newKey(), source, plan: p }));
     setOptions((os) => [...os, ...made]);
     if (made.length) setCurrent(made[0].key);
+    return made;
   }
+
+  // ---- drafts ----
+  // Saves an option as a draft: the pictures it uses are stored first (once each), then
+  // the plan, and the rendered file when there is one. The draft id stays on the option,
+  // so saving again updates the same draft.
+  const [draftMsg, setDraftMsg] = useState({});           // option key -> message
+  async function saveOption(key, outputBlob) {
+    const o = optionsRef.current.find((x) => x.key === key);
+    if (!o) return;
+    setDraftMsg((m) => ({ ...m, [key]: 'Saving to Drafts...' }));
+    try {
+      const plan = normalizeStill(o.plan, all) || o.plan;
+      const stored = await persistAssets(brand, assets, plan, (id, url) => setAssets((xs) => xs.map((a) => (a.id === id ? { ...a, storedUrl: url } : a))));
+      let output;
+      if (outputBlob) {
+        const url = await storeRender(brand, outputBlob, (plan.title || 'image') + (outputBlob.type === 'video/mp4' ? '.mp4' : '.jpg'));
+        output = { url, contentType: outputBlob.type, size: outputBlob.size, width: dimsOf(plan).width, height: dimsOf(plan).height };
+      }
+      const d = await saveDraftApi({ id: o.draftId || undefined, brand, kind: 'image', title: plan.title, plan, assets: stored, ...(output ? { output } : {}),
+        source: o.source === 'draft' ? undefined : { madeWith: o.source } });
+      setOptions((os) => os.map((x) => (x.key === key ? { ...x, draftId: d.id } : x)));
+      setDraftMsg((m) => ({ ...m, [key]: output ? 'Saved to Drafts with the rendered file.' : 'Saved to Drafts.' }));
+    } catch (err) {
+      setDraftMsg((m) => ({ ...m, [key]: 'Not saved: ' + String(err.message || err) }));
+    }
+  }
+  const optionsRef = useRef([]);
+  useEffect(() => { optionsRef.current = options; }, [options]);
+
+  // A draft opened from the Drafts tab arrives as `openDraft`, once the brand kit it may
+  // refer to is loaded, and becomes an option tied to that draft.
+  const openedRef = useRef(null);
+  useEffect(() => {
+    if (!openDraft || kitState !== 'ready' || openedRef.current === openDraft.id) return;
+    const plan = normalizeStill(openDraft.plan, all);
+    if (!plan) return;
+    openedRef.current = openDraft.id;
+    const made = addOptions([plan], 'draft');
+    if (made[0]) setOptions((os) => os.map((x) => (x.key === made[0].key ? { ...x, draftId: openDraft.id } : x)));
+  }, [openDraft, kitState, all]);
   const byInk = logos.slice().sort((x, y) => (y.ink ?? 0.5) - (x.ink ?? 0.5));
   const lightness = (hex) => contrast(hex, '#000000') > contrast(hex, '#FFFFFF');
   const defaults = {
@@ -155,6 +198,7 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
       // JPEG keeps a full-size ad well under a megabyte, so it fits one request to Meta.
       const blob = await r.blob({ format: 'jpeg', quality: 0.92 });
       setRender({ key, stamp: mine, status: 'done', blob, url: URL.createObjectURL(blob) });
+      saveOption(key, blob);
     } catch (err) {
       setRender({ key, stamp: mine, status: 'failed', error: String((err && err.message) || err) });
     }
@@ -341,7 +385,9 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
                     {render && render.status === 'rendering' ? 'Rendering...' : rendered ? '↻ Render again' : 'Render image'}
                   </button>
                   <button className="btn btn-ghost" type="button" onClick={() => { setOptions((os) => os.filter((o) => o.key !== opt.key)); setCurrent(''); }}>Remove option</button>
+                  <button className="btn btn-ghost" type="button" onClick={() => saveOption(opt.key)}>{opt.draftId ? 'Update draft' : 'Save draft'}</button>
                 </div>
+                {draftMsg[opt.key] && <div className="ledger-note" style={{ marginTop: 8 }}>{draftMsg[opt.key]}</div>}
                 {render && render.key === opt.key && render.status === 'failed' && <div className="login-error" style={{ marginTop: 10 }}>{render.error}</div>}
                 {render && render.key === opt.key && render.status === 'done' && render.stamp !== stamp && (
                   <div className="ledger-note" style={{ marginTop: 8 }}>Edited since the last render. Render again to send this version.</div>

@@ -17,6 +17,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import AdStudio, { assetFromLibrary, releaseAssets } from './AdStudio.jsx';
 import StillStudio from './StillStudio.jsx';
+import { OPEN_DRAFT_KEY, restoreAsset } from './draftsClient.js';
 import { ACCENTS } from '../lib/adPlans.js';
 
 const CTA_LABELS = {
@@ -63,7 +64,8 @@ export default function Ads() {
   const [sAssets, setSAssets] = useState([]);
   const [sLoading, setSLoading] = useState(0);            // library images being copied in
   const [sTexts, setSTexts] = useState([]);
-  const [imageHash, setImageHash] = useState('');          // image builder: the sent image               // on-screen text of the sent cut, for the copy
+  const [imageHash, setImageHash] = useState('');          // image builder: the sent image
+  const [openDraft, setOpenDraft] = useState(null);        // a draft reopened from Drafts               // on-screen text of the sent cut, for the copy
   // Video from Canva.
   const [designs, setDesigns] = useState(null);           // null = not loaded yet
   const [designsCont, setDesignsCont] = useState(null);
@@ -92,11 +94,28 @@ export default function Ads() {
   const [alsoLike, setAlsoLike] = useState({});           // mode -> collection id
 
   useEffect(() => {
-    fetch('/api/ads').then((r) => r.json()).then((d) => {
+    fetch('/api/ads').then((r) => r.json()).then(async (d) => {
       if (d.error) return setError(d.error);
       setConfig(d);
       setStoreNotes(Object.fromEntries((d.brands || []).map((b) => [b.key, b.textNotes || ''])));
       if (d.brands && d.brands.length) setBrand(d.brands[0].key);
+      // "Open in builder" from Drafts leaves { id } here: open that draft's store and
+      // builder, with its stored pictures fetched back into the tab.
+      let seed = null;
+      try { seed = JSON.parse(sessionStorage.getItem(OPEN_DRAFT_KEY) || 'null'); sessionStorage.removeItem(OPEN_DRAFT_KEY); } catch { /* none */ }
+      if (!seed || !seed.id) return;
+      try {
+        const r = await fetch('/api/drafts?id=' + encodeURIComponent(seed.id)).then((x) => x.json());
+        if (!r.draft) throw new Error(r.error || 'That draft is gone.');
+        const draft = r.draft;
+        if (!(d.brands || []).some((b) => b.key === draft.brand)) throw new Error('That store has no ad account here.');
+        setBrand(draft.brand);
+        setMode(draft.kind === 'video' ? 'studio' : 'still');
+        setSAssets(await Promise.all((draft.assets || []).map(restoreAsset)));
+        setOpenDraft(draft);
+      } catch (err) {
+        setError('Could not open the draft: ' + String(err.message || err));
+      }
     }).catch(() => setError('Could not load the ad accounts.'));
   }, []);
 
@@ -1014,7 +1033,8 @@ export default function Ads() {
             <>
               <AdStudio brand={brand} brandName={brandInfo ? brandInfo.name : brand} accent={ACCENTS[brand] || '#111827'}
                 assets={sAssets} setAssets={setSAssets} post={post} busyAdding={sLoading > 0}
-                onReset={() => { resetVideo(); setResult(null); }} onSent={studioSent} />
+                onReset={() => { resetVideo(); setResult(null); }} onSent={studioSent}
+                openDraft={openDraft && openDraft.kind === 'video' && openDraft.brand === brand ? openDraft : null} />
               {vStage === 'ready' && videoId && (
                 <div className="card">
                   <div className="card-label">Video ad</div>
@@ -1028,7 +1048,8 @@ export default function Ads() {
             <>
               <StillStudio brand={brand} brandName={brandInfo ? brandInfo.name : brand} accent={ACCENTS[brand] || '#111827'}
                 assets={sAssets} setAssets={setSAssets} post={post} busyAdding={sLoading > 0}
-                onReset={() => { setImageHash(''); setResult(null); }} onSent={stillSent} />
+                onReset={() => { setImageHash(''); setResult(null); }} onSent={stillSent}
+                openDraft={openDraft && openDraft.kind === 'image' && openDraft.brand === brand ? openDraft : null} />
               {imageHash && (
                 <div className="card">
                   <div className="card-label">Image ad</div>

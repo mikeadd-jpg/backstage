@@ -466,9 +466,22 @@ whatever Shopify holds as the featured image, which is a mockup with the design 
 small in frame. If fidelity is still not there, the answer is to generate the scene with
 a blank garment and composite the real print file with `sharp`, not to loosen the review.
 
-**Generated images are never stored.** They live in React state between generate and
-attach. No blob store, nothing in Neon, and closing the tab discards them. The cost is
-that you lose unattached work; the benefit is that a review step cannot be skipped.
+**Every generated image is saved to Drafts** (see Drafts below) by the route as it is
+made: Vercel Blob plus a `creative_drafts` row with the product, colour, scene and
+prompt. This replaced the old rule that generated images lived only in the tab; the
+review step stays, since nothing reaches a store or Meta without a click.
+
+**The source on Printify stores is the original Printify mockup**, in the colour picked
+on the product's card (`lib/printifyMockups.js`). The flat mockups were removed from the
+Shopify listings, which had left the generator making a scene from a lifestyle shot.
+Printify's product list has every mockup and every variant SKU but not the Shopify link
+(that is only on a single-product read, 1,200+ requests for Elder Emo), so one sweep of
+the list (~25 pages, ~40s for Elder Emo) is matched to Shopify products by SKU
+(`variants(first: 3) { sku }` in `PRODUCT_PAGE`) and cached 12 hours in
+`insights_cache`. An expired copy is served at once and re-swept after the response
+(`after()`), so the tab never waits. On 2026-11-04 it matched 828 of 1,000 live Elder Emo
+products (the rest are not Printify items, e.g. Loog bundles) and 31 of 32 PopPunks.
+Wallspoke (Printful) keeps its Shopify listing images, by the owner's choice.
 
 **Product reads go through GraphQL, not REST.** Shopify made the REST product endpoints
 legacy, so `listActiveProducts` and `addProductImage` in `lib/shopify.js` use
@@ -867,6 +880,29 @@ music, which the video builder offers in every option.
 - **SVG kit images are rasterized to PNG on load** (`renderableImage` in
   `app/mediaProbe.js`, 1600px long edge): the web renderer drew nothing for an SVG loaded
   by URL.
+
+## Drafts (`lib/drafts.js`, `/api/drafts`, `app/Drafts.jsx`, `app/draftsClient.js`)
+
+Every mockup, video ad and image ad is kept until someone deletes it, so work survives the
+tab and shows on any device. `creative_drafts`: `kind` (mockup | video | image), `status`
+(draft | favorite), the builder's `plan`, the `assets` it uses, the rendered `output`, a
+`source` and `files` (every Blob URL the draft owns). Screen area `drafts`; each kind is
+also held to its tool's area in the route (mockups, ads).
+
+- Mockups are saved server side as they are generated. The video and image builders save
+  an option with **Save draft**, and again automatically when it is rendered, with the
+  file. Before saving, each picture, clip or song the plan uses is copied to Blob under
+  `drafts/<brand>/assets/` once (`persistAssets`, remembered as `storedUrl` on the asset),
+  so it outlives the tab; brand kit files are referred to by id.
+- **A file can belong to several drafts** (one picture in many cuts), so deleting a draft
+  or replacing its render removes a file only when no other draft lists it
+  (`removeUnshared`).
+- "Open in builder" leaves `{ id }` in `sessionStorage` (`backstage.openDraft`); the Ads
+  tab opens that store and builder, fetches the stored pictures back into blob: URLs under
+  their original ids (the renderer draws only same-origin pictures), and the builder adds
+  the plan as an option tied to the draft once the brand kit has loaded.
+- `/api/drafts` accepts only our own Blob URLs in a draft, so one can never point at an
+  arbitrary address. Uploads go browser to Blob through `/api/drafts/upload`.
 
 ## Settings layout (`app/Settings.jsx`)
 

@@ -2,8 +2,11 @@
 // has to carry a whole batch. The split is for progress and blast radius, not for a time
 // limit: this account is on Pro, where functions get 300s by default and up to 800s.
 //
-//   { action: 'list', brand }                   active products for one store
-//   { action: 'generate', brand, imageUrl, ... } exactly one image, returned as base64
+//   { action: 'list', brand }                   active products for one store, each with
+//                                               its Printify mockups per colour when the
+//                                               store is on Printify (lib/printifyMockups.js)
+//   { action: 'generate', brand, imageUrl, product?, ... } exactly one image, returned as
+//                                                base64 and saved to Drafts (lib/drafts.js)
 //
 // A batch of five is five 'generate' calls from the client, not one call that loops.
 // Same reason the kids builder is split: one slow or failed image cannot take the rest
@@ -23,16 +26,20 @@
 // attach-canva in turn rather than a combined action, so a half-success reports which
 // half, and each destination keeps its own error.
 //
-// Generated images are never persisted. They live in the browser between generate and
-// attach, which keeps a review step in the loop and avoids needing a blob store.
-import { NextResponse } from 'next/server';
+// Every generated image is saved to Drafts as it is made (Vercel Blob plus a
+// creative_drafts row), so work survives the tab. Nothing reaches a store or Meta without
+// a click: the review step stays, it just no longer forgets.
+import { NextResponse, after } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
 import { listActiveProducts, addProductImage, setProductMainImage } from '../../../lib/shopify.js';
+import { printifyMockupIndex, mockupsFor } from '../../../lib/printifyMockups.js';
 import {
   generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, notesFor, SIZES,
 } from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
+import { put } from '@vercel/blob';
+import { saveDraft, DRAFT_PREFIX } from '../../../lib/drafts.js';
 import { uploadToCanva, canvaStatus } from '../../../lib/canva.js';
 
 export const dynamic = 'force-dynamic';
@@ -101,7 +108,22 @@ export async function POST(req) {
 
     if (body.action === 'list') {
       const brand = checkBrand(body.brand);
-      return NextResponse.json({ products: await listActiveProducts(brand) });
+      const [products, index] = await Promise.all([
+        listActiveProducts(brand),
+        printifyMockupIndex(brand, { force: Boolean(body.refresh), staleOk: true }).catch((err) => { console.error('[mockups] printify', err); return null; }),
+      ]);
+      // An expired copy is used now and re-swept after the response, so opening the tab
+      // never waits on Printify's catalog.
+      if (index && index.stale) after(() => printifyMockupIndex(brand, { force: true }).catch((err) => console.error('[mockups] printify refresh', err)));
+      // The original Printify mockup (default colour) becomes the generation source, with
+      // every colour offered; the Shopify image is kept as the fallback.
+      const out = products.map((p) => {
+        const m = mockupsFor(index, p.skus);
+        if (!m) return { ...p, colors: [], source: 'shopify' };
+        const def = m.colors.find((c) => c.name === m.defaultColor) || m.colors[0];
+        return { ...p, shopifyImage: p.image, image: def.front, color: def.name, colors: m.colors, back: m.back, source: 'printify' };
+      });
+      return NextResponse.json({ products: out, printify: index ? { at: index.at, matched: out.filter((p) => p.source === 'printify').length } : null });
     }
 
     if (body.action === 'generate') {
@@ -119,7 +141,24 @@ export async function POST(req) {
         quality: body.quality,
         variation,
       });
-      return NextResponse.json(result);
+      // Saved to Drafts. A failure here never loses the image: the client still has it.
+      let draft = null;
+      try {
+        const p = body.product || {};
+        const slug = String(p.handle || 'mockup').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 60);
+        const file = await put(DRAFT_PREFIX + brand + '/mockups/' + slug + '.png', Buffer.from(result.b64, 'base64'),
+          { access: 'public', addRandomSuffix: true, contentType: 'image/png' });
+        draft = await saveDraft({
+          brand, kind: 'mockup', title: String(p.title || 'Mockup') + (p.color ? ' · ' + p.color : ''),
+          output: { url: file.url, contentType: 'image/png' },
+          source: { productId: p.id || null, handle: p.handle || null, title: p.title || null, color: p.color || null,
+            sourceImage: body.imageUrl, scene: body.scene, variation: result.variation || null, prompt: result.prompt || null },
+          by: gate.access.email,
+        });
+      } catch (err) {
+        console.error('[mockups] draft save', err);
+      }
+      return NextResponse.json({ ...result, draft: draft ? { id: draft.id, url: draft.output.url } : null });
     }
 
     if (body.action === 'attach') {

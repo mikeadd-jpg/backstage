@@ -282,3 +282,28 @@ ALTER TABLE inspiration_captures ADD COLUMN IF NOT EXISTS read_info JSONB;
 -- Which of our stores a competitor matters for (brand keys). Empty means all of them.
 -- The Inspiration tab filters by it and opens a breakdown on that store.
 ALTER TABLE competitors ADD COLUMN IF NOT EXISTS brands TEXT[] NOT NULL DEFAULT '{}';
+
+-- ===== Drafts (mockups, video ads, image ads) =====
+-- Everything the creative tools make is kept here until someone deletes it, so work
+-- survives closing the tab and shows on any device. `kind` is mockup | video | image.
+-- `status` is draft | favorite. A video or image draft keeps its `plan` (the builder's own
+-- plan, lib/adPlans.js / lib/stillPlans.js) and the `assets` it uses (our copies in Blob),
+-- so it can be reopened and edited; `output` is the rendered file once there is one.
+-- `files` lists every Blob URL the draft owns, removed with it. `source` says where it
+-- came from: the product and scene of a mockup, or the inspiration ad it recreates.
+CREATE TABLE IF NOT EXISTS creative_drafts (
+  id          SERIAL PRIMARY KEY,
+  brand       TEXT NOT NULL,
+  kind        TEXT NOT NULL,
+  status      TEXT NOT NULL DEFAULT 'draft',
+  title       TEXT NOT NULL DEFAULT '',
+  plan        JSONB,
+  assets      JSONB NOT NULL DEFAULT '[]'::jsonb,
+  output      JSONB,
+  source      JSONB NOT NULL DEFAULT '{}'::jsonb,
+  files       TEXT[] NOT NULL DEFAULT '{}',
+  created_by  TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS creative_drafts_list_idx ON creative_drafts (brand, kind, status, updated_at DESC);

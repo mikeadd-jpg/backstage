@@ -13,6 +13,7 @@
 // /api/ads/video-upload. Nothing is stored anywhere, the same rule as Mockups: close the
 // tab and the uploads and renders are gone.
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { persistAssets, storeRender, saveDraft as saveDraftApi } from './draftsClient.js';
 import { Player } from '@remotion/player';
 import AdVideo from './AdTemplates.jsx';
 import {
@@ -24,6 +25,7 @@ import { kitFontFamily, loadKitFont } from './BrandKit.jsx';
 import { probeImage, probeVideo, probeAudio, renderableImage, fxTextures, inkLightness } from './mediaProbe.js';
 
 const MAX_ASSETS = 20;
+const dimsOf = (p) => ASPECTS[p && p.aspect] || ASPECTS['9:16'];
 const MAX_UPLOAD = 500 * 1024 * 1024;
 
 let seq = 0;
@@ -86,7 +88,7 @@ export function releaseAssets(list) {
   for (const a of list || []) if (a.src && a.src.startsWith('blob:')) URL.revokeObjectURL(a.src);
 }
 
-export default function AdStudio({ brand, brandName, accent, assets, setAssets, post, onSent, onReset, busyAdding }) {
+export default function AdStudio({ brand, brandName, accent, assets, setAssets, post, onSent, onReset, busyAdding, openDraft = null }) {
   const [aspect, setAspect] = useState('9:16');
   const [notes, setNotes] = useState('');
   const [adding, setAdding] = useState(false);
@@ -180,7 +182,48 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
     const made = plans.map((p) => ({ key: newId('opt'), source, plan: p }));
     setOptions((os) => [...os, ...made]);
     if (made.length) setCurrent(made[0].key);
+    return made;
   }
+
+  // ---- drafts ----
+  // Saves an option as a draft: the pictures it uses are stored first (once each), then
+  // the plan, and the rendered file when there is one. The draft id stays on the option,
+  // so saving again updates the same draft.
+  const [draftMsg, setDraftMsg] = useState({});           // option key -> message
+  async function saveOption(key, outputBlob) {
+    const o = optionsRef.current.find((x) => x.key === key);
+    if (!o) return;
+    setDraftMsg((m) => ({ ...m, [key]: 'Saving to Drafts...' }));
+    try {
+      const plan = normalizePlan(o.plan, all) || o.plan;
+      const stored = await persistAssets(brand, assets, plan, (id, url) => setAssets((xs) => xs.map((a) => (a.id === id ? { ...a, storedUrl: url } : a))));
+      let output;
+      if (outputBlob) {
+        const url = await storeRender(brand, outputBlob, (plan.title || 'video') + (outputBlob.type === 'video/mp4' ? '.mp4' : '.jpg'));
+        output = { url, contentType: outputBlob.type, size: outputBlob.size, width: dimsOf(plan).width, height: dimsOf(plan).height };
+      }
+      const d = await saveDraftApi({ id: o.draftId || undefined, brand, kind: 'video', title: plan.title, plan, assets: stored, ...(output ? { output } : {}),
+        source: o.source === 'draft' ? undefined : { madeWith: o.source } });
+      setOptions((os) => os.map((x) => (x.key === key ? { ...x, draftId: d.id } : x)));
+      setDraftMsg((m) => ({ ...m, [key]: output ? 'Saved to Drafts with the rendered file.' : 'Saved to Drafts.' }));
+    } catch (err) {
+      setDraftMsg((m) => ({ ...m, [key]: 'Not saved: ' + String(err.message || err) }));
+    }
+  }
+  const optionsRef = useRef([]);
+  useEffect(() => { optionsRef.current = options; }, [options]);
+
+  // A draft opened from the Drafts tab arrives as `openDraft`, once the brand kit it may
+  // refer to is loaded, and becomes an option tied to that draft.
+  const openedRef = useRef(null);
+  useEffect(() => {
+    if (!openDraft || kitState !== 'ready' || openedRef.current === openDraft.id) return;
+    const plan = normalizePlan(openDraft.plan, all);
+    if (!plan) return;
+    openedRef.current = openDraft.id;
+    const made = addOptions([plan], 'draft');
+    if (made[0]) setOptions((os) => os.map((x) => (x.key === made[0].key ? { ...x, draftId: openDraft.id } : x)));
+  }, [openDraft, kitState, all]);
 
   function makeTemplateCuts() {
     setPlanError('');
@@ -256,6 +299,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
       });
       const blob = await getBlob();
       setRender({ key, stamp: mine, status: 'done', progress: 1, blob, url: URL.createObjectURL(blob) });
+      saveOption(key, blob);
     } catch (err) {
       if (ctl.signal.aborted) return setRender(null);
       setRender({ key, stamp: mine, status: 'failed', error: String((err && err.message) || err) });
@@ -635,7 +679,9 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                     <button className="btn btn-ghost" type="button" onClick={() => abort.current && abort.current.abort()}>Cancel</button>
                   )}
                   <button className="btn btn-ghost" type="button" onClick={() => dropOption(opt.key)}>Remove option</button>
+                  <button className="btn btn-ghost" type="button" onClick={() => saveOption(opt.key)}>{opt.draftId ? 'Update draft' : 'Save draft'}</button>
                 </div>
+                {draftMsg[opt.key] && <div className="ledger-note" style={{ marginTop: 8 }}>{draftMsg[opt.key]}</div>}
                 {render && render.key === opt.key && render.status === 'failed' && <div className="login-error" style={{ marginTop: 10 }}>{render.error}</div>}
                 {renderStale && <div className="ledger-note" style={{ marginTop: 8 }}>Edited since the last render. Render again to send this version.</div>}
                 {render && render.status === 'rendering' && (
