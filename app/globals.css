@@ -1280,6 +1280,29 @@ span.as-trans { text-align: center; }
 .ap-product .mk-picker-head { margin-top: 12px; }
 .ap-make { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
 .ap-front { display: block; width: 96px; height: 96px; object-fit: cover; border-radius: 8px; margin: 0 0 8px; background: var(--surface-2); }
+/* On wide screens the picker column is sticky with a fixed height. A product's pictures
+   (three grids) and the shot panels are taller than that, so the column scrolls as a
+   whole; before, the panel ran out of the card and its controls could not be reached.
+   The grids get their own height back so one long grid cannot push the rest away. */
+@media (min-width: 1100px) {
+  .mk-picker { overflow-y: auto; }
+  .mk-picker > .mk-grid { min-height: 220px; }
+  .mk-picker .ap-product .mk-grid, .mk-picker .ap-batch .mk-grid { flex: none; max-height: 340px; }
+}
+.mk-item .ap-tick { position: absolute; top: 10px; right: 10px; z-index: 1; width: 22px; height: 22px; border-radius: 6px;
+  border: 1.5px solid var(--line-strong, var(--muted)); background: var(--surface); display: flex; align-items: center;
+  justify-content: center; font-size: 13px; color: var(--surface); }
+.mk-item.picked .ap-tick { background: var(--action); border-color: var(--action); }
+.ap-batch { margin: 4px 0 14px; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.ap-batch-row { display: flex; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.ap-batch-row:first-of-type { border-top: 0; }
+.ap-batch-row > img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; background: var(--surface-2); flex-shrink: 0; }
+.ap-batch-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.ap-batch-body .field-row { margin: 0; }
+.ap-batch-body textarea.input { font-size: 12px; }
+.ap-batch-status { font-size: 11.5px; color: var(--muted); }
+.ap-batch-status.bad { color: var(--red, #b91c1c); }
+.ap-batch-result { width: 104px; }
 .si-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .si-list-row { display: flex; gap: 6px; align-items: center; }
 .si-list-row .input { min-width: 0; flex: 1; }
