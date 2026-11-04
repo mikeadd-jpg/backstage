@@ -7,7 +7,9 @@ import { requireArea } from '../../../../lib/access.js';
 
 export const dynamic = 'force-dynamic';
 
-const HOSTS = /(^|\.)(fbcdn\.net|facebook\.com|cdninstagram\.com|cdn\.shopify\.com)$/i;
+// Also Printify's mockup host and our own Blob store, for pictures picked by product
+// (store mockups, and lifestyle shots kept in Drafts).
+const HOSTS = /((^|\.)(fbcdn\.net|facebook\.com|cdninstagram\.com|cdn\.shopify\.com|images-api\.printify\.com|images\.printify\.com)|^[a-z0-9]+\.public\.blob\.vercel-storage\.com)$/i;
 const MAX_BYTES = 25 * 1024 * 1024;
 
 export async function GET(req) {

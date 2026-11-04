@@ -48,6 +48,8 @@ export async function persistAssets(brand, assets, plan, remember) {
     out.push({
       id, kind: a.kind, url, name: a.name || '', title: a.title || '', handle: a.handle || '', hash: a.hash || null,
       width: a.width || null, height: a.height || null, seconds: a.seconds || null, beat: a.beat || null,
+      // A mockup picked from Drafts: cleanupDrafts keeps it while an ad draft uses it.
+      ...(a.draftId ? { draftId: a.draftId } : {}),
     });
   }
   return out;

@@ -758,6 +758,17 @@ templates through the API on Enterprise, and Kittl has no public API.
   on the `<brand>-<handle>-lifestyle.png` name the mockups route gives every upload, and
   the handle in that name is how a card gets its product title and link. Renaming that
   pattern breaks the mapping.
+- **Pictures can be picked by product** (`app/AdProducts.jsx`, "By product" beside "Image
+  library"): the store's products filtered by collection and sorted by best sellers (units
+  sold over 90 days, `bestSellers` in `lib/shopify.js`, ShopifyQL grouped by `product_id`,
+  cached 6 hours), newest, recently updated or name. A product shows its lifestyle shots
+  in the ad library, its mockups in Drafts (by `source.handle`), and its Printify mockups per
+  colour, and can make a new lifestyle shot in place through `/api/mockups` (one image,
+  saved to Drafts, print-checked after). A carousel needs every card in the library, so a
+  picture from Drafts or the store is copied in first (`url-to-meta`, only from our Blob
+  store, Shopify's CDN and Printify's image host); picking it is the approval. The builders
+  take it by URL instead, and a Drafts mockup used in an ad keeps its `draftId`, so cleanup
+  leaves it alone.
 - **A creative, then at most a paused ad.** `createCarouselCreative` makes an unpublished
   Page post. "Add to ad set" lists the account's campaigns and ad sets (read-only) and
   `createPausedAd` creates the ad there with `status: PAUSED` hardcoded in `lib/meta.js`,

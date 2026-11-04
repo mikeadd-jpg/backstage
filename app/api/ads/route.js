@@ -38,10 +38,12 @@
 // A creative is an unpublished post, and an ad is only ever created paused. Nothing here
 // creates an ad set or a campaign, touches a budget, or switches anything on: that stays
 // in Ads Manager. See the header of lib/meta.js before widening that. Not exposed over MCP.
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
-import { listActiveProducts, shopPrimaryUrl, createLandingCollection, listCollections } from '../../../lib/shopify.js';
+import { listActiveProducts, shopPrimaryUrl, createLandingCollection, listCollections, bestSellers } from '../../../lib/shopify.js';
+import { printifyMockupIndex, mockupsFor } from '../../../lib/printifyMockups.js';
+import { listDrafts } from '../../../lib/drafts.js';
 import { writePrimaryText, adNotesFor, saveAdNotes } from '../../../lib/adcopy.js';
 import {
   metaAccountFor, listAdImages, createCarouselCreative, listBuiltCreatives,
@@ -63,6 +65,9 @@ const MAX_CARDS = 10;   // Meta's own limit for a carousel
 // Mockups pushed to Meta are named <brand>-<handle>-lifestyle.png (app/api/mockups), which
 // is what lets a library image be traced back to its product.
 const MOCKUP_SUFFIX = '-lifestyle.png';
+// Where a picture may come from to be copied into the ad image library: our Blob store
+// (Drafts), Shopify's CDN and Printify's mockup host.
+const PICTURE_HOSTS = /(^[a-z0-9]+\.public\.blob\.vercel-storage\.com|(^|\.)cdn\.shopify\.com|(^|\.)images-api\.printify\.com|(^|\.)images\.printify\.com)$/i;
 function handleFromName(brand, name) {
   const n = String(name || '');
   if (!n.startsWith(brand + '-') || !n.endsWith(MOCKUP_SUFFIX)) return null;
@@ -121,15 +126,41 @@ export async function POST(req) {
       const brand = checkBrand(body.brand);
       // Products and the store address are for filling in cards; if Shopify fails the
       // library still loads and the cards are typed by hand.
-      const [images, products, shopUrl] = await Promise.all([
+      // Also, for picking by product: units sold (best sellers), the Printify mockups per
+      // colour (to make a lifestyle shot from), and the mockups already in Drafts.
+      const [images, products, shopUrl, sold, index, drafts] = await Promise.all([
         listAdImages(brand),
         listActiveProducts(brand).catch(() => []),
         shopPrimaryUrl(brand).catch(() => ''),
+        bestSellers(brand).catch((err) => { console.error('[ads] best sellers', err); return null; }),
+        printifyMockupIndex(brand, { staleOk: true }).catch(() => null),
+        listDrafts({ kinds: ['mockup'], brand, limit: 600 }).catch(() => []),
       ]);
+      if (index && index.stale) after(() => printifyMockupIndex(brand, { force: true }).catch(() => {}));
       const byHandle = new Map(products.map((p) => [p.handle, p]));
+      const draftsByHandle = {};
+      for (const d of drafts) {
+        const h = d.source && d.source.handle;
+        if (!h || !d.output || !d.output.url) continue;
+        (draftsByHandle[h] = draftsByHandle[h] || []).push({
+          id: d.id, url: d.output.url, color: d.source.color || '', favorite: d.status === 'favorite',
+          check: d.source.check ? { pass: d.source.check.pass, score: d.source.check.score } : null, at: d.updatedAt || d.createdAt,
+        });
+      }
       return NextResponse.json({
         shopUrl,
-        products: products.map((p) => ({ handle: p.handle, title: p.title, image: p.image })),
+        sold: Boolean(sold),
+        drafts: draftsByHandle,
+        products: products.map((p) => {
+          const m = mockupsFor(index, p.skus);
+          return {
+            id: p.id, handle: p.handle, title: p.title, image: p.image, createdAt: p.createdAt, productType: p.productType,
+            collections: p.collections, sold: sold ? sold[p.legacyId] || 0 : null,
+            // Printify's flat mockups per colour, the best thing to make a scene from.
+            colors: m ? m.colors.map((c) => ({ name: c.name, hex: c.hex, front: c.front })) : [],
+            defaultColor: m ? m.defaultColor : null,
+          };
+        }),
         images: images.map((img) => {
           const handle = handleFromName(brand, img.name);
           const product = handle ? byHandle.get(handle) : null;
@@ -141,6 +172,27 @@ export async function POST(req) {
           };
         }),
       });
+    }
+
+    // A picture that is not in the ad image library yet (a mockup in Drafts, a store photo)
+    // copied into it, so a carousel can use it. Only our own Blob store, Shopify's and
+    // Printify's image hosts are fetched. Picking it is the approval, the same line the
+    // Mockups tab draws: the library is the list of approved pictures.
+    if (body.action === 'url-to-meta') {
+      const brand = checkBrand(body.brand);
+      let target;
+      try { target = new URL(String(body.url || '')); } catch { /* below */ }
+      if (!target || target.protocol !== 'https:' || !PICTURE_HOSTS.test(target.hostname)) throw new Error('That picture is not from Drafts or the store.');
+      const res = await fetch(target);
+      const type = res.headers.get('content-type') || '';
+      if (!res.ok || !type.startsWith('image/')) throw new Error('Could not fetch the picture.');
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length > 25 * 1024 * 1024) throw new Error('That picture is too large for Meta.');
+      const handle = String(body.handle || 'image').toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 80);
+      // Lifestyle shots get the name the library filter and product titles key on.
+      const name = brand + '-' + handle + (body.lifestyle ? MOCKUP_SUFFIX : '-product.png');
+      const image = await uploadAdImage(brand, buf.toString('base64'), name);
+      return NextResponse.json({ ...image, name, handle: body.lifestyle ? handle : null, mockup: Boolean(body.lifestyle) });
     }
 
     if (body.action === 'write-text') {

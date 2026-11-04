@@ -1271,3 +1271,12 @@ span.as-trans { text-align: center; }
 .si-color input[type=color] { width: 40px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
 .si-words input[type=range] { width: 100%; }
 .btn-link { background: none; border: 0; padding: 0; color: var(--accent, #6D28D9); font: inherit; text-decoration: underline; cursor: pointer; }
+
+/* Ads tab: picking by product (app/AdProducts.jsx). */
+.ap-tabs { margin: 2px 0 10px; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+.ap-tabs .tab { flex: 1; justify-content: center; }
+.ap-tabs .tab.active { background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.ap-meta { font-size: 11px; color: var(--muted); line-height: 1.2; }
+.ap-product .mk-picker-head { margin-top: 12px; }
+.ap-make { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.ap-front { display: block; width: 96px; height: 96px; object-fit: cover; border-radius: 8px; margin: 0 0 8px; background: var(--surface-2); }

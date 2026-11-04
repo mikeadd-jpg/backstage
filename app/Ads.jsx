@@ -15,6 +15,7 @@
 // Image builder mode (app/StillStudio.jsx) does the same for a static image, sharing the
 // video builder's picks, and the form builds a single image ad from it.
 import { useEffect, useMemo, useRef, useState } from 'react';
+import AdProducts from './AdProducts.jsx';
 import AdStudio, { assetFromLibrary, releaseAssets } from './AdStudio.jsx';
 import StillStudio from './StillStudio.jsx';
 import { OPEN_DRAFT_KEY, restoreAsset } from './draftsClient.js';
@@ -30,6 +31,8 @@ export default function Ads() {
   const [libs, setLibs] = useState({});                  // brand -> { images, products, shopUrl }
   const [loading, setLoading] = useState(false);
   const [onlyMockups, setOnlyMockups] = useState(true);
+  const [pickView, setPickView] = useState('products');   // 'products' | 'library'
+  const [picking, setPicking] = useState(false);          // a picture being copied in
   const [search, setSearch] = useState('');
 
   const [cards, setCards] = useState([]);                 // in carousel order
@@ -453,9 +456,62 @@ export default function Ads() {
     setCards((cs) => [...cs, {
       hash: img.hash, url: img.url, width: img.width, height: img.height,
       handle: img.handle || '',
+      fromUrl: img.fromUrl || '',
       headline: img.title || '',
       link: img.handle ? productLink(img.handle) : lib.shopUrl,
     }]);
+  }
+
+  // ---- picking by product (app/AdProducts.jsx) ----
+  // A picture is a library image (has a hash), a mockup in Drafts or a store mockup (a URL
+  // only). A carousel needs every card in the ad library, so a URL is copied in first.
+  const inBuilder = mode === 'studio' || mode === 'still';
+  function isPicked(pic) {
+    const list = inBuilder ? sAssets : cards;
+    return list.some((x) => (pic.hash && x.hash === pic.hash) || (x.fromUrl && x.fromUrl === pic.url));
+  }
+  async function pickPicture(pic) {
+    setError('');
+    if (isPicked(pic)) {
+      if (inBuilder) {
+        const at = sAssets.filter((a) => (pic.hash && a.hash === pic.hash) || a.fromUrl === pic.url);
+        releaseAssets(at); return setSAssets((xs) => xs.filter((a) => !at.includes(a)));
+      }
+      setResult(null);
+      return setCards((cs) => cs.filter((c) => !((pic.hash && c.hash === pic.hash) || c.fromUrl === pic.url)));
+    }
+    if (pic.hash) {
+      const img = { hash: pic.hash, url: pic.url, name: pic.name, width: pic.width, height: pic.height, handle: pic.handle, title: pic.title };
+      return inBuilder ? toggleStudio(img) : toggle(img);
+    }
+    if (!inBuilder && cards.length >= maxCards) return setError('A carousel holds at most ' + maxCards + ' cards.');
+    if (inBuilder && sAssets.length >= 20) return setError('The builder holds 20 pictures.');
+    setPicking(true);
+    try {
+      if (inBuilder) {
+        // Into the builder straight from its URL; a Drafts file is already stored, so it is
+        // never uploaded again, and the draft it came from is kept from cleanup while used.
+        const a = await assetFromLibrary({ url: pic.url, name: pic.handle, title: pic.title, handle: pic.handle });
+        const own = pic.source === 'draft';
+        setSAssets((xs) => [...xs, { ...a, fromUrl: pic.url, storedUrl: own ? pic.url : undefined, draftId: pic.draftId || undefined, origin: pic.source }]);
+      } else {
+        const { ok, d } = await post({ action: 'url-to-meta', brand, url: pic.url, handle: pic.handle, lifestyle: pic.lifestyle });
+        if (!ok) throw new Error(d.error || 'Could not copy the picture into the ad library.');
+        const img = { hash: d.hash, url: d.url || pic.url, name: d.name, width: d.width, height: d.height, mockup: d.mockup, handle: pic.handle, title: pic.title };
+        setLibs((l) => ({ ...l, [brand]: { ...l[brand], images: [img, ...((l[brand] || {}).images || []).filter((x) => x.hash !== d.hash)] } }));
+        toggle({ ...img, fromUrl: pic.url });
+      }
+    } catch (err) {
+      setError(String(err.message || err));
+    } finally {
+      setPicking(false);
+    }
+  }
+  function draftMade(handle, d) {
+    setLibs((l) => {
+      const cur = l[brand] || {};
+      return { ...l, [brand]: { ...cur, drafts: { ...(cur.drafts || {}), [handle]: [d, ...((cur.drafts || {})[handle] || [])] } } };
+    });
   }
 
   // Builder: a library image goes in (copied same-origin for the renderer) or comes out.
@@ -802,7 +858,7 @@ export default function Ads() {
                 {config.brands.map((b) => <option key={b.key} value={b.key}>{b.name}</option>)}
               </select>
             </label>
-            {mode !== 'video' ? (
+            {mode !== 'video' ? (pickView === 'library' &&
               <label className="field">
                 <span>Search</span>
                 <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="product or file name" />
@@ -814,7 +870,7 @@ export default function Ads() {
               </form>
             )}
           </div>
-          {mode !== 'video' && (
+          {mode !== 'video' && pickView === 'library' && (
             <label className="check" style={{ marginTop: -4 }}>
               <input type="checkbox" checked={onlyMockups} onChange={(e) => setOnlyMockups(e.target.checked)} />
               Backstage mockups only
@@ -905,7 +961,21 @@ export default function Ads() {
             </>
           )}
 
-          {mode !== 'video' && (<>
+          {mode !== 'video' && (
+            <div className="tabs ap-tabs">
+              <button type="button" className={'tab' + (pickView === 'products' ? ' active' : '')} onClick={() => setPickView('products')}>By product</button>
+              <button type="button" className={'tab' + (pickView === 'library' ? ' active' : '')} onClick={() => setPickView('library')}>Image library</button>
+            </div>
+          )}
+          {mode !== 'video' && pickView === 'products' && (
+            loading ? <div className="ledger-note">Loading products...</div> : (
+              <>
+                {picking && <div className="ledger-note" style={{ marginBottom: 6 }}>Adding the picture...</div>}
+                <AdProducts brand={brand} lib={lib} isPicked={isPicked} onPick={pickPicture} busy={picking} onDraftMade={draftMade} />
+              </>
+            )
+          )}
+          {mode !== 'video' && pickView === 'library' && (<>
           <div className="mk-picker-head">
             <span>Image library</span>
             <span className="acc-count">
