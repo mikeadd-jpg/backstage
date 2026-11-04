@@ -755,6 +755,16 @@ songs, then hands it to the same form as a Canva video (headline, link, text, bu
   VHS band, film scratches, flicker and jitter. The textures are drawn in the browser once
   per tab (`fxTextures` in `app/mediaProbe.js`), never stored. Pictures only, never text,
   logo or end cards. CSS filters render in Chrome and Edge; Safari renders unfiltered.
+- **Movement** (`MOTIONS`, `plan.motion`): punch in, slow push, slow pull, drift, or still
+  (the picture lands and stays). Each template has a default (`TEMPLATE_MOTION`). Shake from a
+  look (`jitter`) glides to a new offset every `jitterEvery` frames (`wobble()`), so VHS reads
+  as slow tape wobble; a shaken picture is enlarged a touch so its edge never shows.
+- **Safe zones** (`safeZone()` in `AdTemplates.jsx`): in a tall frame nothing is placed in
+  the top 14%, the bottom 35% or the outer 6% at the sides, where Reels and Stories draw
+  their own UI; feed shapes keep 8% top and 12% bottom. Every text position and the logo
+  use it.
+- **End cards hold still**: no movement, zoom, filter or effects, image or generated; they
+  only fade in over the last shot.
 - **Every picture fills the frame edge to edge** (`objectFit: cover`), end card images too.
   The blurred letterbox backdrop is gone on purpose: the owner wants no bars.
 - **Transitions** (`TRANSITIONS`): cut, flash, crossfade, dip to black, slide left/up, zoom,
@@ -781,6 +791,28 @@ songs, then hands it to the same form as a Canva video (headline, link, text, bu
 - Remotion is free for individuals and companies of up to 3 people; past that it needs a
   company license, passed as `NEXT_PUBLIC_REMOTION_LICENSE_KEY`. All `remotion` and
   `@remotion/*` packages must be the same exact version.
+
+### Image builder (Ads tab, `app/StillStudio.jsx`, `app/StillTemplates.jsx`, `lib/stillPlans.js`)
+
+Static ad images, built from the same parts as the video builder: the same picks (it shares
+the Ads tab's `sAssets` with the video builder), the brand kit and style, Instagram text,
+looks and `StillImg`, rendered as one frame with `renderStillOnWeb` on the device.
+
+- **Seven layouts** (`STILL_TEMPLATES`), modelled on retail ads the owner chose and drawn in
+  each brand's style: headline over photo, framed poster (main action colour, checkerboard
+  border from `checkerTexture`), big headline with an offer bar, 2x2 and 3x3 grids (no gap,
+  thin lines, thick border), product card, and "new drop" over the brand name repeated as an
+  outlined pattern. Sizes come from `u` = width / 1080, so every layout holds at 9:16, 4:5
+  and 1:1.
+- Options come from `templateStills` (one per layout, product title or brand name as the
+  headline, never an offer) or Claude (`lib/stillPlan.js`, action `plan-still`, thumbnails,
+  brand guidelines, same no-invented-offers rule as the ad copy). Each logo's lightness is
+  measured on kit load (`inkLightness`), so a layout defaults to the logo that shows on it.
+- Output is a JPEG (quality 0.92, well under a megabyte), sent as base64 to `image-to-meta`
+  (`uploadAdImage`), so it lands in the ad image library: usable in a carousel as well. The
+  Ads tab's shared form then builds a single image creative (`createImageCreative`,
+  `link_data` with the image hash) and optionally a paused ad. Same write limits as the
+  carousel and the video.
 
 ### Brand kit (Settings, `app/BrandKit.jsx`, `/api/brand-kit`, `lib/kitKinds.js`)
 

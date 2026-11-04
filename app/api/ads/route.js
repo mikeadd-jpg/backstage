@@ -21,6 +21,11 @@
 //   /api/ads/video-upload and finished with 'video-status' and 'build-video' above.
 //   { action: 'plan-video', brand, assets, aspect, notes, beat, previous }  Claude plans 3 cuts
 //
+//   Image builder (app/StillStudio.jsx): the image is made on the device.
+//   { action: 'plan-still', brand, assets, aspect, notes, previous }   Claude plans 3 images
+//   { action: 'image-to-meta', brand, b64, title }  into the ad image library, returns the hash
+//   { action: 'build-image', brand, hash, ... }     a single image ad creative
+//
 //   { action: 'check-access', brand } what the Meta token can do for this brand (read-only)
 //   { action: 'collections', brand }  the store's collections, for "you might also like"
 //   { action: 'landing-page', brand, title, handles, alsoLike }  a manual Shopify collection
@@ -42,8 +47,10 @@ import {
   metaAccountFor, listAdImages, createCarouselCreative, listBuiltCreatives,
   resolveMetaPage, resolveInstagram, listAdSets, createPausedAd, CTA_TYPES,
   uploadAdVideoFromUrl, adVideoStatus, createVideoCreative, checkMetaAccess,
+  uploadAdImage, createImageCreative,
 } from '../../../lib/meta.js';
 import { planVideos } from '../../../lib/adVideo.js';
+import { planStills } from '../../../lib/stillPlan.js';
 import { canvaStatus, listDesigns, startVideoExport, exportStatus } from '../../../lib/canva.js';
 
 export const dynamic = 'force-dynamic';
@@ -185,6 +192,46 @@ export async function POST(req) {
         standing: await adNotesFor(brand).catch(() => ''),
       });
       return NextResponse.json({ plans });
+    }
+
+    if (body.action === 'plan-still') {
+      const brand = checkBrand(body.brand);
+      const plans = await planStills({
+        brand, brandName: BRANDS[brand].name,
+        assets: Array.isArray(body.assets) ? body.assets : [],
+        aspect: body.aspect, notes: body.notes,
+        previous: Array.isArray(body.previous) ? body.previous : [],
+        standing: await adNotesFor(brand).catch(() => ''),
+      });
+      return NextResponse.json({ plans });
+    }
+
+    if (body.action === 'image-to-meta') {
+      const brand = checkBrand(body.brand);
+      const b64 = String(body.b64 || '');
+      // A rendered JPEG is well under this; the cap keeps the request under Vercel's limit.
+      if (!b64 || b64.length > 4 * 1024 * 1024) throw new Error('That image is empty or too large to send.');
+      const slug = String(body.title || 'image').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'image';
+      const image = await uploadAdImage(brand, b64, brand + '-builder-' + slug + '-' + Date.now().toString(36) + '.jpg');
+      return NextResponse.json(image);
+    }
+
+    if (body.action === 'build-image') {
+      const brand = checkBrand(body.brand);
+      const hash = String(body.hash || '');
+      if (!/^[0-9a-f]{16,64}$/i.test(hash)) throw new Error('Send the image to Meta first.');
+      const link = String(body.link || '').trim();
+      if (!isUrl(link)) throw new Error('The ad needs a link starting with https://.');
+      const who = await identity(brand);
+      const label = String(body.name || '').trim() || new Date().toISOString().slice(0, 10);
+      const creativeName = namePrefix(brand) + label;
+      const result = await createImageCreative(brand, {
+        ...who, name: creativeName, hash,
+        message: String(body.message || '').trim(),
+        headline: String(body.headline || '').trim(),
+        link, cta: body.cta,
+      });
+      return NextResponse.json({ ...result, name: creativeName });
     }
 
     if (body.action === 'canva-designs') {

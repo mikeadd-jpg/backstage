@@ -12,8 +12,11 @@
 //
 // Video builder mode (app/AdStudio.jsx) makes the video itself with Remotion, on this
 // device, from library mockups and uploads, then hands the sent video to the same form.
+// Image builder mode (app/StillStudio.jsx) does the same for a static image, sharing the
+// video builder's picks, and the form builds a single image ad from it.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import AdStudio, { assetFromLibrary, releaseAssets } from './AdStudio.jsx';
+import StillStudio from './StillStudio.jsx';
 import { ACCENTS } from '../lib/adPlans.js';
 
 const CTA_LABELS = {
@@ -59,7 +62,8 @@ export default function Ads() {
   // Video builder: assets picked from the library or uploaded, in order (blob: URLs).
   const [sAssets, setSAssets] = useState([]);
   const [sLoading, setSLoading] = useState(0);            // library images being copied in
-  const [sTexts, setSTexts] = useState([]);               // on-screen text of the sent cut, for the copy
+  const [sTexts, setSTexts] = useState([]);
+  const [imageHash, setImageHash] = useState('');          // image builder: the sent image               // on-screen text of the sent cut, for the copy
   // Video from Canva.
   const [designs, setDesigns] = useState(null);           // null = not loaded yet
   const [designsCont, setDesignsCont] = useState(null);
@@ -181,7 +185,7 @@ export default function Ads() {
 
   function resetVideo() {
     run.current += 1;
-    setVStage('idle'); setVMsg(''); setExportUrl(''); setVideoId('');
+    setVStage('idle'); setVMsg(''); setExportUrl(''); setVideoId(''); setImageHash('');
   }
 
   function pickDesign(d) {
@@ -253,6 +257,7 @@ export default function Ads() {
 
   const vProblems = [];
   if (mode === 'studio') { if (vStage !== 'ready') vProblems.push('Render a cut and send it to Meta.'); }
+  else if (mode === 'still') { if (!imageHash) vProblems.push('Render an image and send it to Meta.'); }
   else if (!design) vProblems.push('Pick a Canva design.');
   else if (vStage !== 'ready') vProblems.push('Send the video to Meta and wait for it to be ready.');
   if (!/^https?:\/\/\S+$/i.test(vLink.trim())) vProblems.push('The ad needs a link starting with https://.');
@@ -269,7 +274,7 @@ export default function Ads() {
   const lpFound = lp[mode] || null;
 
   // Collections for "you might also like", fetched the first time a landing section shows.
-  const showLanding = mode === 'video' ? Boolean(design) : mode === 'studio' ? vStage === 'ready' : cards.length > 0;
+  const showLanding = mode === 'video' ? Boolean(design) : mode === 'studio' ? vStage === 'ready' : mode === 'still' ? Boolean(imageHash) : cards.length > 0;
   useEffect(() => {
     if (!showLanding || !brand || collections[brand]) return;
     setCollections((c) => ({ ...c, [brand]: [] }));     // claim it so it loads once
@@ -450,6 +455,29 @@ export default function Ads() {
   }
 
   // The builder sent a video and Meta has processed it: fill the ad form from the cut.
+  // The image builder sent an image: same form, built as a single image ad.
+  function stillSent({ hash, title, headline, handles, texts }) {
+    setImageHash(hash); setResult(null);
+    setSTexts(texts || []);
+    if (!name) setName(title);
+    setVPicked(handles);
+    if (handles.length === 1) { pickVideoProduct(handles[0]); if (headline) setVHeadline(headline); }
+    else { setVHandle(''); setVHeadline(headline || title); setVLink(lib.shopUrl || ''); }
+  }
+
+  async function buildImage() {
+    setError(''); setResult(null); setBuilding(true);
+    try {
+      const { ok, d } = await post({ action: 'build-image', brand, hash: imageHash, name, message, cta, headline: vHeadline, link: vLink });
+      if (!ok) setError(d.error || 'Meta would not create the image ad.');
+      else { setResult(d); loadRecent(brand); startAttach({ id: d.id, name: d.name }); }
+    } catch {
+      setError('Request failed.');
+    } finally {
+      setBuilding(false);
+    }
+  }
+
   function studioSent({ videoId: id, title, headline, handles, texts }) {
     setVideoId(id); setVStage('ready'); setResult(null);
     setSTexts(texts || []);
@@ -602,7 +630,7 @@ export default function Ads() {
   const textBlock = (
     <>
             <label className="field">
-              <span>Primary text (above the {mode !== 'carousel' ? 'video' : 'carousel'})</span>
+              <span>Primary text (above the {mode === 'still' ? 'image' : mode !== 'carousel' ? 'video' : 'carousel'})</span>
               <textarea className="textarea" rows={3} value={message} onChange={(e) => { setMessage(e.target.value); setResult(null); }}
                 placeholder={'Write it yourself, or have Claude draft it from the ' + (mode !== 'carousel' ? 'headline' : 'cards')} />
             </label>
@@ -685,15 +713,15 @@ export default function Ads() {
             )}
             {error && <div className="login-error">{error}</div>}
             <div className="reply-actions" style={{ marginTop: 14 }}>
-              <button className="btn btn-primary" onClick={buildVideo} disabled={building || vProblems.length > 0}>
-                {building ? 'Building...' : 'Build video ad'}
+              <button className="btn btn-primary" onClick={mode === 'still' ? buildImage : buildVideo} disabled={building || vProblems.length > 0}>
+                {building ? 'Building...' : mode === 'still' ? 'Build image ad' : 'Build video ad'}
               </button>
             </div>
             {result && (
               <div className="flag ok ad-done" style={{ marginTop: 14 }}>
                 <span className="ico">&#10003;</span>
                 <span>
-                  Video ad built in ad account {result.accountId} (creative {result.id}{result.postId ? ', post ' + result.postId : ''}).
+                  {mode === 'still' ? 'Image' : 'Video'} ad built in ad account {result.accountId} (creative {result.id}{result.postId ? ', post ' + result.postId : ''}).
                   {' '}Add it to an ad set below.
                   {result.instagramDropped && <> Built without the Instagram account, so Instagram placements show the Facebook Page: Meta refused it with it ({result.instagramDropped}).</>}
                   {' '}{result.previewUrl && <a href={result.previewUrl} target="_blank" rel="noreferrer">Preview</a>}
@@ -717,11 +745,11 @@ export default function Ads() {
     <div className="pane mk-pane">
       <div className="pane-head">Ads</div>
       <p className="pane-sub">
-        Build a carousel from images already in the store's Meta ad account, have the video builder cut a video ad from your mockups, clips and songs, or use a reel you made in Canva.
+        Build a carousel from images already in the store's Meta ad account, have the video builder cut a video ad or the image builder make a static ad from your mockups, or use a reel you made in Canva.
         Nothing here runs or spends: ads are only ever added to an ad set paused, and you switch them on in Ads Manager.
       </p>
       <div className="pf-chips" role="tablist" aria-label="Kind of ad">
-        {[['carousel', 'Carousel'], ['studio', 'Video builder'], ['video', 'Video from Canva']].map(([k, label]) => (
+        {[['carousel', 'Carousel'], ['studio', 'Video builder'], ['still', 'Image builder'], ['video', 'Video from Canva']].map(([k, label]) => (
           <button key={k} type="button" role="tab" aria-selected={mode === k} className={'chip' + (mode === k ? ' active' : '')}
             onClick={() => {
               if (k === mode) return;
@@ -861,7 +889,7 @@ export default function Ads() {
           <div className="mk-picker-head">
             <span>Image library</span>
             <span className="acc-count">
-              {loading ? 'loading...' : shown.length + ' shown'} · {mode === 'studio' ? sAssets.filter((a) => a.hash).length + ' in the video' : cards.length + ' of ' + maxCards + ' picked'}
+              {loading ? 'loading...' : shown.length + ' shown'} · {mode === 'studio' || mode === 'still' ? sAssets.filter((a) => a.hash).length + ' picked' : cards.length + ' of ' + maxCards + ' picked'}
             </span>
           </div>
           <div className="mk-grid">
@@ -871,13 +899,13 @@ export default function Ads() {
               </div>
             )}
             {shown.map((img) => {
-              const pos = mode === 'studio' ? sAssets.findIndex((a) => a.hash === img.hash) : cards.findIndex((c) => c.hash === img.hash);
+              const pos = mode === 'studio' || mode === 'still' ? sAssets.findIndex((a) => a.hash === img.hash) : cards.findIndex((c) => c.hash === img.hash);
               return (
                 <button
                   key={img.hash} type="button"
                   className={'mk-item' + (pos >= 0 ? ' picked' : '')}
-                  onClick={() => (mode === 'studio' ? toggleStudio(img) : toggle(img))}
-                  disabled={mode !== 'studio' && pos < 0 && cards.length >= maxCards}
+                  onClick={() => (mode === 'studio' || mode === 'still' ? toggleStudio(img) : toggle(img))}
+                  disabled={mode === 'carousel' && pos < 0 && cards.length >= maxCards}
                   title={img.name}
                 >
                   {pos >= 0 && <span className="ad-pos">{pos + 1}</span>}
@@ -990,6 +1018,20 @@ export default function Ads() {
               {vStage === 'ready' && videoId && (
                 <div className="card">
                   <div className="card-label">Video ad</div>
+                  {videoForm}
+                </div>
+              )}
+            </>
+          )}
+
+          {mode === 'still' && (
+            <>
+              <StillStudio brand={brand} brandName={brandInfo ? brandInfo.name : brand} accent={ACCENTS[brand] || '#111827'}
+                assets={sAssets} setAssets={setSAssets} post={post} busyAdding={sLoading > 0}
+                onReset={() => { setImageHash(''); setResult(null); }} onSent={stillSent} />
+              {imageHash && (
+                <div className="card">
+                  <div className="card-label">Image ad</div>
                   {videoForm}
                 </div>
               )}

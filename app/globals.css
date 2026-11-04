@@ -1161,3 +1161,16 @@ span.as-trans { text-align: center; }
   .as-scene { grid-template-columns: 44px minmax(0, 1fr) 72px; }
   .as-scene .as-trans { grid-column: 2 / 4; }
 }
+
+/* Ads tab: image builder (app/StillStudio.jsx) */
+.si-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.si-opt { flex: none; width: 112px; display: flex; flex-direction: column; gap: 6px; padding: 6px; background: var(--bg);
+  border: 1px solid var(--line); border-radius: 9px; cursor: pointer; font-family: inherit; text-align: left; color: var(--text); }
+.si-opt.picked { border-color: var(--action); box-shadow: 0 0 0 1px var(--action); }
+.si-thumb { width: 100%; border-radius: 5px; overflow: hidden; background: #000; }
+.si-preview { max-width: 340px; }
+.si-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.si-slot { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.si-slot img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: none; background: var(--surface-2); }
+.si-slot select { min-width: 0; font-size: 12px; }
+.si-result { display: block; width: 100%; max-width: 280px; border-radius: 10px; }

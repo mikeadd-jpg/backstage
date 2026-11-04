@@ -52,6 +52,18 @@ export async function probeAudio(file) {
 // canvas at `size` px on the long edge and handed over as PNG: the renderer skipped SVG
 // files loaded by URL (it promises only inline SVG), and an SVG's 150px default size
 // would come out soft anyway. Returns { src, width, height }.
+// How light an image's visible pixels are, 0 (black) to 1 (white), ignoring transparent
+// ones: tells a light logo from a dark one, so each layout can pick the one that shows.
+export async function inkLightness(src) {
+  const img = await new Promise((resolve, reject) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = reject; i.src = src; });
+  const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+  const g = c.getContext('2d'); g.drawImage(img, 0, 0, 64, 64);
+  const d = g.getImageData(0, 0, 64, 64).data;
+  let sum = 0, n = 0;
+  for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 128) { sum += (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255; n++; }
+  return n ? sum / n : 0.5;
+}
+
 export async function renderableImage(blob, size = 1600) {
   if (blob.type !== 'image/svg+xml') {
     const src = URL.createObjectURL(blob);
@@ -79,8 +91,8 @@ export async function renderableImage(blob, size = 1600) {
 
 // The textures behind the video looks (VHS, old movie, grainy...), drawn once per tab in
 // the browser and handed to the templates as blob: URLs, so nothing is stored or fetched:
-// four frames of grey noise (cycled per frame for moving static), scanlines, a vignette and
-// two old film scratches. Sized for a 9:16 frame; the templates stretch them to any shape.
+// four frames of grey noise (cycled per frame for moving static), scanlines, a vignette,
+// two old film scratches and three frames of dust. Sized for a 9:16 frame; the templates stretch them to any shape.
 let fxPromise = null;
 export function fxTextures() {
   if (fxPromise) return fxPromise;
@@ -114,7 +126,40 @@ export function fxTextures() {
       for (let d = 0; d < 14; d++) { g.fillStyle = 'rgba(235,230,215,0.8)'; g.fillRect(Math.random() * 540, Math.random() * 960, 2 + Math.random() * 3, 2 + Math.random() * 3); }
       scratches.push(await toUrl(c));
     }
-    return { noise, scanlines: await toUrl(sc), vignette: await toUrl(vc), scratches };
+    // Dust: specks and short hairs, three frames picked at random every other frame.
+    const dust = [];
+    for (let n = 0; n < 3; n++) {
+      const [c, g] = canvas(540, 960);
+      g.fillStyle = 'rgba(240,235,220,0.9)'; g.strokeStyle = 'rgba(240,235,220,0.8)';
+      for (let d = 0; d < 26; d++) { const r = 0.6 + Math.random() * 2.2; g.beginPath(); g.arc(Math.random() * 540, Math.random() * 960, r, 0, 7); g.fill(); }
+      for (let h = 0; h < 3; h++) {
+        let x = Math.random() * 540, y = Math.random() * 960; g.lineWidth = 0.8; g.beginPath(); g.moveTo(x, y);
+        for (let k = 0; k < 5; k++) { x += (Math.random() - 0.5) * 18; y += (Math.random() - 0.3) * 14; g.lineTo(x, y); }
+        g.stroke();
+      }
+      dust.push(await toUrl(c));
+    }
+    return { noise, scanlines: await toUrl(sc), vignette: await toUrl(vc), scratches, dust };
   })();
   return fxPromise;
+}
+
+// A full-frame checkerboard in two brand colours, for the framed poster's border (the web
+// renderer draws only plain linear gradients, so a pattern has to be an image). Cached per
+// colour pair and size.
+const checkers = new Map();
+export function checkerTexture(a, b, width = 1080, height = 1920, cell = 30) {
+  const key = [a, b, width, height, cell].join('|');
+  if (!checkers.has(key)) {
+    checkers.set(key, new Promise((resolve) => {
+      const c = document.createElement('canvas');
+      c.width = width; c.height = height;
+      const g = c.getContext('2d');
+      g.fillStyle = a; g.fillRect(0, 0, width, height);
+      g.fillStyle = b;
+      for (let y = 0; y < height; y += cell) for (let x = (y / cell) % 2 ? cell : 0; x < width; x += cell * 2) g.fillRect(x, y, cell, cell);
+      c.toBlob((blob) => resolve(URL.createObjectURL(blob)), 'image/png');
+    }));
+  }
+  return checkers.get(key);
 }

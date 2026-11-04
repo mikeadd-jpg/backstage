@@ -18,10 +18,10 @@ import AdVideo from './AdTemplates.jsx';
 import {
   ASPECTS, TEMPLATES, TEMPLATE_KEYS, FPS, CHUNK_BYTES, timeline, planSeconds, templatePlans, normalizePlan,
   CAPTION_POSITIONS, CAPTION_STYLES, CAPTION_MAX, LOGO_POSITIONS, LOGO_SIZES, FILTERS,
-  TRANSITIONS, TEMPLATE_TRANSITION, TEXT_STYLES, TEXT_BOXES, SHOT_MIN, SHOT_MAX,
+  TRANSITIONS, TEMPLATE_TRANSITION, TEXT_STYLES, TEXT_BOXES, SHOT_MIN, SHOT_MAX, MOTIONS, TEMPLATE_MOTION,
 } from '../lib/adPlans.js';
 import { kitFontFamily, loadKitFont } from './BrandKit.jsx';
-import { probeImage, probeVideo, probeAudio, renderableImage, fxTextures } from './mediaProbe.js';
+import { probeImage, probeVideo, probeAudio, renderableImage, fxTextures, inkLightness } from './mediaProbe.js';
 
 const MAX_ASSETS = 20;
 const MAX_UPLOAD = 500 * 1024 * 1024;
@@ -34,7 +34,7 @@ const mb = (n) => (n / 1024 / 1024).toFixed(1) + ' MB';
 // The brand kit as builder assets, ids prefixed so they never meet an upload's. Images are
 // copied to blob: URLs for the same canvas reason as library images; music streams from
 // its Blob URL (the store sends CORS headers), since a brand may keep a lot of it.
-async function loadKit(brand) {
+export async function loadKit(brand) {
   const d = await fetch('/api/brand-kit?brand=' + encodeURIComponent(brand)).then((r) => r.json());
   if (d.error) throw new Error(d.error);
   const out = [];
@@ -50,7 +50,9 @@ async function loadKit(brand) {
       const res = await fetch(a.url).catch(() => null);
       if (!res || !res.ok) continue;
       const img = await renderableImage(await res.blob()).catch(() => null);
-      if (img) out.push({ ...base, kind: a.kind, ...img });
+      if (!img) continue;
+      const ink = a.kind === 'logo' ? await inkLightness(img.src).catch(() => 0.5) : undefined;
+      out.push({ ...base, kind: a.kind, ...img, ...(ink !== undefined ? { ink } : {}) });
     }
   }
   return { assets: out, style: d.style || null };
@@ -438,10 +440,26 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                     </select>
                   </label>
                 </div>
+                <div className="field-row">
+                  <label className="field">
+                    <span>Movement on each shot</span>
+                    <select className="input" value={plan.motion || ''} onChange={(e) => editPlan({ motion: e.target.value || null })}>
+                      <option value="">{MOTIONS[TEMPLATE_MOTION[plan.template]]} (template default)</option>
+                      {Object.entries(MOTIONS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </select>
+                  </label>
+                  <div className="field">
+                    <span>Text on the shots</span>
+                    <button type="button" className="btn btn-ghost" disabled={!plan.scenes.some((x) => x.text)}
+                      onClick={() => editPlan({ scenes: plan.scenes.map((x) => ({ ...x, text: '' })) })}>Remove all shot text</button>
+                  </div>
+                </div>
                 <div className="field-row as-bulk">
                   <label className="field">
                     <span>Transition between shots</span>
-                    <select className="input" value={plan.transition || ''} onChange={(e) => editPlan({ transition: e.target.value || null })}>
+                    {/* Choosing here sets every shot: per-shot picks are cleared. */}
+                    <select className="input" value={plan.transition || ''}
+                      onChange={(e) => editPlan({ transition: e.target.value || null, scenes: plan.scenes.map(({ transition, ...x }) => x) })}>
                       <option value="">{TRANSITIONS[TEMPLATE_TRANSITION[plan.template]].label} (template default)</option>
                       {Object.entries(TRANSITIONS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                     </select>
