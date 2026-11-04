@@ -149,8 +149,34 @@ Order matters and is deliberate:
    would not have stayed invisible at 25.
 4. Brand routing, classify, order lookup, draft, insert.
 
+### The support mailbox (`lib/gmailAuth.js`, `/api/gmail`, Settings → Support mailbox)
+
+All three brands deliver into one Google Workspace mailbox (mike@elderemo.com): brand
+addresses are aliases on it, PopPunks' are Google Groups because Admin's alias picker
+refused poppunks.com. Backstage reads and sends from the mailbox connected in Settings;
+until one is connected it falls back to `GMAIL_REFRESH_TOKEN` (the old read-only inbox).
+
+- **Consent rides the sign-in callback.** `/api/gmail/connect` signs a state with
+  `purpose: 'gmail'`, and `/api/auth/google/callback` branches on it, so no new redirect
+  URL is needed on the OAuth client. That branch never signs anyone in: it needs a
+  signed-in settings role and the same person who started it.
+- Scopes `gmail.modify` (read incl. Sent, send) and `gmail.settings.basic` (the Send mail
+  as list and its signatures). The refresh token is AES-GCM sealed in
+  `app_settings.gmail_auth`, so rotating `SESSION_SECRET` drops back to env.
+- **Ingest never reads our own mail** (`-in:sent -from:me`) and nothing older than the
+  connection (`since`), because message ids differ per mailbox and the switch would
+  otherwise re-ingest two days already handled.
+- **Send** (`/api/inquiries/send`, Inbox "Send reply", always confirmed) replies in the
+  Gmail thread from the first address the customer wrote to that is on Send mail as, else
+  the default, with that address's signature appended (the API adds none). Then the
+  inquiry is resolved. Never exposed over MCP. Inquiries from the old mailbox are found
+  again by sender, subject and day (`findMessageId`).
+- The Inbox shows the live thread (`/api/inquiries/thread`), replies sent from Gmail too.
+
 Brand routing (`lib/brands.js`) reads the **original** recipient, which forwarding
-hides. It tries `delivered-to`, `x-original-to`, `x-forwarded-to`, `to`, `cc`, then
+hides. After exact addresses it falls back to any address at a brand's domain in To/Cc
+(marina@wallspoke.com), never Delivered-To, which in the Workspace mailbox is always
+its primary address. It tries `delivered-to`, `x-original-to`, `x-forwarded-to`, `to`, `cc`, then
 scans the forwarded body as a last resort. If routing fails, `resolveOrderAcrossBrands`
 uses the order number as the clue: whichever store owns the order *is* the brand.
 

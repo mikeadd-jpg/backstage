@@ -24,6 +24,11 @@ export default function Inbox({ rows, resolvedRows, resolvedLoaded, loadResolved
   const [drafts, setDrafts] = useState({});   // per-inquiry edited reply text, kept while the tab is open
   const [copied, setCopied] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
+  // The live Gmail conversation for the open message, our own replies included, plus who a
+  // reply would go to and from: { id, loading, messages, plan, cantSend, error }.
+  const [thread, setThread] = useState(null);
+  const [sending, setSending] = useState(false);
+  const [sendMsg, setSendMsg] = useState('');
   const listRef = useRef(null);
 
   function pickView(v) {
@@ -40,7 +45,18 @@ export default function Inbox({ rows, resolvedRows, resolvedLoaded, loadResolved
   const current = shown.find((r) => r.id === selected) || shown[0] || null;
 
   // Reset the per-message view state whenever the message changes.
-  useEffect(() => { setEditing(false); setShowOriginal(false); setCopied(false); }, [current && current.id]);
+  useEffect(() => { setEditing(false); setShowOriginal(false); setCopied(false); setSendMsg(''); }, [current && current.id]);
+
+  // Load the conversation whenever the open message changes. A late answer for a message
+  // no longer open is dropped.
+  useEffect(() => {
+    if (!current) { setThread(null); return; }
+    const id = current.id;
+    setThread({ id, loading: true });
+    fetch('/api/inquiries/thread?id=' + encodeURIComponent(id)).then((r) => r.json())
+      .then((d) => setThread((t) => (t && t.id === id ? { id, ...d, loading: false } : t)))
+      .catch(() => setThread((t) => (t && t.id === id ? { id, loading: false, error: 'Could not load the conversation.' } : t)));
+  }, [current && current.id]);
 
   const counts = {
     open: rows.length,
@@ -77,6 +93,25 @@ export default function Inbox({ rows, resolvedRows, resolvedLoaded, loadResolved
     else done();
   }
   function resolve() { onResolve(current.id); setSelected(null); setMobileDetail(false); }
+
+  const plan = thread && thread.id === (current && current.id) ? thread.plan : null;
+  // Sending emails a customer, so it always asks first and says exactly from and to whom.
+  async function sendReply() {
+    if (!plan || sending) return;
+    const ok = window.confirm('Send this reply?\n\nFrom: ' + (plan.fromName ? plan.fromName + ' <' + plan.from + '>' : plan.from) +
+      '\nTo: ' + plan.to + '\nSubject: ' + plan.subject + (plan.hasSignature ? '\n\nThe ' + plan.from + ' signature is added.' : ''));
+    if (!ok) return;
+    setSending(true); setSendMsg('');
+    const id = current.id;
+    const d = await fetch('/api/inquiries/send', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, text: replyText }),
+    }).then((r) => r.json()).catch(() => ({ error: 'The request failed. Check Gmail before sending again.' }));
+    setSending(false);
+    if (d.error) { setSendMsg(d.error); return; }
+    setDrafts((x) => { const n = { ...x }; delete n[id]; return n; });
+    // The server already marked it resolved; this moves it out of the open list here too.
+    onResolve(id); setSelected(null); setMobileDetail(false);
+  }
   function reopen() { onReopen(current.id); setSelected(null); setMobileDetail(false); }
 
   const vendorLinks = current ? ['printify', 'gelato', 'printful']
@@ -159,7 +194,13 @@ export default function Inbox({ rows, resolvedRows, resolvedLoaded, loadResolved
               </div>
               {/* The two things an agent does with every message, kept at the top. */}
               <div className="ibx-dactions">
-                <button className={'btn btn-primary' + (copied ? ' copied' : '')} onClick={copyReply}>{copied ? 'Copied ✓' : 'Copy reply'}</button>
+                {!isResolvedView && plan && (
+                  <button className="btn btn-primary" onClick={sendReply} disabled={sending || !replyText.trim()}
+                    title={'Sends from ' + plan.from + ' to ' + plan.to}>
+                    {sending ? 'Sending…' : 'Send reply'}
+                  </button>
+                )}
+                <button className={'btn ' + (plan && !isResolvedView ? 'btn-ghost' : 'btn-primary') + (copied ? ' copied' : '')} onClick={copyReply}>{copied ? 'Copied ✓' : 'Copy reply'}</button>
                 {isResolvedView
                   ? <button className="btn btn-ghost" onClick={reopen}>Reopen</button>
                   : <button className="btn btn-ghost" onClick={resolve}>Mark resolved</button>}
@@ -199,6 +240,34 @@ export default function Inbox({ rows, resolvedRows, resolvedLoaded, loadResolved
                     )}
                     {current.confidence != null && <span className="confidence">draft confidence {current.confidence}</span>}
                   </div>
+                  {!isResolvedView && thread && thread.id === current.id && !thread.loading && (
+                    <div className="li-sub" style={{ marginTop: 8 }}>
+                      {plan
+                        ? 'Send goes from ' + plan.from + ' to ' + plan.to + (plan.hasSignature ? ', with its signature added.' : '.')
+                        : thread.cantSend || thread.error || ''}
+                    </div>
+                  )}
+                  {sendMsg && <div className="ledger-note" style={{ marginTop: 8 }}>{sendMsg}</div>}
+                </div>
+
+                <div className="card">
+                  <div className="card-label">Conversation <span className="source-flag">GMAIL</span></div>
+                  {!thread || thread.id !== current.id || thread.loading ? (
+                    <div className="li-sub">Loading the conversation…</div>
+                  ) : thread.error ? (
+                    <div className="li-sub">{thread.error}</div>
+                  ) : !thread.messages || thread.messages.length === 0 ? (
+                    <div className="li-sub">{thread.cantSend || 'No messages found in the mailbox.'}</div>
+                  ) : thread.messages.map((m) => (
+                    <div key={m.id} className={'ibx-msg' + (m.sent ? ' sent' : '')}>
+                      <div className="ibx-msg-head">
+                        <span className="ibx-msg-from">{m.sent ? 'You' : m.from}</span>
+                        {m.sent && <span className="ibx-msg-tag">sent</span>}
+                        <span className="ibx-msg-time">{new Date(m.date).toLocaleString()}</span>
+                      </div>
+                      <div className="ibx-msg-body">{m.body}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

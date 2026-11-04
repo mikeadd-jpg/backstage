@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 import { exchangeGoogleCode, readState, redirectUri, baseUrl } from '../../../../../lib/google.js';
 import { findUser, recordSignIn } from '../../../../../lib/users.js';
 import { createSession, cookieOptions, SESSION_COOKIE } from '../../../../../lib/session.js';
+import { requireArea } from '../../../../../lib/access.js';
+import { finishGmailConnect } from '../../../../../lib/gmailAuth.js';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +21,22 @@ export async function GET(req) {
 
   const code = sp.get('code');
   if (!code) return deny(req, 'Google did not return a sign-in code.');
+
+  // Connecting the Gmail mailbox (Settings) comes back through here too, since this is
+  // the redirect URL already registered on the OAuth client. It never signs anyone in:
+  // the person must already be signed in, hold settings, and be who started it.
+  if (state.purpose === 'gmail') {
+    const back = (q) => NextResponse.redirect(baseUrl(req) + '/?' + q + '#settings', 302);
+    const gate = await requireArea(req, 'settings');
+    if (gate.error) return back('gmail_error=' + encodeURIComponent('Sign in with a settings role to connect Gmail.'));
+    if (gate.access.email !== state.by) return back('gmail_error=' + encodeURIComponent('That Gmail connection was started by someone else. Start again.'));
+    try {
+      const mailbox = await finishGmailConnect(req, { code, by: gate.access.email });
+      return back('gmail=' + encodeURIComponent(mailbox));
+    } catch (err) {
+      return back('gmail_error=' + encodeURIComponent(String(err.message || err)));
+    }
+  }
 
   let who;
   try {

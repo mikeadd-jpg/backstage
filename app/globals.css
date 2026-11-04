@@ -776,6 +776,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .ibx-dhead .back-btn ~ .ibx-dactions { grid-row: 2 / span 2; }
 .orig-body { margin-top: 12px; }
 .orig-body.clamped { max-height: 7.2em; overflow: hidden; }
+/* The live Gmail conversation under the reply: customer messages plain, ours tinted. */
+.ibx-msg { border-top: 1px solid var(--line); padding: 10px 0; }
+.ibx-msg:first-of-type { border-top: none; padding-top: 2px; }
+.ibx-msg.sent { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; margin: 6px 0; border-top: none; }
+.ibx-msg-head { display: flex; gap: 8px; align-items: baseline; font-size: 12px; color: var(--muted); margin-bottom: 4px; flex-wrap: wrap; }
+.ibx-msg-from { font-weight: 600; color: var(--text); word-break: break-all; }
+.ibx-msg-tag { font-family: 'Space Mono', monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--blue); }
+.ibx-msg-time { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; }
+.ibx-msg-body { font-size: 13.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow-y: auto; }
 .ibx-more { border: none; background: none; padding: 6px 0 0; font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 600; color: var(--blue); cursor: pointer; }
 /* Wide screens: order status beside the message instead of under it. */
 @media (min-width: 1500px) {

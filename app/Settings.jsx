@@ -48,6 +48,8 @@ export default function Settings() {
   const [saved, setSaved] = useState('');
   const [canva, setCanva] = useState(null);
   const [canvaMsg, setCanvaMsg] = useState('');
+  const [gmail, setGmail] = useState(null);
+  const [gmailMsg, setGmailMsg] = useState('');
   const [open, setOpen] = useState([]);         // ids of the expanded blocks and sections
 
   useEffect(() => { setOpen(readOpen()); }, []);
@@ -60,18 +62,33 @@ export default function Settings() {
   }
 
 
-  useEffect(() => { load(); loadCanva(); }, []);
+  useEffect(() => { load(); loadCanva(); loadGmail(); }, []);
 
-  // The Canva callback lands back here with ?canva=connected or ?canva_error=...; show it
-  // once, then drop the query so a refresh does not repeat it.
+  // The Canva and Gmail callbacks land back here with ?canva=connected, ?gmail=<mailbox>
+  // or ?..._error=...; show it once, then drop the query so a refresh does not repeat it.
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     if (sp.get('canva') === 'connected') setCanvaMsg('Canva connected.');
     else if (sp.get('canva_error')) setCanvaMsg(sp.get('canva_error'));
-    if (sp.has('canva') || sp.has('canva_error')) {
+    if (sp.get('gmail')) setGmailMsg('Connected ' + sp.get('gmail') + '. New mail is read from here from now on.');
+    else if (sp.get('gmail_error')) setGmailMsg(sp.get('gmail_error'));
+    if (['canva', 'canva_error', 'gmail', 'gmail_error'].some((k) => sp.has(k))) {
       window.history.replaceState(null, '', window.location.pathname + window.location.hash);
     }
   }, []);
+
+  async function loadGmail() {
+    const d = await fetch('/api/gmail').then((r) => r.json()).catch(() => null);
+    if (d && !d.error) setGmail(d);
+  }
+  async function disconnectGmail() {
+    if (!window.confirm('Disconnect Gmail? Backstage goes back to reading the old mailbox and can no longer send replies. Nothing in Gmail is touched.')) return;
+    const d = await fetch('/api/gmail', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'disconnect' }),
+    }).then((r) => r.json()).catch(() => ({ error: 'Request failed' }));
+    if (d.error) setGmailMsg(d.error);
+    else { setGmail(d); setGmailMsg('Gmail disconnected.'); }
+  }
 
   async function loadCanva() {
     const d = await fetch('/api/canva').then((r) => r.json()).catch(() => null);
@@ -199,7 +216,40 @@ export default function Settings() {
         );
       })}
 
-      <Section top id="shared" title="All stores" sub="Reply structure, Canva and the store list">
+      <Section top id="shared" title="All stores" sub="Support mailbox, reply structure, Canva and the store list">
+        <Section id="shared:gmail" title="Support mailbox (Gmail)" sub={gmail && gmail.connected ? gmail.email : 'Not connected'}>
+          <p className="pane-sub" style={{ marginTop: 0 }}>
+            The mailbox the Inbox reads customer emails from and sends replies from. Replies go out
+            from the brand address the customer wrote to, with that address's Gmail signature, as long as
+            the address is on the mailbox's Send mail as list. Sign in to Google as the support mailbox
+            itself and tick every permission.
+          </p>
+          {!gmail ? <p className="pane-sub">Loading...</p>
+            : gmail.connected ? (
+              <div className="build-row">
+                <span className="li-name">
+                  {gmail.email}
+                  <span className="li-sub" style={{ display: 'inline' }}>
+                    {' '}connected by {gmail.by || 'someone'}{gmail.at ? ' on ' + new Date(gmail.at).toLocaleDateString() : ''}
+                  </span>
+                </span>
+                <a className="btn btn-ghost" href="/api/gmail/connect">Reconnect</a>
+                <button className="btn btn-ghost" onClick={disconnectGmail}>Disconnect</button>
+              </div>
+            ) : (
+              <>
+                <a className="btn btn-primary" style={{ alignSelf: 'flex-start' }} href="/api/gmail/connect">Connect Gmail</a>
+                <div className="ledger-note" style={{ marginTop: 8 }}>
+                  {gmail.unreadable
+                    ? 'The stored connection can no longer be read (the session secret changed). Connect again.'
+                    : gmail.envFallback
+                      ? 'Until a mailbox is connected, Backstage reads the old one set on the server and cannot send.'
+                      : 'No mailbox is set up, so nothing is being read.'}
+                </div>
+              </>
+            )}
+          {gmailMsg && <div className="ledger-note" style={{ marginTop: 8 }}>{gmailMsg}</div>}
+        </Section>
         <Section id="shared:reply" title="Customer-service reply structure" sub="The skeleton every reply follows">
           <p className="pane-sub" style={{ marginTop: 0 }}>The shared skeleton every reply follows. The apology fires only when something went wrong.</p>
           <textarea className="textarea" value={structure} onChange={(e) => setStructure(e.target.value)} rows={8} />
