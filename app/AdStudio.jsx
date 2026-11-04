@@ -20,6 +20,7 @@ import {
   ASPECTS, TEMPLATES, TEMPLATE_KEYS, FPS, CHUNK_BYTES, timeline, planSeconds, templatePlans, normalizePlan,
   CAPTION_POSITIONS, CAPTION_STYLES, CAPTION_MAX, LOGO_POSITIONS, LOGO_SIZES, FILTERS,
   TRANSITIONS, TEMPLATE_TRANSITION, TEXT_STYLES, TEXT_BOXES, SHOT_MIN, SHOT_MAX, MOTIONS, TEMPLATE_MOTION,
+  spreadScenes, dropScene, dropRepeats, hasRepeats,
 } from '../lib/adPlans.js';
 import { kitFontFamily, loadKitFont } from './BrandKit.jsx';
 import { probeImage, probeVideo, probeAudio, renderableImage, fxTextures, inkLightness } from './mediaProbe.js';
@@ -107,6 +108,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   const [kitStyle, setKitStyle] = useState(null);       // the brand's saved style, or null
   const [fx, setFx] = useState(null);                   // effect textures for the looks
   const [allSecs, setAllSecs] = useState('1');
+  const [totalSecs, setTotalSecs] = useState('');       // "Fit the shots into" box; empty shows the current length
   useEffect(() => { fxTextures().then(setFx).catch(() => {}); }, []);
 
   // A new store means a new kit, and options made from the old store's assets go.
@@ -134,6 +136,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
   }, [assets, kit]);
   const opt = options.find((o) => o.key === current) || null;
   const plan = opt ? opt.plan : null;
+  const shotTotal = plan ? Math.round(plan.scenes.reduce((t, x) => t + (Number(x.seconds) || 0), 0) * 10) / 10 : 0;
   const stamp = plan ? JSON.stringify(plan) : '';
   const rendered = render && opt && render.key === opt.key && render.stamp === stamp ? render : null;
   const renderStale = render && opt && render.key === opt.key && render.stamp !== stamp && render.status === 'done';
@@ -563,6 +566,26 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                       <button className="btn btn-ghost" type="submit">Apply to all</button>
                     </span>
                   </form>
+                  {/* Fewer pictures than the template had shots: keep the length, hold each longer. */}
+                  <form className="field" onSubmit={(e) => {
+                    e.preventDefault();
+                    const n = Number(totalSecs || shotTotal);
+                    if (n > 0) { editPlan({ scenes: spreadScenes(plan.scenes, n) }); setTotalSecs(''); }
+                  }}>
+                    <span>Shots together, evenly</span>
+                    <span className="as-allsecs">
+                      <input className="input as-secs" type="number" step="0.5" min={SHOT_MIN} value={totalSecs} placeholder={String(shotTotal)}
+                        onChange={(e) => setTotalSecs(e.target.value)} aria-label="Seconds for all the shots together" />
+                      <span className="li-sub">s</span>
+                      <button className="btn btn-ghost" type="submit">Spread</button>
+                    </span>
+                  </form>
+                </div>
+                <div className="li-sub" style={{ margin: '2px 0 8px' }}>
+                  {plan.scenes.length} shot{plan.scenes.length === 1 ? '' : 's'}, {shotTotal}s before the end card. Removing a shot keeps the length: its time goes to the others.
+                  {hasRepeats(plan.scenes) && (
+                    <> <button type="button" className="link-inline" onClick={() => editPlan({ scenes: dropRepeats(plan.scenes) })}>Use each picture once</button></>
+                  )}
                 </div>
                 <div className="as-scenes">
                   {plan.scenes.map((s, i) => {
@@ -581,6 +604,8 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                             {Object.entries(TRANSITIONS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                           </select>
                         )}
+                        <button type="button" className="btn btn-ghost as-drop" title="Remove this shot" aria-label={'Remove shot ' + (i + 1)}
+                          disabled={plan.scenes.length < 2} onClick={() => editPlan({ scenes: dropScene(plan.scenes, i) })}>×</button>
                       </div>
                     );
                   })}

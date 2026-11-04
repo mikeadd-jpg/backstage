@@ -951,6 +951,15 @@ songs, then hands it to the same form as a Canva video (headline, link, text, bu
   `templatePlans` (Quick cuts, Product spotlight, Slow story, instant) and Claude
   (`lib/adVideo.js`, action `plan-video`, `DRAFT_MODEL`, shown 512px thumbnails, answers
   through a tool). Quick cuts land on the beat: `detectTempo` reads the song in the browser.
+  **Pictures are never looped to fill time** (the owner's rule): Quick cuts uses each once and
+  holds each longer when there are few (about 8s, in whole beats), and Claude is told the same.
+  The editor removes a shot keeping the length (`dropScene`), spreads the shots evenly over a
+  chosen total (`spreadScenes`) and drops repeats (`dropRepeats`), all in `lib/adPlans.js`.
+- **One selection for every kind of ad** (`carryPicks` in `app/Ads.jsx`): switching between
+  Carousel and the builders carries the picked pictures across in order, the target made to
+  match. Uploads, clips and songs stay in the builders; a URL-only picture is copied into the
+  ad library on the way to a carousel. `pickHome` remembers which list is newest, so a detour
+  through Canva video never pulls older picks over newer ones. In-tab only, not saved.
   Same copy rules as `lib/adcopy.js`: no invented offers, no other brands, no dashes.
 - **Looks** (`FILTERS` in `lib/adPlans.js`, `plan.filter`, "Look" in the editor) are a CSS
   filter plus, for VHS, Old movie, Grainy and Faded, an `fx` layer drawn over each picture

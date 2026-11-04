@@ -1102,7 +1102,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Inter', system-u
 .as-option { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .as-preview { width: 100%; max-width: 300px; max-height: 560px; margin: 0 auto; border-radius: 10px; overflow: hidden; background: #000; }
 .as-scenes { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; max-height: 340px; overflow-y: auto; }
-.as-scene { display: grid; grid-template-columns: 44px minmax(0, 1fr) 72px 118px; gap: 8px; align-items: center; }
+.as-scene { display: grid; grid-template-columns: 44px minmax(0, 1fr) 72px 118px 34px; gap: 8px; align-items: center; }
+.as-drop { padding: 6px 0; width: 34px; justify-content: center; }
 .as-trans { font-size: 12px; padding-left: 6px; padding-right: 4px; }
 span.as-trans { text-align: center; }
 .as-allsecs { display: flex; gap: 6px; align-items: center; }
@@ -1158,7 +1159,7 @@ span.as-trans { text-align: center; }
 .kit-fontroles { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0 10px; }
 .kit-looks { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 10px; }
 @media (max-width: 560px) {
-  .as-scene { grid-template-columns: 44px minmax(0, 1fr) 72px; }
+  .as-scene { grid-template-columns: 44px minmax(0, 1fr) 72px 34px; }
   .as-scene .as-trans { grid-column: 2 / 4; }
 }
 

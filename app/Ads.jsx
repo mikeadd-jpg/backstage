@@ -114,7 +114,7 @@ export default function Ads() {
         const draft = r.draft;
         if (!(d.brands || []).some((b) => b.key === draft.brand)) throw new Error('That store has no ad account here.');
         setBrand(draft.brand);
-        setMode(draft.kind === 'video' ? 'studio' : 'still');
+        setMode(draft.kind === 'video' ? 'studio' : 'still'); pickHome.current = 'builder';
         setSAssets(await Promise.all((draft.assets || []).map(restoreAsset)));
         setOpenDraft(draft);
       } catch (err) {
@@ -457,6 +457,8 @@ export default function Ads() {
       hash: img.hash, url: img.url, width: img.width, height: img.height,
       handle: img.handle || '',
       fromUrl: img.fromUrl || '',
+      // Kept so the same pick can follow into the video and image builders.
+      origin: img.origin || 'library', draftId: img.draftId || undefined, side: img.side || undefined, title: img.title || '',
       headline: img.title || '',
       link: img.handle ? productLink(img.handle) : lib.shopUrl,
     }]);
@@ -499,7 +501,7 @@ export default function Ads() {
         if (!ok) throw new Error(d.error || 'Could not copy the picture into the ad library.');
         const img = { hash: d.hash, url: d.url || pic.url, name: d.name, width: d.width, height: d.height, mockup: d.mockup, handle: pic.handle, title: pic.title };
         setLibs((l) => ({ ...l, [brand]: { ...l[brand], images: [img, ...((l[brand] || {}).images || []).filter((x) => x.hash !== d.hash)] } }));
-        toggle({ ...img, fromUrl: pic.url });
+        toggle({ ...img, fromUrl: pic.url, origin: pic.source, draftId: pic.draftId, side: pic.side });
       }
     } catch (err) {
       setError(String(err.message || err));
@@ -514,6 +516,68 @@ export default function Ads() {
     });
   }
 
+  // ---- one selection for every kind of ad ----
+  // The carousel keeps `cards` (ad library images) and both builders share `sAssets`
+  // (pictures in the tab). Switching between them carries the picked pictures across, in
+  // the same order, so products picked once serve a carousel, a video and an image ad.
+  // The target is made to match the source: something removed in one is gone in the other.
+  // Uploads, clips and songs stay with the builders, since a carousel card must be an
+  // image in the ad library; a picture that is only a URL is copied into the library on
+  // the way to the carousel, exactly as picking it there would.
+  const samePic = (c, a) => (c.hash && a.hash && c.hash === a.hash) || (c.fromUrl && a.fromUrl && c.fromUrl === a.fromUrl);
+  const isPickedPicture = (a) => a.kind === 'image' && (a.hash || a.fromUrl) && a.origin !== 'kit' && a.origin !== 'upload';
+  // Which list holds the latest picks. Canva video uses neither, so going carousel, Canva,
+  // carousel must not pull the builders' older picks over the carousel's.
+  const pickHome = useRef('carousel');
+  async function carryPicks(to) {
+    const group = to === 'carousel' ? 'carousel' : to === 'studio' || to === 'still' ? 'builder' : null;
+    if (!group || group === pickHome.current) return;
+    pickHome.current = group;
+    const toBuilder = group === 'builder';
+    setPicking(true); setError('');
+    try {
+      if (toBuilder) {
+        const keep = sAssets.filter((a) => !isPickedPicture(a));
+        const pics = [];
+        for (const c of cards) {
+          const had = sAssets.find((a) => isPickedPicture(a) && samePic(c, a));
+          if (had) { pics.push(had); continue; }
+          const a = await assetFromLibrary({ url: c.fromUrl || c.url, name: c.name || c.handle, title: c.title || c.headline, handle: c.handle, hash: c.hash });
+          pics.push({ ...a, libUrl: c.url, fromUrl: c.fromUrl || undefined, origin: c.origin || 'library',
+            storedUrl: c.origin === 'draft' ? c.fromUrl : undefined, draftId: c.draftId, side: c.side });
+        }
+        const gone = sAssets.filter((a) => isPickedPicture(a) && !pics.includes(a));
+        releaseAssets(gone);
+        setSAssets([...pics, ...keep].slice(0, 20));
+      } else {
+        const next = [];
+        let skipped = 0;
+        for (const a of sAssets.filter(isPickedPicture)) {
+          if (next.length >= maxCards) { skipped++; continue; }
+          const had = cards.find((c) => samePic(c, a));
+          if (had) { next.push(had); continue; }
+          let img;
+          if (a.hash && a.libUrl) {
+            img = { hash: a.hash, url: a.libUrl, name: a.name, width: a.width, height: a.height };
+          } else {
+            const { ok, d } = await post({ action: 'url-to-meta', brand, url: a.fromUrl, handle: a.handle, lifestyle: a.origin !== 'store' });
+            if (!ok) throw new Error(d.error || 'Could not copy a picture into the ad library.');
+            img = { hash: d.hash, url: d.url || a.fromUrl, name: d.name, width: d.width, height: d.height, mockup: d.mockup };
+            setLibs((l) => ({ ...l, [brand]: { ...l[brand], images: [{ ...img, handle: a.handle, title: a.title }, ...((l[brand] || {}).images || []).filter((x) => x.hash !== d.hash)] } }));
+          }
+          next.push({ ...img, handle: a.handle || '', fromUrl: a.fromUrl || '', origin: a.origin, draftId: a.draftId, side: a.side, title: a.title || '',
+            headline: a.title || '', link: a.handle ? productLink(a.handle) : lib.shopUrl });
+        }
+        setCards(next);
+        if (skipped) setError('A carousel holds ' + maxCards + ' cards, so the last ' + skipped + ' picture' + (skipped === 1 ? ' was' : 's were') + ' left out.');
+      }
+    } catch (err) {
+      setError('Could not bring your picks across: ' + String(err.message || err));
+    } finally {
+      setPicking(false);
+    }
+  }
+
   // Builder: a library image goes in (copied same-origin for the renderer) or comes out.
   async function toggleStudio(img) {
     const at = sAssets.find((a) => a.hash === img.hash);
@@ -521,7 +585,7 @@ export default function Ads() {
     if (sAssets.length >= 20) return setError('The video builder holds 20 assets.');
     setSLoading((n) => n + 1); setError('');
     try {
-      const a = await assetFromLibrary(img);
+      const a = { ...(await assetFromLibrary(img)), libUrl: img.url };
       setSAssets((xs) => (xs.some((x) => x.hash === img.hash) ? (releaseAssets([a]), xs) : [...xs, a]));
     } catch (err) {
       setError(String(err.message || err));
@@ -832,6 +896,7 @@ export default function Ads() {
               // A video sent from one source is not the other's, so the form starts clean.
               if (mode !== 'carousel' && k !== 'carousel') resetVideo();
               setMode(k); setResult(null); setError(''); setAttach(null); setTextHistory([]);
+              carryPicks(k);
             }}>{label}</button>
         ))}
       </div>
