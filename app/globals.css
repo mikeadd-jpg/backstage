@@ -1301,3 +1301,5 @@ span.as-trans { text-align: center; }
 .brief-picker { max-height: 520px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
 .brief-tpl { display: flex; gap: 8px; margin-top: 14px; }
 .brief-tpl .input { flex: 1; min-width: 0; }
+.brief-from { display: flex; gap: 14px; align-items: flex-start; }
+.brief-from img { width: 96px; height: 120px; object-fit: cover; border-radius: 8px; flex: 0 0 auto; }

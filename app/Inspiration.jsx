@@ -9,7 +9,8 @@ import { STILL_TEMPLATES } from '../lib/stillPlans.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import Batches from './Batches.jsx';
-import BriefEditor, { briefFromRecipe } from './BriefEditor.jsx';
+import { briefFromRecipe } from './BriefEditor.jsx';
+import { BRIEF_SEED_KEY } from './Brief.jsx';
 
 const PAGE = 60;
 const SEED_KEY = 'backstage.mockupSeed'; // read once by app/Mockups.jsx
@@ -141,7 +142,7 @@ function AdCard({ ad, open, onOpen, onStar, picked, onPick }) {
       <div className="reply-actions insp-actions">
         <a className="btn btn-ghost" href={ad.url} target="_blank" rel="noreferrer">Ad Library</a>
         <button className={'btn ' + (open ? 'btn-ghost' : 'btn-primary')} onClick={onOpen}>
-          {open ? 'Close' : 'How would I build this?'}
+          {open ? 'Close' : 'Make a brief from this'}
         </button>
       </div>
     </div>
@@ -167,7 +168,7 @@ function CaptureCard({ cap, open, onOpen, onStar, onDelete, picked, onPick }) {
       {cap.note && <div className="insp-notes">{cap.note}</div>}
       <div className="insp-meta">{cap.source === 'shortcut' ? 'From the iPhone Shortcut' : 'Uploaded' + (cap.by ? ' by ' + cap.by.split('@')[0] : '')} · {ago(cap.at)}</div>
       <div className="reply-actions insp-actions">
-        <button className={'btn ' + (open ? 'btn-ghost' : 'btn-primary')} onClick={onOpen}>{open ? 'Close' : 'How would I build this?'}</button>
+        <button className={'btn ' + (open ? 'btn-ghost' : 'btn-primary')} onClick={onOpen}>{open ? 'Close' : 'Make a brief from this'}</button>
         <button className="btn btn-ghost" type="button" onClick={onDelete}>Delete</button>
       </div>
     </div>
@@ -210,6 +211,16 @@ function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, 
     try {
       const d = await post({ action: 'analyze', brand, image: image || undefined, ...(isCapture ? { captureId: item.id } : { adId: item.id }) });
       setState({ busy: false, recipe: d.recipe, scene: d.recipe.scene, recipeBrand: brand });
+      // The breakdown becomes the Brief tab's brief, to check and approve there.
+      const pic = isCapture ? (item.kind === 'image' ? item.url : '') : ((media.find((m) => m.kind === 'image') || {}).url || (media.find((m) => m.poster) || {}).poster || '');
+      try {
+        sessionStorage.setItem(BRIEF_SEED_KEY, JSON.stringify({
+          brand, brief: briefFromRecipe(d.recipe), productHint: d.recipe.product || '',
+          source: { type: isCapture ? 'capture' : 'ad', id: item.id, competitor: item.competitor || '' },
+          from: { competitor: item.competitor || '', headline: isCapture ? (item.info && item.info.headline) || '' : item.headline || '', why: d.recipe.why || '', image: pic },
+        }));
+      } catch { /* private mode: the breakdown still shows here */ }
+      go('brief');
     } catch (e) {
       setState({ busy: false, error: e.message });
     }
@@ -288,7 +299,7 @@ function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, 
       {error && <div className="login-error">{error}</div>}
       <div className="reply-actions" style={{ marginTop: 12 }}>
         <button className="btn btn-primary" onClick={analyze} disabled={busy || !brand || (isCapture && item.kind === 'video' && !image)}>
-          {busy ? 'Reading the ad...' : recipe ? 'Break it down again' : 'Break it down for ' + brandName}
+          {busy ? 'Writing the brief...' : 'Write the brief for ' + brandName}
         </button>
         {isCapture && item.kind === 'video' && !image && <span className="ledger-note">Pick a frame first.</span>}
       </div>
@@ -321,12 +332,6 @@ function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, 
               </p>
             </>
           )}
-          <BriefEditor key={(state.recipeBrand || brand) + ':' + item.id} brands={brands} brand={state.recipeBrand || brand}
-            initial={briefFromRecipe(recipe)} productHint={recipe.product || ''}
-            source={{ type: isCapture ? 'capture' : 'ad', id: item.id, competitor: item.competitor || '' }} onStarted={onStarted} />
-          <div className="reply-actions" style={{ marginTop: 8 }}>
-            <button className="btn btn-ghost" onClick={makeOne} disabled={!scene.trim()}>Only the lifestyle shot, in Mockups</button>
-          </div>
         </div>
       )}
     </div>
@@ -565,7 +570,7 @@ function Competitors({ list, brands, onChanged }) {
 
 // Ads from our own idea rather than a competitor's (lib/recreate.js createBriefBatch):
 // Claude writes the angles, and each becomes mockups, an ad and a render in Drafts.
-function BriefCard({ brands, defaultStore, onStarted }) {
+function BriefCard({ brands, defaultStore, onStarted, go }) {
   const [open, setOpen] = useState(false);
   const [o, setO] = useState({ store: '', brief: '', count: 3, make: 'auto', perAd: 2, aspect: '' });
   const [busy, setBusy] = useState(false);
@@ -582,18 +587,10 @@ function BriefCard({ brands, defaultStore, onStarted }) {
       setO((x) => ({ ...x, brief: '' })); setOpen(false); onStarted();
     } catch (e) { setErr(e.message); } finally { setBusy(false); }
   }
-  const [writing, setWriting] = useState(false);
-  if (writing) {
-    return (
-      <div className="card" style={{ marginBottom: 14 }}>
-        <BriefEditor brands={brands} brand={store} onStarted={onStarted} onClose={() => setWriting(false)} />
-      </div>
-    );
-  }
   if (!open) {
     return (
       <div className="reply-actions" style={{ marginBottom: 12 }}>
-        <button className="btn btn-primary" type="button" onClick={() => setWriting(true)}>Write an ad brief</button>
+        <button className="btn btn-primary" type="button" onClick={() => go('brief')}>Start a brief from an idea</button>
         <button className="btn btn-ghost" type="button" onClick={() => setOpen(true)}>Let Claude write several from an idea</button>
       </div>
     );
@@ -809,7 +806,7 @@ export default function Inspiration({ go }) {
       {error && <div className="flag" style={{ marginBottom: 14 }}><span className="ico">&#9873;</span><span>{error}</span></div>}
 
       <Batches refresh={batchRefresh} go={go} />
-      {brands.length > 0 && <BriefCard brands={brands} defaultStore={store || brand} onStarted={() => setBatchRefresh((n) => n + 1)} />}
+      {brands.length > 0 && <BriefCard brands={brands} defaultStore={store || brand} go={go} onStarted={() => setBatchRefresh((n) => n + 1)} />}
 
       <div className="pf-chips" role="tablist" aria-label="What to show" style={{ marginBottom: 12 }}>
         {[['ads', 'Competitor ads'], ['captures', 'From my phone' + (data && data.captures.length ? ' (' + data.captures.length + ')' : '')], ['competitors', 'Competitors']].map(([k, l]) => (

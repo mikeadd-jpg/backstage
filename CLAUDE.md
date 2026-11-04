@@ -95,8 +95,8 @@ a headline, what is going well, what needs work, and 3 to 5 concrete actions.
 
 ## Navigation (`app/Shell.jsx`)
 
-Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Operations: Inbox, At risk, Approvals, Products; Marketing: Inspiration, Mockups,
-Ads, Drafts; Insights: Profit, Attribution, Email, Traffic, Orders) at 1100px and up, an icon rail from 681 to 1099px, and on
+Home sits first, unlabelled, and is the default landing screen. Sidebar grouped by job (Operations: Inbox, At risk, Approvals, Products; Marketing: Inspiration, Brief,
+Mockups, Ads, Drafts; Insights: Profit, Attribution, Email, Traffic, Orders) at 1100px and up, an icon rail from 681 to 1099px, and on
 phones a title bar plus at most five bottom tabs: Marketing and Insights each fold into one
 tab with a chooser (and Operations too, when the tabs would otherwise pass five, carrying the
 summed badge) when the person has more than one screen in the group and other tabs
@@ -610,6 +610,13 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   scene and what not to copy. `TOOLS` says exactly what each tab can do; keep it exact.
   Headlines and scenes never name a band or other brand and never invent offers, and the
   ad's text is fenced as data: competitors wrote it.
+- **The Brief tab** (`app/Brief.jsx`, area `brief`) is where every ad starts. An idea typed or
+  spoken (the browser's own speech recognition, `webkitSpeechRecognition`; where there is
+  none, the keyboard's dictation) is turned into a filled-in brief by `fillBrief` (action
+  `fill-brief`), which keeps a headline given word for word and only offers in the store
+  notes. Inspiration is optional: its "Make a brief from this" breaks the ad down, leaves the
+  brief in `sessionStorage` (`backstage.briefSeed`) and opens the Brief tab with it filled in
+  and the ad shown above it. Blank briefs and templates start there too.
 - **Every ad starts as a brief the person approves** (`app/BriefEditor.jsx`,
   `createApprovedBrief` in `lib/recreate.js`, action `approve`). From a competitor ad the
   breakdown fills it in (`briefFromRecipe`); "Write an ad brief" starts it blank or from a

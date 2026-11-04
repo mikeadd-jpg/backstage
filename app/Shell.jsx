@@ -24,6 +24,7 @@ const PATHS = {
   orders: ['M6 3h12v18l-3-2-3 2-3-2-3 2z', 'M9 8h6', 'M9 12h6'],
   ads: ['M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z', 'M17 9a4 4 0 0 1 0 6', 'M20 6a8 8 0 0 1 0 12'],
   drafts: ['M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z', 'M14 3v5h5', 'M9 13h6', 'M9 17h4'],
+  brief: ['M8 4h8a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z', 'M10 3h4v3h-4z', 'M10 11h4', 'M10 15h4'],
   inspiration: ['M9 18h6', 'M10 21h4', 'M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2V16h5v-.2c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z'],
   insights: ['M4 20h16', 'M7 16v-4', 'M12 16V8', 'M17 16v-6'],
   create: ['M12 5v14', 'M5 12h14'],
@@ -49,7 +50,8 @@ export const DESTINATIONS = {
   risk:      { area: 'risk',      label: 'At risk',   icon: 'risk',      group: 'Operations', blurb: 'Orders that may not arrive' },
   approvals: { area: 'approvals', label: 'Approvals', icon: 'approvals', group: 'Operations', blurb: 'Print files waiting for a yes' },
   products:  { area: 'products',  label: 'Products',  icon: 'products',  group: 'Operations', blurb: 'Printify drafts from a design' },
-  inspiration: { area: 'inspiration', label: 'Inspiration', icon: 'inspiration', group: 'Marketing', blurb: 'Competitor ads, and how to make our own' },
+  inspiration: { area: 'inspiration', label: 'Inspiration', icon: 'inspiration', group: 'Marketing', blurb: 'Competitor ads to start a brief from' },
+  brief:     { area: 'brief',     label: 'Brief',     icon: 'brief',     group: 'Marketing', blurb: 'An idea or a competitor ad, turned into an ad you approve' },
   mockups:   { area: 'mockups',   label: 'Mockups',   icon: 'mockups',   group: 'Marketing', blurb: 'Lifestyle shots for a live product' },
   ads:       { area: 'ads',       label: 'Ads',       icon: 'ads',       group: 'Marketing', blurb: 'Carousel ads from the Meta image library' },
   drafts:    { area: 'drafts',    label: 'Drafts',    icon: 'drafts',    group: 'Marketing', blurb: 'Saved mockups and ads' },
@@ -139,7 +141,7 @@ export default function Shell({ me, current, go, badges = {}, children }) {
   const [menu, setMenu] = useState(null);       // null | 'side' | 'top'
   const [chooser, setChooser] = useState(null);  // null | 'work' | 'create' | 'insights'
   const allowed = allowedDestinations(me);
-  const createKeys = ['inspiration', 'mockups', 'ads', 'drafts'].filter((k) => allowed.includes(k));
+  const createKeys = ['inspiration', 'brief', 'mockups', 'ads', 'drafts'].filter((k) => allowed.includes(k));
 
   // Bottom tabs on phones, five at most: Operations screens, then Marketing and Insights. A group
   // with several screens folds into one tab that opens a chooser, but only when there are
