@@ -16,6 +16,7 @@
 // video builder's picks, and the form builds a single image ad from it.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import AdProducts from './AdProducts.jsx';
+import LifestyleStep from './LifestyleStep.jsx';
 import AdStudio, { assetFromLibrary, releaseAssets } from './AdStudio.jsx';
 import StillStudio from './StillStudio.jsx';
 import { OPEN_DRAFT_KEY, restoreAsset } from './draftsClient.js';
@@ -578,6 +579,52 @@ export default function Ads() {
     }
   }
 
+  // ---- the Lifestyle shots step (app/LifestyleStep.jsx) ----
+  // The picked pictures of whichever list is in use, each with the URL a shot is made from:
+  // the original (store mockup, Drafts file) where there is one, else the ad library copy.
+  const madeUrls = useRef(new Set());
+  const stepPicks = mode === 'carousel'
+    ? cards.map((c) => ({ url: c.fromUrl || c.url, thumb: c.url, handle: c.handle, title: c.title || c.headline, side: c.side,
+        lifestyle: c.origin !== 'store', made: madeUrls.current.has(c.fromUrl) }))
+    : sAssets.filter((a) => a.kind === 'image' && a.origin !== 'kit').map((a) => ({ url: a.fromUrl || a.libUrl || a.storedUrl || '', thumb: a.src,
+        handle: a.handle, title: a.title, side: a.side, lifestyle: a.origin !== 'store', made: madeUrls.current.has(a.fromUrl) }));
+  const live = useRef({});
+  live.current = { mode, brand, cards, sAssets };
+  // A new shot takes its source picture's place in the list in use when it lands (the step
+  // keeps running while you switch between Carousel and the builders). Saved to Drafts
+  // either way, so the left picker lists it too.
+  async function lifestyleMade(src, made) {
+    const { mode: m, brand: b } = live.current;  // as they are when the shot lands
+    const pic = { handle: src.handle, title: src.title, side: made.side };
+    draftMade(src.handle, { id: made.id, url: made.url, color: made.side === 'back' ? 'Back' : '', side: made.side, favorite: false, check: null, at: new Date().toISOString() });
+    madeUrls.current.add(made.url);
+    try {
+      if (m === 'carousel') {
+        const { ok, d } = await post({ action: 'url-to-meta', brand: b, url: made.url, handle: src.handle, lifestyle: true });
+        if (!ok) throw new Error(d.error || 'Could not copy it into the ad library.');
+        const img = { hash: d.hash, url: d.url || made.url, name: d.name, width: d.width, height: d.height, mockup: d.mockup };
+        setLibs((l) => ({ ...l, [b]: { ...l[b], images: [{ ...img, handle: src.handle, title: src.title }, ...((l[b] || {}).images || []).filter((x) => x.hash !== d.hash)] } }));
+        const at = live.current.cards.findIndex((c) => (c.fromUrl || c.url) === src.url);
+        if (at < 0) throw new Error('that picture is no longer in the carousel.');
+        const next = live.current.cards.slice();
+        next[at] = { ...next[at], ...img, fromUrl: made.url, origin: 'draft', draftId: made.id, side: made.side || undefined };
+        setCards(next); live.current.cards = next;
+      } else if (m === 'studio' || m === 'still') {
+        const a = await assetFromLibrary({ url: made.url, name: src.handle, title: src.title, handle: src.handle });
+        const fresh = { ...a, fromUrl: made.url, storedUrl: made.url, draftId: made.id, origin: 'draft', side: made.side || undefined };
+        const xs = live.current.sAssets;
+        const at = xs.findIndex((x) => x.kind === 'image' && (x.fromUrl || x.libUrl || x.storedUrl) === src.url);
+        if (at < 0) { releaseAssets([fresh]); throw new Error('that picture is no longer in the builder.'); }
+        const next = xs.slice();
+        releaseAssets([next[at]]); next[at] = fresh;
+        setSAssets(next); live.current.sAssets = next;
+      }
+      return {};
+    } catch (err) {
+      return { error: String(err.message || err) };
+    }
+  }
+
   // Builder: a library image goes in (copied same-origin for the renderer) or comes out.
   async function toggleStudio(img) {
     const at = sAssets.find((a) => a.hash === img.hash);
@@ -1074,6 +1121,10 @@ export default function Ads() {
         </aside>
 
         <section className="mk-work">
+          {/* Kept mounted across Carousel and the builders so a run carries on while you switch. */}
+          <div style={mode === 'video' ? { display: 'none' } : undefined}>
+            <LifestyleStep brand={brand} picks={mode === 'video' ? [] : stepPicks} products={lib.products} onMade={lifestyleMade} />
+          </div>
           {mode === 'carousel' && (
           <div className="card">
             <div className="card-label">Carousel</div>

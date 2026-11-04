@@ -1290,10 +1290,6 @@ span.as-trans { text-align: center; }
   .mk-picker > .mk-grid { min-height: 220px; }
   .mk-picker .ap-product .mk-grid, .mk-picker .ap-batch .mk-grid { flex: none; max-height: 340px; }
 }
-.mk-item .ap-tick { position: absolute; top: 10px; right: 10px; z-index: 1; width: 22px; height: 22px; border-radius: 6px;
-  border: 1.5px solid var(--line-strong, var(--muted)); background: var(--surface); display: flex; align-items: center;
-  justify-content: center; font-size: 13px; color: var(--surface); }
-.mk-item.picked .ap-tick { background: var(--action); border-color: var(--action); }
 .ap-batch { margin: 4px 0 14px; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
 .ap-batch-row { display: flex; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
 .ap-batch-row:first-of-type { border-top: 0; }
@@ -1303,7 +1299,7 @@ span.as-trans { text-align: center; }
 .ap-batch-body textarea.input { font-size: 12px; }
 .ap-batch-status { font-size: 11.5px; color: var(--muted); }
 .ap-batch-status.bad { color: var(--red, #b91c1c); }
-.ap-batch-result { width: 104px; }
+.ap-batch-use { align-self: center; margin: 0; }
 .si-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
 .si-list-row { display: flex; gap: 6px; align-items: center; }
 .si-list-row .input { min-width: 0; flex: 1; }

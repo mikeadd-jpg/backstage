@@ -833,10 +833,7 @@ templates through the API on Enterprise, and Kittl has no public API.
   cached 6 hours), newest, recently updated or name. A product shows its lifestyle shots
   in the ad library, its mockups in Drafts (by `source.handle`), and its Printify mockups per
   colour, and can make a new lifestyle shot in place through `/api/mockups` (one image,
-  saved to Drafts, print-checked after), or for several at once ("Make shots for several
-  products": tick up to 10, one scene each from `suggestScene` with the others passed as
-  used, then one `generate` per product, two at a time, a second press making only the
-  missing). A carousel needs every card in the library, so a
+  saved to Drafts, print-checked after). A carousel needs every card in the library, so a
   picture from Drafts or the store is copied in first (`url-to-meta`, only from our Blob
   store, Shopify's CDN and Printify's image host); picking it is the approval. The builders
   take it by URL instead, and a Drafts mockup used in an ad keeps its `draftId`, so cleanup
@@ -955,6 +952,13 @@ songs, then hands it to the same form as a Canva video (headline, link, text, bu
   holds each longer when there are few (about 8s, in whole beats), and Claude is told the same.
   The editor removes a shot keeping the length (`dropScene`), spreads the shots evenly over a
   chosen total (`spreadScenes`) and drops repeats (`dropRepeats`), all in `lib/adPlans.js`.
+- **Lifestyle shots are their own step** (`app/LifestyleStep.jsx`), at the top of the right
+  side for Carousel and both builders, before the name and copy: every picked picture is
+  listed, store mockups ticked for a new shot and existing lifestyle shots unticked. One
+  button makes a shot per ticked picture (one `generate` each, two at a time, at most 10,
+  cost stated first, a scene each from `suggestScene` with the others passed as used), and
+  each finished shot takes its source's place in the list in use (`lifestyleMade` in
+  `app/Ads.jsx`). The step stays mounted across those three tabs so a run survives switching.
 - **One selection for every kind of ad** (`carryPicks` in `app/Ads.jsx`): switching between
   Carousel and the builders carries the picked pictures across in order, the target made to
   match. Uploads, clips and songs stay in the builders; a URL-only picture is copied into the
