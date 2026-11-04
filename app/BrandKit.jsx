@@ -151,7 +151,7 @@ export default function BrandKit({ brand, brandName }) {
           <div className="kit-head">
             <div>
               <div className="li-name">Brand style</div>
-              <div className="li-sub">Colours, fonts and rules the video builder draws with. Claude reads the guidelines when it plans a cut.</div>
+              <div className="li-sub">Colours, fonts and rules every image and video ad is drawn with. Claude reads the guidelines when it plans an ad.</div>
             </div>
           </div>
           <div className="kit-colors">

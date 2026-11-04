@@ -1,5 +1,5 @@
 'use client';
-// Brand voice, reply structure, mockup notes, stores, product pricing, the video brand kit
+// Brand voice, reply structure, mockup notes, stores, product pricing, the creative brand kit
 // and the Canva connection. Who can sign in moved to its own Users screen (app/Users.jsx),
 // opened from the account menu.
 //
@@ -147,7 +147,7 @@ export default function Settings() {
             )}
 
             {CS_BRANDS.includes(b) && (
-              <Section id={b + ':kit'} title="Video brand kit" sub="End cards, logos, fonts and music for the video builder">
+              <Section id={b + ':kit'} title="Creative brand kit" sub="Logos, fonts, colours, end cards and music for every ad and mockup">
                 <BrandKit brand={b} brandName={nameOf(b)} />
               </Section>
             )}

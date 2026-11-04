@@ -355,3 +355,18 @@ CREATE TABLE IF NOT EXISTS spend_events (
 );
 CREATE INDEX IF NOT EXISTS spend_events_month_idx ON spend_events (created_at);
 CREATE INDEX IF NOT EXISTS spend_events_batch_idx ON spend_events (batch_id);
+
+-- ===== Brief templates =====
+-- Saved briefs for the Inspiration tab's brief editor (lib/recreate.js, saveBriefTemplate):
+-- the idea, direction, headlines, make, shape, layout, overlays, scene, composition and
+-- what to avoid, without products, kept per store by name.
+CREATE TABLE IF NOT EXISTS brief_templates (
+  id          SERIAL PRIMARY KEY,
+  brand       TEXT NOT NULL,
+  name        TEXT NOT NULL,
+  brief       JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_by  TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (brand, name)
+);

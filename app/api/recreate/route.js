@@ -16,7 +16,7 @@ import { NextResponse, after } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { batchSpend, monthSpend } from '../../../lib/spend.js';
 import { configuredShopifyBrands } from '../../../lib/brands.js';
-import { createBatch, createBriefBatch, stopBatch, listBatches, driveBatch, wakeIdleBatches, MAX_MOCKUPS, MAX_ITEMS, MAX_PER_AD } from '../../../lib/recreate.js';
+import { createBatch, createBriefBatch, createApprovedBrief, listBriefTemplates, saveBriefTemplate, deleteBriefTemplate, stopBatch, listBatches, driveBatch, wakeIdleBatches, MAX_MOCKUPS, MAX_ITEMS, MAX_PER_AD, MAX_BRIEF_SHOTS } from '../../../lib/recreate.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 800;
@@ -67,6 +67,25 @@ export async function POST(req) {
       after(() => driveBatch(batch.id).catch((err) => console.error('[recreate] batch ' + batch.id, err)));
       return NextResponse.json({ batch });
     }
+    // A brief the person approved in the editor: their products, pictures and words.
+    if (b.action === 'approve') {
+      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      const batch = await createApprovedBrief({
+        brand: b.brand, brief: b.brief, products: b.products, pickCount: b.pickCount, source: b.source || null,
+        by: g.access.email, origin: new URL(req.url).origin,
+      });
+      after(() => driveBatch(batch.id).catch((err) => console.error('[recreate] batch ' + batch.id, err)));
+      return NextResponse.json({ batch, maxShots: MAX_BRIEF_SHOTS });
+    }
+    if (b.action === 'templates') {
+      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      return NextResponse.json({ templates: await listBriefTemplates(b.brand) });
+    }
+    if (b.action === 'save-template') {
+      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      return NextResponse.json({ template: await saveBriefTemplate({ brand: b.brand, name: b.name, brief: b.brief, by: g.access.email }) });
+    }
+    if (b.action === 'delete-template') { await deleteBriefTemplate(b.id); return NextResponse.json({ ok: true }); }
     if (b.action === 'stop') { await stopBatch(b.id); return NextResponse.json({ ok: true }); }
     throw new Error('Unknown action.');
   } catch (err) {

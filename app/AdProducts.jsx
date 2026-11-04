@@ -17,14 +17,14 @@ async function mockupsPost(payload) {
   return { ok: res.ok, status: res.status, d: await res.json().catch(() => ({})) };
 }
 
-export default function AdProducts({ brand, lib, isPicked, onPick, busy, onDraftMade }) {
+export default function AdProducts({ brand, lib, isPicked, onPick, busy, onDraftMade, initialQuery = '', onUseProduct = null, productNote = null }) {
   const [collection, setCollection] = useState('');
   const [sort, setSort] = useState('best');
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(initialQuery);
   const [limit, setLimit] = useState(PAGE);
   const [open, setOpen] = useState(null);           // handle of the product being looked at
 
-  useEffect(() => { setCollection(''); setQ(''); setOpen(null); setLimit(PAGE); }, [brand]);
+  useEffect(() => { setCollection(''); setQ(initialQuery); setOpen(null); setLimit(PAGE); }, [brand]);
   useEffect(() => { if (!lib.sold && sort === 'best') setSort('new'); }, [lib.sold]);
 
   const products = lib.products || [];
@@ -51,7 +51,7 @@ export default function AdProducts({ brand, lib, isPicked, onPick, busy, onDraft
 
   if (product) {
     return <ProductPictures brand={brand} product={product} shots={shotsFor[product.handle] || []} drafts={(lib.drafts || {})[product.handle] || []}
-      isPicked={isPicked} onPick={onPick} busy={busy} onBack={() => setOpen(null)} onDraftMade={onDraftMade} />;
+      isPicked={isPicked} onPick={onPick} busy={busy} onBack={() => setOpen(null)} onDraftMade={onDraftMade} onUseProduct={onUseProduct} note={productNote} />;
   }
 
   return (
@@ -110,7 +110,7 @@ function Pic({ pic, picked, onPick, busy, badge }) {
   );
 }
 
-function ProductPictures({ brand, product, shots, drafts, isPicked, onPick, busy, onBack, onDraftMade }) {
+function ProductPictures({ brand, product, shots, drafts, isPicked, onPick, busy, onBack, onDraftMade, onUseProduct, note }) {
   const base = { handle: product.handle, title: product.title, productId: product.id };
   const library = shots.map((img) => ({ ...base, source: 'library', hash: img.hash, url: img.url, name: img.name, width: img.width, height: img.height, label: 'In Meta', lifestyle: true }));
   const kept = drafts.map((d) => ({ ...base, source: 'draft', draftId: d.id, url: d.url, label: (d.color || 'Draft') + (d.favorite ? ' ★' : ''), lifestyle: true,
@@ -126,6 +126,11 @@ function ProductPictures({ brand, product, shots, drafts, isPicked, onPick, busy
       <div className="ledger-note" style={{ marginBottom: 10 }}>
         {product.sold != null ? product.sold + ' sold in 90 days · ' : ''}{(product.collections || []).slice(0, 3).join(', ')}
       </div>
+      {onUseProduct && (
+        <div className="reply-actions" style={{ marginBottom: 6 }}>
+          <button type="button" className="btn btn-ghost" onClick={() => onUseProduct(product)}>{note && note(product) ? note(product) : '+ Use this product (new shots in the batch)'}</button>
+        </div>
+      )}
 
       <div className="mk-picker-head"><span>Lifestyle shots in Meta</span><span className="acc-count">{library.length}</span></div>
       <div className="mk-grid">

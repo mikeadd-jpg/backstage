@@ -610,7 +610,19 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   scene and what not to copy. `TOOLS` says exactly what each tab can do; keep it exact.
   Headlines and scenes never name a band or other brand and never invent offers, and the
   ad's text is fenced as data: competitors wrote it.
-- **"Make one like it" builds the whole ad**, not just a shot: a one-ad recreate batch
+- **Every ad starts as a brief the person approves** (`app/BriefEditor.jsx`,
+  `createApprovedBrief` in `lib/recreate.js`, action `approve`). From a competitor ad the
+  breakdown fills it in (`briefFromRecipe`); "Write an ad brief" starts it blank or from a
+  saved template. It holds the idea, what they want in the ad (passed to the planner as
+  approved direction), headline ideas, image or video, shape, layout, what goes over the
+  picture, scene and composition, and the products, each with pictures picked (Drafts
+  mockups by id, Meta library or store pictures by URL, copied into Blob since Meta's links
+  expire) and a number of new shots (at most `MAX_BRIEF_SHOTS`, 8). Picked pictures go in as
+  `existing` mockups, which the batch never regenerates. With no products, Claude picks.
+  Nothing is spent before "Approve and make".
+- **Brief templates** (`brief_templates`, unique per store and name) keep a brief without its
+  products or source, for "Start from a template".
+- **"Make one like it"** (now the brief's approve button) builds the whole ad, not just a shot: a one-ad recreate batch
   started from the breakdown as edited in the tab (`recipe` on `createBatch`, so it is not
   analysed twice), with the product, image or video and shape chosen there. "Only the
   lifestyle shot, in Mockups" is the old path below. The breakdown carries the ad's
@@ -1084,7 +1096,7 @@ also held to its tool's area in the route (mockups, ads).
 
 ## Settings layout (`app/Settings.jsx`)
 
-One expandable block per brand (voice, mockup notes, video brand kit, pricing and tags), then
+One expandable block per brand (voice, mockup notes, creative brand kit, pricing and tags), then
 "All stores" (reply structure, Canva, the store list). Sections render only while open, so a
 brand's kit loads when opened, and which are open is remembered in `localStorage` on that
 device. `Section` is defined outside the component on purpose: defined inside, every

@@ -1129,7 +1129,7 @@ span.as-trans { text-align: center; }
 .set-sec-body { display: flex; flex-direction: column; padding: 0 2px 14px; }
 @media (max-width: 680px) { .set-sum-sub { margin-left: 18px; flex-basis: 100%; } }
 
-/* Video brand kit (app/BrandKit.jsx) */
+/* Creative brand kit (app/BrandKit.jsx) */
 .kit { display: flex; flex-direction: column; gap: 18px; }
 .kit-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
 .kit-head .btn { white-space: nowrap; flex: none; }
@@ -1284,3 +1284,20 @@ span.as-trans { text-align: center; }
 .si-list-row { display: flex; gap: 6px; align-items: center; }
 .si-list-row .input { min-width: 0; flex: 1; }
 .si-list-row select.input { flex: 0 0 92px; }
+
+/* The ad brief (app/BriefEditor.jsx). */
+.brief { margin-top: 12px; border: 1px solid var(--line-strong); border-radius: 12px; padding: 14px; background: var(--surface); }
+.brief-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.brief-checks { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin: 2px 0 6px; }
+.brief-chosen { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+.brief-prod { border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+.brief-prod-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.brief-prod-head img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+.brief-prod-head .li-name { flex: 1; }
+.brief-pics { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.brief-pic { position: relative; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+.brief-pic img { width: 64px; height: 80px; object-fit: cover; border-radius: 6px; display: block; }
+.brief-pic span { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.6); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; line-height: 18px; }
+.brief-picker { max-height: 520px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+.brief-tpl { display: flex; gap: 8px; margin-top: 14px; }
+.brief-tpl .input { flex: 1; min-width: 0; }

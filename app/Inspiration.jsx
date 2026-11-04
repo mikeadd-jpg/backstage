@@ -9,6 +9,7 @@ import { STILL_TEMPLATES } from '../lib/stillPlans.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import Batches from './Batches.jsx';
+import BriefEditor, { briefFromRecipe } from './BriefEditor.jsx';
 
 const PAGE = 60;
 const SEED_KEY = 'backstage.mockupSeed'; // read once by app/Mockups.jsx
@@ -221,26 +222,6 @@ function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, 
     } catch (e) { setState({ error: e.message }); }
   }
 
-  // The whole ad in one go: a one-ad recreate batch (lib/recreate.js) that starts from this
-  // breakdown as edited here, makes the lifestyle shot in the ad's composition, plans the
-  // image (or video) in the matching layout, renders it and leaves it in Drafts.
-  async function makeAd() {
-    setState({ making: { busy: true } });
-    try {
-      const res = await fetch('/api/recreate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-        action: 'start', brand: state.recipeBrand || brand, picks: [{ type: isCapture ? 'capture' : 'ad', id: item.id }],
-        make: state.make || 'auto', perAd: 1, aspect: state.aspect || '',
-        recipe: { ...recipe, scene, product: state.product !== undefined ? state.product : recipe.product },
-      }) });
-      const d = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(d.error || 'Could not start.');
-      setState({ making: { started: true } });
-      onStarted && onStarted();
-    } catch (e) {
-      setState({ making: { error: e.message } });
-    }
-  }
-
   function makeOne() {
     try {
       sessionStorage.setItem(SEED_KEY, JSON.stringify({
@@ -340,45 +321,11 @@ function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, 
               </p>
             </>
           )}
-          <label className="field" style={{ marginTop: 6 }}>
-            <span>Scene for the lifestyle shot</span>
-            <textarea className="input" rows={4} value={scene} onChange={(e) => setState({ scene: e.target.value })} />
-          </label>
-          <div className="field-row">
-            <label className="field">
-              <span>Product to use</span>
-              <input className="input" value={state.product !== undefined ? state.product : recipe.product} onChange={(e) => setState({ product: e.target.value })}
-                placeholder="Claude picks from the store" />
-            </label>
-            <label className="field">
-              <span>Make</span>
-              <select className="input" value={state.make || 'auto'} onChange={(e) => setState({ make: e.target.value })}>
-                <option value="auto">{recipe.tool === 'video' ? 'A video ad (suggested)' : 'An image ad (suggested)'}</option>
-                <option value="image">An image ad</option>
-                <option value="video">A video ad</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>Shape</span>
-              <select className="input" value={state.aspect || ''} onChange={(e) => setState({ aspect: e.target.value })}>
-                <option value="">Default</option>
-                <option value="4:5">4:5 feed</option>
-                <option value="1:1">1:1 square</option>
-                <option value="9:16">9:16 Stories and Reels</option>
-              </select>
-            </label>
-          </div>
-          <div className="reply-actions">
-            <button className="btn btn-primary" onClick={makeAd} disabled={!scene.trim() || (state.making && state.making.busy)}>
-              {state.making && state.making.busy ? 'Starting...' : state.making && state.making.started ? 'Make another' : 'Make one like it'}
-            </button>
+          <BriefEditor key={(state.recipeBrand || brand) + ':' + item.id} brands={brands} brand={state.recipeBrand || brand}
+            initial={briefFromRecipe(recipe)} productHint={recipe.product || ''}
+            source={{ type: isCapture ? 'capture' : 'ad', id: item.id, competitor: item.competitor || '' }} onStarted={onStarted} />
+          <div className="reply-actions" style={{ marginTop: 8 }}>
             <button className="btn btn-ghost" onClick={makeOne} disabled={!scene.trim()}>Only the lifestyle shot, in Mockups</button>
-          </div>
-          {state.making && state.making.error && <div className="login-error" style={{ marginTop: 8 }}>{state.making.error}</div>}
-          <div className="ledger-note" style={{ marginTop: 8 }}>
-            {state.making && state.making.started
-              ? 'Started. It shows under Batches at the top of this tab and lands in Drafts in about two minutes, rendered, ready to send to Meta.'
-              : 'Makes the lifestyle shot in this composition, builds the ad in the matching layout with our own words, renders it and saves it to Drafts. One image, about $0.25, checked against the product before use.'}
           </div>
         </div>
       )}
@@ -635,10 +582,19 @@ function BriefCard({ brands, defaultStore, onStarted }) {
       setO((x) => ({ ...x, brief: '' })); setOpen(false); onStarted();
     } catch (e) { setErr(e.message); } finally { setBusy(false); }
   }
+  const [writing, setWriting] = useState(false);
+  if (writing) {
+    return (
+      <div className="card" style={{ marginBottom: 14 }}>
+        <BriefEditor brands={brands} brand={store} onStarted={onStarted} onClose={() => setWriting(false)} />
+      </div>
+    );
+  }
   if (!open) {
     return (
       <div className="reply-actions" style={{ marginBottom: 12 }}>
-        <button className="btn btn-ghost" type="button" onClick={() => setOpen(true)}>Make ads from your own idea</button>
+        <button className="btn btn-primary" type="button" onClick={() => setWriting(true)}>Write an ad brief</button>
+        <button className="btn btn-ghost" type="button" onClick={() => setOpen(true)}>Let Claude write several from an idea</button>
       </div>
     );
   }
