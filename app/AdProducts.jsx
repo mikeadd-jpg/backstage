@@ -116,8 +116,12 @@ function ProductPictures({ brand, product, shots, drafts, isPicked, onPick, busy
   const library = shots.map((img) => ({ ...base, source: 'library', hash: img.hash, url: img.url, name: img.name, width: img.width, height: img.height, label: 'In Meta', lifestyle: true }));
   const kept = drafts.map((d) => ({ ...base, source: 'draft', draftId: d.id, url: d.url, label: (d.color || 'Draft') + (d.favorite ? ' ★' : ''), lifestyle: true,
     check: d.check }));
+  // Each colour's front, and its back when the design has one.
   const store = (product.colors && product.colors.length ? product.colors : [{ name: '', front: product.image }])
-    .map((c) => ({ ...base, source: 'store', url: c.front, label: c.name || 'Store photo', lifestyle: false }));
+    .flatMap((c) => [
+      { ...base, source: 'store', url: c.front, label: (c.name || 'Store photo') + (product.hasBack ? ' · front' : ''), lifestyle: false },
+      ...(product.hasBack && c.back ? [{ ...base, source: 'store', url: c.back, label: (c.name || 'Store photo') + ' · back', lifestyle: false, side: 'back' }] : []),
+    ]);
   const [making, setMaking] = useState(false);
 
   return (
@@ -169,8 +173,10 @@ function MakeShot({ brand, product, onClose, onMade }) {
   const [writing, setWriting] = useState(false);
   const [size, setSize] = useState('portrait');
   const [shown, setShown] = useState(brand === 'wallspoke' ? 'room' : 'model');
+  const [side, setSide] = useState('front');
   const [state, setState] = useState(null);           // null | { busy } | { error } | { done }
-  const front = (colors.find((c) => c.name === color) || {}).front || product.image;
+  const pick = colors.find((c) => c.name === color) || {};
+  const front = (side === 'back' && product.hasBack && pick.back) || pick.front || product.image;
 
   async function rotate() {
     setWriting(true);
@@ -188,8 +194,8 @@ function MakeShot({ brand, product, onClose, onMade }) {
     setState({ busy: true });
     try {
       const { ok, status, d } = await mockupsPost({ action: 'generate', brand, imageUrl: front, scene, size, quality: 'high',
-        variationIndex: shown === 'model' || shown === 'room' ? 0 : undefined, notes: presentationLine(shown),
-        product: { id: product.id, title: product.title, handle: product.handle, color } });
+        variationIndex: shown === 'model' || shown === 'room' ? 0 : undefined, notes: presentationLine(shown), side,
+        product: { id: product.id, title: product.title, handle: product.handle, color: color + (side === 'back' ? ', back' : '') } });
       if (status === 403) return setState({ error: 'Making mockups needs the Mockups area on your role.' });
       if (!ok || !d.draft) return setState({ error: d.error || 'The image could not be made.' });
       onMade({ id: d.draft.id, url: d.draft.url, color, favorite: false, check: null, at: new Date().toISOString() });
@@ -206,6 +212,15 @@ function MakeShot({ brand, product, onClose, onMade }) {
             <span>Colour</span>
             <select className="input" value={color} onChange={(e) => setColor(e.target.value)}>
               {colors.map((c) => <option key={c.name} value={c.name}>{c.name}</option>)}
+            </select>
+          </label>
+        )}
+        {product.hasBack && (
+          <label className="field">
+            <span>Side</span>
+            <select className="input" value={side} onChange={(e) => setSide(e.target.value)}>
+              <option value="front">Front design</option>
+              <option value="back">Back design</option>
             </select>
           </label>
         )}

@@ -65,7 +65,7 @@ export default function BriefEditor({ brands, brand: startBrand, initial = null,
   const isPicked = (pic) => !!(chosen[pic.productId] && chosen[pic.productId].pictures[keyOf(pic)]);
   function entryFor(product, cur) {
     const colors = product.colors || [];
-    return cur[product.id] || { product, pictures: {}, newShots: 0, color: product.defaultColor || (colors[0] && colors[0].name) || '' };
+    return cur[product.id] || { product, pictures: {}, newShots: 0, side: 'front', color: product.defaultColor || (colors[0] && colors[0].name) || '' };
   }
   function togglePic(pic) {
     const product = (lib.products || []).find((p) => p.id === pic.productId);
@@ -126,7 +126,7 @@ export default function BriefEditor({ brands, brand: startBrand, initial = null,
         action: 'approve', brand, source, pickCount,
         brief: { ...b, headlines: String(b.headlines || '').split('\n') },
         products: list.map((c) => ({
-          productId: c.product.id, newShots: c.newShots, color: c.color,
+          productId: c.product.id, newShots: c.newShots, color: c.color, side: c.side || 'front',
           pictures: Object.values(c.pictures).map((p) => (p.source === 'draft' ? { draftId: p.draftId } : { url: p.url })),
         })),
       });
@@ -240,6 +240,15 @@ export default function BriefEditor({ brands, brand: startBrand, initial = null,
                     {[0, 1, 2, 3, 4].map((n) => <option key={n} value={n}>{n === 0 ? 'None, use the pictures picked' : n}</option>)}
                   </select>
                 </label>
+                {c.newShots > 0 && c.product.hasBack && (
+                  <label className="field">
+                    <span>Side</span>
+                    <select className="input" value={c.side || 'front'} onChange={(e) => setEntry(c.product.id, { side: e.target.value })}>
+                      <option value="front">Front design</option>
+                      <option value="back">Back design</option>
+                    </select>
+                  </label>
+                )}
                 {c.newShots > 0 && (c.product.colors || []).length > 1 && (
                   <label className="field">
                     <span>Colour</span>

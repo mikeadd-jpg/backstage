@@ -166,7 +166,7 @@ export default function Mockups() {
     if (jobs.length >= maxProducts) return setError('Up to ' + maxProducts + ' products at a time. Remove one to add another.');
     const seeded = seed && seed.brand === brand;
     const job = {
-      key, brand, product: p, color: p.color || null, image: p.image,
+      key, brand, product: p, color: p.color || null, image: p.image, side: 'front',
       scene: seeded ? seed.scene : scenes[brand] || defaults[brand] || '',
       notes: '', rotating: false, msg: seeded ? 'Scene from Inspiration.' : '', failures: [],
     };
@@ -240,9 +240,9 @@ export default function Mockups() {
     try {
       const { ok, d } = await post({
         action: 'generate', brand: job.brand, imageUrl: job.image || job.product.image, scene: job.scene,
-        notes: job.notes, size, quality, variationIndex: index,
+        notes: job.notes, size, quality, variationIndex: index, side: job.side || 'front',
         // For the draft the server saves: which product and colour this shot is of.
-        product: { id: job.product.id, title: job.product.title, handle: job.product.handle, color: job.color },
+        product: { id: job.product.id, title: job.product.title, handle: job.product.handle, color: (job.color || '') + (job.side === 'back' ? (job.color ? ', back' : 'Back') : '') || null },
       });
       if (!ok) return { ok: false, error: d.error || 'Generation failed.' };
       shotSeq.current += 1;
@@ -670,6 +670,23 @@ export default function Mockups() {
                     <button className="btn btn-ghost" type="button" onClick={() => removeJob(job.key)} disabled={busy} title="Remove this product">&times;</button>
                   </div>
 
+                  {job.product.hasBack && (
+                    <div className="field">
+                      <span>Side to shoot</span>
+                      <div className="mk-colors">
+                        {['front', 'back'].map((side) => {
+                          const c = (job.product.colors || []).find((x) => x.name === job.color) || (job.product.colors || [])[0] || {};
+                          const pic = side === 'back' ? c.back : c.front;
+                          return (
+                            <button key={side} type="button" disabled={busy || !pic} className={'mk-color' + ((job.side || 'front') === side ? ' on' : '')}
+                              onClick={() => updateJob(job.key, { side, image: pic })}>
+                              {side === 'front' ? 'Front design' : 'Back design'}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                   {(job.product.colors || []).length > 1 && (
                     <div className="field">
                       <span>Colour to shoot</span>
@@ -677,7 +694,7 @@ export default function Mockups() {
                         {job.product.colors.map((c) => (
                           <button key={c.name} type="button" title={c.name} disabled={busy}
                             className={'mk-color' + (c.name === job.color ? ' on' : '')}
-                            onClick={() => updateJob(job.key, { color: c.name, image: c.front })}>
+                            onClick={() => updateJob(job.key, { color: c.name, image: job.side === 'back' && c.back ? c.back : c.front })}>
                             <span className="mk-swatch" style={{ background: c.hex || '#888' }} />{c.name}
                           </button>
                         ))}

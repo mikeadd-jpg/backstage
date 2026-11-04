@@ -35,7 +35,7 @@ import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
 import { listActiveProducts, addProductImage, setProductMainImage } from '../../../lib/shopify.js';
 import { printifyMockupIndex, mockupsFor } from '../../../lib/printifyMockups.js';
 import {
-  generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, notesFor, SIZES,
+  generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, notesFor, SIZES, BACK_LINE,
 } from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
 import { saveMockupDraft, getDraft, saveDraft } from '../../../lib/drafts.js';
@@ -121,7 +121,7 @@ export async function POST(req) {
         const m = mockupsFor(index, p.skus);
         if (!m) return { ...p, colors: [], source: 'shopify' };
         const def = m.colors.find((c) => c.name === m.defaultColor) || m.colors[0];
-        return { ...p, shopifyImage: p.image, image: def.front, color: def.name, colors: m.colors, back: m.back, source: 'printify' };
+        return { ...p, shopifyImage: p.image, image: def.front, color: def.name, colors: m.colors, back: m.back, hasBack: Boolean(m.hasBack), source: 'printify' };
       });
       return NextResponse.json({ products: out, printify: index ? { at: index.at, matched: out.filter((p) => p.source === 'printify').length } : null });
     }
@@ -136,7 +136,7 @@ export async function POST(req) {
         brand,
         imageUrl: body.imageUrl,
         scene: body.scene,
-        notes: body.notes,
+        notes: [body.notes, body.side === 'back' ? BACK_LINE : ''].filter(Boolean).join(' '),
         size: body.size,
         quality: body.quality,
         variation,

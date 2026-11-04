@@ -157,8 +157,9 @@ export async function POST(req) {
             id: p.id, handle: p.handle, title: p.title, image: p.image, createdAt: p.createdAt, productType: p.productType,
             collections: p.collections, sold: sold ? sold[p.legacyId] || 0 : null,
             // Printify's flat mockups per colour, the best thing to make a scene from.
-            colors: m ? m.colors.map((c) => ({ name: c.name, hex: c.hex, front: c.front })) : [],
+            colors: m ? m.colors.map((c) => ({ name: c.name, hex: c.hex, front: c.front, back: c.back || null })) : [],
             defaultColor: m ? m.defaultColor : null,
+            hasBack: Boolean(m && m.hasBack),
           };
         }),
         images: images.map((img) => {
