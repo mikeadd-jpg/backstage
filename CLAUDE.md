@@ -627,6 +627,15 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   expire) and a number of new shots (at most `MAX_BRIEF_SHOTS`, 8). Picked pictures go in as
   `existing` mockups, which the batch never regenerates. With no products, Claude picks.
   Nothing is spent before "Approve and make".
+- **How the product is shown is part of the idea** (`presentation`: on a person, on a hanger,
+  laid flat, on its own, in a room; `PRESENTATIONS` in `lib/stillPlans.js`). The analysis
+  records the competitor's, the brief keeps it (editable), and it reaches the scene writer
+  and the image model (`presentationLine`), which drop the store's person-led variations and
+  framing when there is no person. Before this, every apparel scene had someone wearing it
+  and a hanger ad's hanger was listed under "don't copy".
+- **Catalogue ads carry Meta's placeholders** (`{{product.name}}`), 168 of them on
+  2026-11-04. `lib/adText.js` hides them on screen and spells them out for Claude, so a
+  placeholder is never read as the ad's wording.
 - **Brief templates** (`brief_templates`, unique per store and name) keep a brief without its
   products or source, for "Start from a template".
 - **"Make one like it"** (now the brief's approve button) builds the whole ad, not just a shot: a one-ad recreate batch

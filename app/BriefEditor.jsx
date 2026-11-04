@@ -9,11 +9,11 @@
 // the products for next time. Nothing is generated before the approve button.
 import { useEffect, useMemo, useState } from 'react';
 import AdProducts from './AdProducts.jsx';
-import { STILL_TEMPLATES, STILL_KEYS } from '../lib/stillPlans.js';
+import { STILL_TEMPLATES, STILL_KEYS, PRESENTATIONS } from '../lib/stillPlans.js';
 
 const OVERLAYS = { headline: 'Headline', sub: 'Line under', benefits: 'Benefits with icons', price: 'Price tags', button: 'Button', logo: 'Logo' };
 const IMAGE_COST = 0.25;
-const blank = { idea: '', direction: '', headlines: '', make: 'image', aspect: '', layout: '', overlays: ['headline', 'logo'], scene: '', composition: '', avoid: '' };
+const blank = { idea: '', direction: '', headlines: '', make: 'image', aspect: '', layout: '', overlays: ['headline', 'logo'], presentation: '', scene: '', composition: '', avoid: '' };
 
 async function api(path, payload) {
   const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -28,7 +28,7 @@ export function briefFromRecipe(r) {
     idea: r.hook || '', direction: '', headlines: (r.headlines || []).join('\n'),
     make: r.tool === 'video' ? 'video' : 'image', aspect: '', layout: r.layout || '',
     overlays: r.overlays && r.overlays.length ? r.overlays : ['headline', 'logo'],
-    scene: r.scene || '', composition: r.composition || '', avoid: r.avoid || '',
+    presentation: r.presentation || '', scene: r.scene || '', composition: r.composition || '', avoid: r.avoid || '',
   };
 }
 
@@ -274,6 +274,13 @@ export default function BriefEditor({ brands, brand: startBrand, initial = null,
       {needsScene && (
         <>
           <label className="field" style={{ marginTop: 12 }}>
+            <span>How the product is shown</span>
+            <select className="input" value={b.presentation} onChange={(e) => set({ presentation: e.target.value })}>
+              <option value="">As the scene says</option>
+              {Object.entries(PRESENTATIONS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
+          </label>
+          <label className="field">
             <span>Scene for the new shots</span>
             <textarea className="input" rows={3} value={b.scene} onChange={(e) => set({ scene: e.target.value })} placeholder="Where it is, the light, the mood. Never the artwork." />
           </label>

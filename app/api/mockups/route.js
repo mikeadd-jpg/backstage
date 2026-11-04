@@ -189,6 +189,7 @@ export async function POST(req) {
         current: body.current,
         previous: Array.isArray(body.previous) ? body.previous : [],
         theme: typeof body.theme === 'string' ? body.theme : '',
+        presentation: typeof body.presentation === 'string' ? body.presentation : '',
       });
       return NextResponse.json({ scene });
     }

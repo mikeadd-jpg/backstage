@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import Batches from './Batches.jsx';
 import { briefFromRecipe } from './BriefEditor.jsx';
+import { isCatalogText, withoutPlaceholders } from '../lib/adText.js';
 import { BRIEF_SEED_KEY } from './Brief.jsx';
 
 const PAGE = 60;
@@ -132,8 +133,9 @@ function AdCard({ ad, open, onOpen, onStar, picked, onPick }) {
             : 'ended'}
         </span>
       </div>
-      {ad.headline && <div className="insp-headline">{ad.headline}</div>}
-      {ad.text && <div className="insp-text">{ad.text}</div>}
+      {ad.headline && <div className="insp-headline">{withoutPlaceholders(ad.headline, 'Catalogue ad')}</div>}
+      {ad.text && withoutPlaceholders(ad.text) && <div className="insp-text">{withoutPlaceholders(ad.text)}</div>}
+      {(isCatalogText(ad.headline) || isCatalogText(ad.text)) && <div className="insp-meta">Catalogue ad: Meta fills in each product's own name and picture.</div>}
       {ad.notes && <div className="insp-notes">Note: {ad.notes}</div>}
       <div className="insp-meta">
         {ad.format ? ad.format.toLowerCase() + ' · ' : ''}Started {ad.startDate || '?'} · seen {ad.firstSeen}{ad.lastSeen && ad.lastSeen !== ad.firstSeen ? ' to ' + ad.lastSeen : ''}
@@ -217,7 +219,7 @@ function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, 
         sessionStorage.setItem(BRIEF_SEED_KEY, JSON.stringify({
           brand, brief: briefFromRecipe(d.recipe), productHint: d.recipe.product || '',
           source: { type: isCapture ? 'capture' : 'ad', id: item.id, competitor: item.competitor || '' },
-          from: { competitor: item.competitor || '', headline: isCapture ? (item.info && item.info.headline) || '' : item.headline || '', why: d.recipe.why || '', image: pic },
+          from: { competitor: item.competitor || '', headline: withoutPlaceholders(isCapture ? (item.info && item.info.headline) || '' : item.headline || '', 'A catalogue ad (one card per product)'), why: d.recipe.why || '', image: pic },
         }));
       } catch { /* private mode: the breakdown still shows here */ }
       go('brief');

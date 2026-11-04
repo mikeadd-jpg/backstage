@@ -8,6 +8,7 @@
 // tab. Picking a picture hands it to the Ads tab (`onPick`), which adds it to whichever
 // builder is open; the tab copies it into the ad library first when a carousel needs that.
 import { useEffect, useMemo, useState } from 'react';
+import { PRESENTATIONS, presentationLine } from '../lib/stillPlans.js';
 
 const SORTS = { best: 'Best sellers', new: 'Newest', updated: 'Recently updated', az: 'A to Z' };
 const PAGE = 60;
@@ -167,6 +168,7 @@ function MakeShot({ brand, product, onClose, onMade }) {
   const [used, setUsed] = useState([]);
   const [writing, setWriting] = useState(false);
   const [size, setSize] = useState('portrait');
+  const [shown, setShown] = useState(brand === 'wallspoke' ? 'room' : 'model');
   const [state, setState] = useState(null);           // null | { busy } | { error } | { done }
   const front = (colors.find((c) => c.name === color) || {}).front || product.image;
 
@@ -174,18 +176,19 @@ function MakeShot({ brand, product, onClose, onMade }) {
     setWriting(true);
     try {
       const { ok, status, d } = await mockupsPost({ action: 'suggest-scene', brand, product: { title: product.title, productType: product.productType, image: front },
-        current: scene, previous: used });
+        current: scene, previous: used, presentation: shown });
       if (status === 403) return setState({ error: 'Making mockups needs the Mockups area on your role.' });
       if (!ok) return setState({ error: d.error || 'Could not write a scene.' });
       setScene(d.scene); setUsed((u) => [d.scene, ...u].slice(0, 8));
     } catch { setState({ error: 'Could not write a scene.' }); } finally { setWriting(false); }
   }
-  useEffect(() => { rotate(); }, []);
+  useEffect(() => { rotate(); }, [shown]);
 
   async function make() {
     setState({ busy: true });
     try {
-      const { ok, status, d } = await mockupsPost({ action: 'generate', brand, imageUrl: front, scene, size, quality: 'high', variationIndex: 0,
+      const { ok, status, d } = await mockupsPost({ action: 'generate', brand, imageUrl: front, scene, size, quality: 'high',
+        variationIndex: shown === 'model' || shown === 'room' ? 0 : undefined, notes: presentationLine(shown),
         product: { id: product.id, title: product.title, handle: product.handle, color } });
       if (status === 403) return setState({ error: 'Making mockups needs the Mockups area on your role.' });
       if (!ok || !d.draft) return setState({ error: d.error || 'The image could not be made.' });
@@ -206,6 +209,12 @@ function MakeShot({ brand, product, onClose, onMade }) {
             </select>
           </label>
         )}
+        <label className="field">
+          <span>Shown</span>
+          <select className="input" value={shown} onChange={(e) => setShown(e.target.value)}>
+            {Object.entries(PRESENTATIONS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </label>
         <label className="field">
           <span>Shape</span>
           <select className="input" value={size} onChange={(e) => setSize(e.target.value)}>
