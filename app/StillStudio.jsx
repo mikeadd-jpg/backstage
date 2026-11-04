@@ -13,7 +13,7 @@ import StillAd from './StillTemplates.jsx';
 import { loadKit, assetFromFile, releaseAssets } from './AdStudio.jsx';
 import { fxTextures } from './mediaProbe.js';
 import { ASPECTS, FILTERS, TEXT_STYLES, TEXT_BOXES } from '../lib/adPlans.js';
-import { STILL_TEMPLATES, STILL_KEYS, GRID_GAPS, TEXT_ALIGNS, TEXT_COLORS, TEXT_BOXES_BG, TEXT_DEFAULTS, normalizeStill, templateStills } from '../lib/stillPlans.js';
+import { STILL_TEMPLATES, STILL_KEYS, GRID_GAPS, TEXT_ALIGNS, TEXT_COLORS, TEXT_BOXES_BG, textDefaults, BENEFIT_ICONS, normalizeStill, templateStills } from '../lib/stillPlans.js';
 
 const MAX_ASSETS = 20;
 const dimsOf = (p) => ASPECTS[p && p.aspect] || ASPECTS['9:16'];
@@ -201,7 +201,7 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
     edit({ text: { ...plan.text, [el]: { ...plan.text[el], ...patch, ...detach } } });
   }
   function resetSpot(el) {
-    const d = TEXT_DEFAULTS[plan.template][el];
+    const d = textDefaults(plan.template, plan.place)[el];
     edit({ text: { ...plan.text, [el]: { ...plan.text[el], x: d.x, y: d.y, w: d.w, align: d.align, v: d.v, size: 1, attach: !!d.attach } } });
   }
 
@@ -446,17 +446,24 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
 
 // ---- words, button and logo ------------------------------------------------------------
 
-const ELEMENTS = { headline: 'Headline', sub: 'Line under', cta: 'Button', logo: 'Logo' };
+const ELEMENTS = { headline: 'Headline', sub: 'Line under', cta: 'Button', benefits: 'Benefits', tags: 'Price tags', logo: 'Logo' };
+const LISTS = ['benefits', 'tags'];
 const pct = (n) => Math.round(n * 100) + '%';
 
 // Settings for one placed element at a time (chips pick which): on or off, the words,
 // size, alignment, position, width, colour and a box behind it.
 function WordsEditor({ plan, tmpl, sel, setSel, logos, edit, setText, resetSpot }) {
-  const els = Object.keys(ELEMENTS).filter((el) => el !== 'sub' || tmpl.sub > 0);
+  // Benefits and price tags belong to the feature layout, or to a plan that already has them.
+  const els = Object.keys(ELEMENTS).filter((el) => (el !== 'sub' || tmpl.sub > 0)
+    && (!LISTS.includes(el) || plan.template === 'feature' || (plan[el] || []).length > 0));
   const el = els.includes(sel) ? sel : 'headline';
   const cfg = plan.text[el];
   const isText = el === 'headline' || el === 'sub';
+  const isList = LISTS.includes(el);
   const on = el === 'logo' ? !!plan.logo : cfg.show;
+  const items = isList ? plan[el] || [] : [];
+  // Rows go in as typed (an empty new row would otherwise be dropped); rendering checks them.
+  const setItems = (next) => edit({ [el]: next, text: { ...plan.text, [el]: { ...cfg, show: items.length === 0 && next.length > 0 ? true : cfg.show } } }, { raw: true });
   const maxLen = el === 'headline' ? tmpl.headline : el === 'sub' ? tmpl.sub : 24;
   const custom = /^#/.test(cfg.color || '');
   const rides = el === 'sub' && cfg.attach && plan.text.headline.show && !!plan.headline;
@@ -464,7 +471,7 @@ function WordsEditor({ plan, tmpl, sel, setSel, logos, edit, setText, resetSpot 
     <div className="si-words">
       <div className="si-chips">
         {els.map((k) => {
-          const lit = k === 'logo' ? !!plan.logo : plan.text[k].show && !!plan[k];
+          const lit = k === 'logo' ? !!plan.logo : LISTS.includes(k) ? plan.text[k].show && (plan[k] || []).length > 0 : plan.text[k].show && !!plan[k];
           return (
             <button key={k} type="button" className={'chip' + (k === el ? ' active' : '')} onClick={() => setSel(k)}>
               <span className="mini-dot" style={{ background: lit ? 'var(--green)' : 'var(--faint)' }} />{ELEMENTS[k]}
@@ -487,12 +494,44 @@ function WordsEditor({ plan, tmpl, sel, setSel, logos, edit, setText, resetSpot 
             <input type="checkbox" checked={cfg.show} onChange={(e) => setText(el, { show: e.target.checked })} />
             <span>Show the {ELEMENTS[el].toLowerCase()}</span>
           </label>
+          {isList ? (
+            <div className="si-list">
+              {items.map((it, i) => (
+                <div key={i} className="si-list-row">
+                  {el === 'benefits' ? (
+                    <>
+                      <select className="input" value={it.icon} onChange={(e) => setItems(items.map((x, j) => (j === i ? { ...x, icon: e.target.value } : x)))} aria-label="Icon">
+                        {BENEFIT_ICONS.map((k) => <option key={k} value={k}>{k}</option>)}
+                      </select>
+                      <input className="input" value={it.text} maxLength={34} placeholder="e.g. Easy to customise"
+                        onChange={(e) => setItems(items.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))} />
+                    </>
+                  ) : (
+                    <>
+                      <input className="input" value={it.label} maxLength={22} placeholder="Prints from" onChange={(e) => setItems(items.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))} />
+                      <input className="input" value={it.price} maxLength={12} placeholder="$39" onChange={(e) => setItems(items.map((x, j) => (j === i ? { ...x, price: e.target.value } : x)))} />
+                      <input className="input" value={it.was} maxLength={12} placeholder="was (optional)" onChange={(e) => setItems(items.map((x, j) => (j === i ? { ...x, was: e.target.value } : x)))} />
+                    </>
+                  )}
+                  <button type="button" className="btn btn-ghost" onClick={() => setItems(items.filter((_, j) => j !== i))} aria-label="Remove">×</button>
+                </div>
+              ))}
+              {items.length < (el === 'benefits' ? 4 : 2) && (
+                <button type="button" className="btn btn-ghost" onClick={() => setItems([...items, el === 'benefits' ? { icon: 'check', text: '' } : { label: '', price: '', was: '' }])}>
+                  + Add {el === 'benefits' ? 'a benefit' : 'a price tag'}
+                </button>
+              )}
+              {el === 'tags' && <div className="ledger-note">Only prices that are real on the store today.</div>}
+              {el === 'benefits' && <div className="ledger-note">Only true claims: no free shipping or guarantees unless the store offers them.</div>}
+            </div>
+          ) : (
           <label className="field">
             <span>{el === 'cta' ? 'Button text' : 'Words'}</span>
             <input className="input" value={plan[el]} maxLength={maxLen}
               placeholder={el === 'sub' && plan.template === 'offer' ? 'e.g. Up to 60% off (only if the offer is real)' : el === 'cta' ? 'e.g. Shop now' : ''}
               onChange={(e) => edit({ [el]: e.target.value, ...(e.target.value && !cfg.show ? { text: { ...plan.text, [el]: { ...cfg, show: true } } } : {}) }, { raw: true })} />
           </label>
+          )}
         </>
       )}
 
@@ -529,14 +568,14 @@ function WordsEditor({ plan, tmpl, sel, setSel, logos, edit, setText, resetSpot 
           )}
           {el !== 'logo' && (
             <div className="field-row">
-              {isText && !rides && (
+              {(isText || el === 'benefits') && !rides && (
                 <label className="field">
                   <span>Width · {Math.round(cfg.w)}%</span>
                   <input type="range" min={20} max={100} step={1} value={cfg.w} onChange={(e) => setText(el, { w: Number(e.target.value) })} />
                 </label>
               )}
               <label className="field">
-                <span>{el === 'cta' ? 'Button colour' : 'Colour'}</span>
+                <span>{el === 'cta' ? 'Button colour' : el === 'tags' ? 'Price colour' : 'Colour'}</span>
                 <div className="si-color">
                   <select className="input" value={custom ? '#' : cfg.color} onChange={(e) => setText(el, { color: e.target.value === '#' ? '#ffffff' : e.target.value })}>
                     {Object.entries(TEXT_COLORS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -547,10 +586,10 @@ function WordsEditor({ plan, tmpl, sel, setSel, logos, edit, setText, resetSpot 
               </label>
             </div>
           )}
-          {isText && (
+          {(isText || el === 'tags') && (
             <div className="field-row">
               <label className="field">
-                <span>Box behind</span>
+                <span>{el === 'tags' ? 'Tag colour' : 'Box behind'}</span>
                 <select className="input" value={cfg.bg} onChange={(e) => setText(el, { bg: e.target.value })}>
                   {Object.entries(TEXT_BOXES_BG).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
@@ -581,8 +620,9 @@ function DragLayer({ plan, sel, onPick, onMove }) {
   const ref = useRef(null);
   const drag = useRef(null);
   const headOn = plan.text.headline.show && !!plan.headline;
+  const filled = (el) => (LISTS.includes(el) ? (plan[el] || []).length > 0 : !!plan[el]);
   const spots = Object.keys(ELEMENTS).filter((el) => (el === 'logo' ? !!plan.logo
-    : plan.text[el] && plan.text[el].show && !!plan[el] && !(el === 'sub' && plan.text.sub.attach && headOn)));
+    : plan.text[el] && plan.text[el].show && filled(el) && !(el === 'sub' && plan.text.sub.attach && headOn)));
   const at = (e) => {
     const r = ref.current.getBoundingClientRect();
     const snap = (v) => (Math.abs(v - 50) < 1.5 ? 50 : Math.round(v * 2) / 2);

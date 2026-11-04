@@ -610,7 +610,24 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   scene and what not to copy. `TOOLS` says exactly what each tab can do; keep it exact.
   Headlines and scenes never name a band or other brand and never invent offers, and the
   ad's text is fenced as data: competitors wrote it.
-- **"Make one like it" never sends the competitor's image to an image model.** Claude
+- **"Make one like it" builds the whole ad**, not just a shot: a one-ad recreate batch
+  started from the breakdown as edited in the tab (`recipe` on `createBatch`, so it is not
+  analysed twice), with the product, image or video and shape chosen there. "Only the
+  lifestyle shot, in Mockups" is the old path below. The breakdown carries the ad's
+  `composition` (camera, where the product sits, where plain space is left for words), its
+  `layout` (one of our image layouts) and `overlays`. The composition goes to the scene
+  writer and the image model ahead of the store's usual framing (Wallspoke's "print
+  filling the frame" left no room for words), and the planner is told the layout, the
+  overlays and the product's own listing text as the only claims allowed.
+- **The `feature` image layout** is for ads built like retail posters: a row of up to four
+  benefits with line icons (inline SVG, which both renderers draw), one short headline, up
+  to two price tags and the logo over a full-bleed scene. The photo is anchored to its top
+  (sized by hand, the web renderer has no object-position) so the plain space survives the
+  crop, the planner says where that space is (`place`: top, left or right) and whether the
+  words there are dark or light (`tone`), and without a kit headline font the headline is
+  an editorial serif. Benefits and tags are editable rows in the builder; price tags only
+  ever hold prices the store notes state.
+- **"Only the lifestyle shot" never sends the competitor's image to an image model.** Claude
   writes an original scene, surroundings only, and the button leaves
   `{ brand, scene, search, source }` in `sessionStorage` (`backstage.mockupSeed`). Mockups
   reads it once on load (a ref, so React's dev double effect cannot eat it), opens that

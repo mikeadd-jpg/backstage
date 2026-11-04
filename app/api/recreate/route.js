@@ -52,7 +52,7 @@ export async function POST(req) {
     if (b.action === 'start') {
       if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
       const batch = await createBatch({
-        brand: b.brand, picks: b.picks, make: b.make, perAd: b.perAd, aspect: b.aspect, notes: b.notes,
+        brand: b.brand, picks: b.picks, make: b.make, perAd: b.perAd, aspect: b.aspect, notes: b.notes, recipe: b.recipe || null,
         by: g.access.email, origin: new URL(req.url).origin,
       });
       after(() => driveBatch(batch.id).catch((err) => console.error('[recreate] batch ' + batch.id, err)));

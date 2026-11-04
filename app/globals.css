@@ -1280,3 +1280,7 @@ span.as-trans { text-align: center; }
 .ap-product .mk-picker-head { margin-top: 12px; }
 .ap-make { margin-top: 14px; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
 .ap-front { display: block; width: 96px; height: 96px; object-fit: cover; border-radius: 8px; margin: 0 0 8px; background: var(--surface-2); }
+.si-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.si-list-row { display: flex; gap: 6px; align-items: center; }
+.si-list-row .input { min-width: 0; flex: 1; }
+.si-list-row select.input { flex: 0 0 92px; }

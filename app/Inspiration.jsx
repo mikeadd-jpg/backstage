@@ -5,6 +5,7 @@
 // version; "Make one like it" hands Claude's scene to the Mockups tab, where our real
 // product is shot in it and reviewed like any other mockup. Breakdowns are held in this
 // tab only; stars, notes, captures and the competitor list are saved.
+import { STILL_TEMPLATES } from '../lib/stillPlans.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
 import Batches from './Batches.jsx';
@@ -175,7 +176,7 @@ function CaptureCard({ cap, open, onOpen, onStar, onDelete, picked, onPick }) {
 // The breakdown panel, for an ad or a capture. An ad's saved picture (or a video's poster)
 // goes to Claude automatically; a screenshot can still be added for ads without one, and
 // a recording needs a frame picked from it.
-function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, go, onSaved }) {
+function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, go, onSaved, onStarted }) {
   const { image = '', recipe = null, busy = false, error = '', scene = '' } = state;
   const brandName = (brands.find((b) => b.key === brand) || {}).name || brand;
   const videoRef = useRef(null);
@@ -218,6 +219,26 @@ function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, 
       await post(isCapture ? { action: 'mark-capture', id: item.id, note, competitor: label } : { action: 'mark-ad', id: item.id, notes: note });
       onSaved();
     } catch (e) { setState({ error: e.message }); }
+  }
+
+  // The whole ad in one go: a one-ad recreate batch (lib/recreate.js) that starts from this
+  // breakdown as edited here, makes the lifestyle shot in the ad's composition, plans the
+  // image (or video) in the matching layout, renders it and leaves it in Drafts.
+  async function makeAd() {
+    setState({ making: { busy: true } });
+    try {
+      const res = await fetch('/api/recreate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        action: 'start', brand: state.recipeBrand || brand, picks: [{ type: isCapture ? 'capture' : 'ad', id: item.id }],
+        make: state.make || 'auto', perAd: 1, aspect: state.aspect || '',
+        recipe: { ...recipe, scene, product: state.product !== undefined ? state.product : recipe.product },
+      }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || 'Could not start.');
+      setState({ making: { started: true } });
+      onStarted && onStarted();
+    } catch (e) {
+      setState({ making: { error: e.message } });
+    }
   }
 
   function makeOne() {
@@ -309,16 +330,55 @@ function Breakdown({ item, isCapture, brands, brand, setBrand, state, setState, 
           )}
           <div className="insp-sub">Don't copy</div>
           <p className="insp-p">{recipe.avoid}</p>
+          {(recipe.composition || recipe.layout) && (
+            <>
+              <div className="insp-sub">How it is put together</div>
+              <p className="insp-p">
+                {recipe.composition}
+                {recipe.layout ? ' Our layout: ' + ((STILL_TEMPLATES[recipe.layout] || {}).label || recipe.layout) + '.' : ''}
+                {recipe.overlays && recipe.overlays.length ? ' Over the picture: ' + recipe.overlays.join(', ') + '.' : ''}
+              </p>
+            </>
+          )}
           <label className="field" style={{ marginTop: 6 }}>
-            <span>Scene for Mockups{recipe.product ? ' · use a product like: ' + recipe.product : ''}</span>
-            <textarea className="input" rows={5} value={scene} onChange={(e) => setState({ scene: e.target.value })} />
+            <span>Scene for the lifestyle shot</span>
+            <textarea className="input" rows={4} value={scene} onChange={(e) => setState({ scene: e.target.value })} />
           </label>
-          <div className="reply-actions">
-            <button className="btn btn-primary" onClick={makeOne} disabled={!scene.trim()}>Make one like it in Mockups</button>
-            {recipe.tool !== 'mockup' && <button className="btn btn-ghost" onClick={() => go('ads')}>Open Ads</button>}
+          <div className="field-row">
+            <label className="field">
+              <span>Product to use</span>
+              <input className="input" value={state.product !== undefined ? state.product : recipe.product} onChange={(e) => setState({ product: e.target.value })}
+                placeholder="Claude picks from the store" />
+            </label>
+            <label className="field">
+              <span>Make</span>
+              <select className="input" value={state.make || 'auto'} onChange={(e) => setState({ make: e.target.value })}>
+                <option value="auto">{recipe.tool === 'video' ? 'A video ad (suggested)' : 'An image ad (suggested)'}</option>
+                <option value="image">An image ad</option>
+                <option value="video">A video ad</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>Shape</span>
+              <select className="input" value={state.aspect || ''} onChange={(e) => setState({ aspect: e.target.value })}>
+                <option value="">Default</option>
+                <option value="4:5">4:5 feed</option>
+                <option value="1:1">1:1 square</option>
+                <option value="9:16">9:16 Stories and Reels</option>
+              </select>
+            </label>
           </div>
+          <div className="reply-actions">
+            <button className="btn btn-primary" onClick={makeAd} disabled={!scene.trim() || (state.making && state.making.busy)}>
+              {state.making && state.making.busy ? 'Starting...' : state.making && state.making.started ? 'Make another' : 'Make one like it'}
+            </button>
+            <button className="btn btn-ghost" onClick={makeOne} disabled={!scene.trim()}>Only the lifestyle shot, in Mockups</button>
+          </div>
+          {state.making && state.making.error && <div className="login-error" style={{ marginTop: 8 }}>{state.making.error}</div>}
           <div className="ledger-note" style={{ marginTop: 8 }}>
-            Mockups opens on {(brands.find((b) => b.key === (state.recipeBrand || brand)) || {}).name || 'that store'} with this scene ready for the next products you pick. Nothing is generated until you press Generate there.
+            {state.making && state.making.started
+              ? 'Started. It shows under Batches at the top of this tab and lands in Drafts in about two minutes, rendered, ready to send to Meta.'
+              : 'Makes the lifestyle shot in this composition, builds the ad in the matching layout with our own words, renders it and saves it to Drafts. One image, about $0.25, checked against the product before use.'}
           </div>
         </div>
       )}
@@ -887,7 +947,7 @@ export default function Inspiration({ go }) {
                 <AdCard ad={ad} open={openId === k} onOpen={() => openItem(k, ad.competitor)} onStar={() => star('ad', ad)}
                   picked={Boolean(picked[k])} onPick={() => togglePick(k, { type: 'ad', id: ad.id, label: ad.competitor })} />
                 {openId === k && (
-                  <Breakdown item={ad} brands={brands} brand={brand} setBrand={setBrand} state={states[k] || {}} setState={setStateFor(k)} go={go} onSaved={load} />
+                  <Breakdown item={ad} brands={brands} brand={brand} setBrand={setBrand} state={states[k] || {}} setState={setStateFor(k)} go={go} onSaved={load} onStarted={() => setBatchRefresh((n) => n + 1)} />
                 )}
               </div>
             );
@@ -903,7 +963,7 @@ export default function Inspiration({ go }) {
                     try { await post({ action: 'delete-capture', id: cap.id }); if (openId === k) setOpenId(null); load(); } catch (e) { setError(e.message); }
                   }} />
                 {openId === k && (
-                  <Breakdown item={cap} isCapture brands={brands} brand={brand} setBrand={setBrand} state={states[k] || {}} setState={setStateFor(k)} go={go} onSaved={load} />
+                  <Breakdown item={cap} isCapture brands={brands} brand={brand} setBrand={setBrand} state={states[k] || {}} setState={setStateFor(k)} go={go} onSaved={load} onStarted={() => setBatchRefresh((n) => n + 1)} />
                 )}
               </div>
             );
