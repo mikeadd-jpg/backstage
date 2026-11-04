@@ -38,8 +38,7 @@ import {
   generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, notesFor, SIZES,
 } from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
-import { put } from '@vercel/blob';
-import { saveDraft, DRAFT_PREFIX } from '../../../lib/drafts.js';
+import { saveMockupDraft } from '../../../lib/drafts.js';
 import { uploadToCanva, canvaStatus } from '../../../lib/canva.js';
 
 export const dynamic = 'force-dynamic';
@@ -144,17 +143,8 @@ export async function POST(req) {
       // Saved to Drafts. A failure here never loses the image: the client still has it.
       let draft = null;
       try {
-        const p = body.product || {};
-        const slug = String(p.handle || 'mockup').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 60);
-        const file = await put(DRAFT_PREFIX + brand + '/mockups/' + slug + '.png', Buffer.from(result.b64, 'base64'),
-          { access: 'public', addRandomSuffix: true, contentType: 'image/png' });
-        draft = await saveDraft({
-          brand, kind: 'mockup', title: String(p.title || 'Mockup') + (p.color ? ' · ' + p.color : ''),
-          output: { url: file.url, contentType: 'image/png' },
-          source: { productId: p.id || null, handle: p.handle || null, title: p.title || null, color: p.color || null,
-            sourceImage: body.imageUrl, scene: body.scene, variation: result.variation || null, prompt: result.prompt || null },
-          by: gate.access.email,
-        });
+        draft = await saveMockupDraft({ brand, product: body.product || {}, b64: result.b64, sourceImage: body.imageUrl,
+          scene: body.scene, result, by: gate.access.email });
       } catch (err) {
         console.error('[mockups] draft save', err);
       }

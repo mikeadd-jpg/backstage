@@ -497,7 +497,8 @@ fresh token. `shopifyGraphql` detects the denial and says so rather than passing
 "Access denied for products field".
 
 **Rotate scene** (`suggestScene`, action `suggest-scene`) has Claude (`DRAFT_MODEL`) write
-a fresh scene in the brand voice, looking at the product image, with every scene already
+a fresh scene in the brand voice, looking at the product image (sent as data, never a URL:
+Printify's image host blocks Claude's fetcher in robots.txt), with every scene already
 shown this session passed as "already used" so it moves on rather than circling back. It
 describes only the surroundings, never the artwork, so it cannot argue with `HARD_RULES`.
 It saves nothing; "Save as default" is still the only way a scene becomes the default.
@@ -616,6 +617,42 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   competitor's ads, unread-ad lookups and media, so a new brand is useful straight away.
 - Stars, notes, capture labels and the competitor list are edited in the tab and saved;
   breakdowns live in the tab and go when it closes.
+
+### Recreate in bulk (`lib/recreate.js`, `/api/recreate`, `app/Batches.jsx`)
+
+"Pick" on any Inspiration ad or capture, then **Recreate** in the bar at the bottom: for
+each pick Backstage makes our own mockups, an ad and its render, all kept in Drafts. Needs
+the inspiration, mockups and ads areas. Runs on the server, so it can be started from a
+phone and left.
+
+- **Steps per ad:** analyze (`analyzeAd`, the same breakdown as "How would I build
+  this?"), products, one mockup per product, plan (the builders' own `planVideos` /
+  `planStills`, with the brand kit's logos, end cards and approved songs as `k<id>`
+  assets), then a server render (`startRender`). Make is Claude's pick per ad (its `tool`:
+  video means a video ad, anything else an image ad), or all images, or all videos.
+- **Their creative never reaches an image model, and their words never reach ours.**
+  Claude sees their picture to understand the idea; the image model gets our product and
+  a scene Claude wrote; the planners get only the breakdown, in our voice, under the
+  builders' no-offers, no-other-brands rules.
+- **Products are picked by Claude from the real catalog** (`pickProducts`, Haiku), one
+  listing per design (market copies folded), never a keyword match: matching "relaxed fit
+  pants" once picked an onesie called Underpants. On a Printify store only Printify items
+  are offered (a Loog guitar bundle was picked once), gift cards never, kids' garments only
+  when the idea is about kids. Products already used in the batch are marked, short
+  answers are topped up.
+- **Each product gets its own scene** (`suggestScene`, looking at the product, set in the
+  first sentence of the breakdown's scene): the breakdown describes the competitor's kind
+  of product and once dressed a hoodie in "relaxed-fit bottoms".
+- **Spend cap:** at most `MAX_MOCKUPS` (20) paid images and `MAX_ITEMS` (10) ads per batch,
+  checked when it starts. A failed mockup is retried once, then the ad goes ahead with the
+  rest; any other failed step fails only that ad.
+- **`creative_batches` holds the state** (`items` per ad). A worker leases the batch
+  (`lease_until`), works for `BUDGET_MS`, never starting a step it might not finish
+  (`SLOWEST_STEP_MS`), mockups three at a time, then hands on to a new invocation of
+  `/api/recreate/worker` (exempt from the sign-in gate, checks `INGEST_SECRET` in
+  `x-worker-key`). An expired lease is restarted by the tabs' polling and by the ingest
+  cron (`wakeIdleBatches`), so a dead worker never strands a batch.
+- Measured 2026-11-04: one ad, two mockups and an image ad, rendered, in 90 seconds.
 
 ## Sending a mockup to Meta (`lib/meta.js`)
 

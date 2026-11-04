@@ -7,6 +7,7 @@
 // tab only; stars, notes, captures and the competitor list are saved.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { upload } from '@vercel/blob/client';
+import Batches from './Batches.jsx';
 
 const PAGE = 60;
 const SEED_KEY = 'backstage.mockupSeed'; // read once by app/Mockups.jsx
@@ -98,15 +99,25 @@ function Media({ media, big, videoRef }) {
   return null;
 }
 
-function AdCard({ ad, open, onOpen, onStar }) {
+// "Pick" adds a card to the batch in the bar at the bottom (Recreate, lib/recreate.js).
+function PickButton({ picked, onPick }) {
+  if (!onPick) return null;
   return (
-    <div className={'card insp-ad' + (open ? ' open' : '')}>
+    <button type="button" className={'insp-pick' + (picked ? ' on' : '')} onClick={onPick} aria-pressed={picked}
+      title="Pick it to recreate with our products and brand kit">{picked ? '✓ Picked' : 'Pick'}</button>
+  );
+}
+
+function AdCard({ ad, open, onOpen, onStar, picked, onPick }) {
+  return (
+    <div className={'card insp-ad' + (open ? ' open' : '') + (picked ? ' picked' : '')}>
       {!open && ad.media.length > 0 && <Media media={ad.media} />}
       <div className="insp-ad-top">
         <span className="insp-comp">{ad.competitor}</span>
         <button type="button" className={'insp-star-btn' + (ad.starred ? ' on' : '')} onClick={onStar} title={ad.starred ? 'Unstar' : 'Star'}>
           {ad.starred ? '★' : '☆'}
         </button>
+        <PickButton picked={picked} onPick={onPick} />
         {ad.winner && (
           <span className="insp-win" title="Likely winner: in the advertiser's top 3 by impressions, live for a month, or run as several versions. Inferred, since Meta does not publish impressions for these ads.">
             Likely winner
@@ -135,9 +146,9 @@ function AdCard({ ad, open, onOpen, onStar }) {
   );
 }
 
-function CaptureCard({ cap, open, onOpen, onStar, onDelete }) {
+function CaptureCard({ cap, open, onOpen, onStar, onDelete, picked, onPick }) {
   return (
-    <div className={'card insp-ad' + (open ? ' open' : '')}>
+    <div className={'card insp-ad' + (open ? ' open' : '') + (picked ? ' picked' : '')}>
       {!open && (cap.kind === 'video'
         ? <video className="insp-media" src={cap.url + '#t=0.5'} muted playsInline preload="metadata" />
         : <img className="insp-media" src={cap.url} alt="" loading="lazy" />)}
@@ -146,6 +157,7 @@ function CaptureCard({ cap, open, onOpen, onStar, onDelete }) {
         <button type="button" className={'insp-star-btn' + (cap.starred ? ' on' : '')} onClick={onStar} title={cap.starred ? 'Unstar' : 'Star'}>
           {cap.starred ? '★' : '☆'}
         </button>
+        <PickButton picked={picked} onPick={onPick} />
         <span className="insp-run">{cap.reading ? 'reading...' : (cap.info && cap.info.platform && cap.info.platform !== 'unknown' ? cap.info.platform + ' · ' : '') + (cap.kind === 'video' ? 'recording' : 'screenshot')}</span>
       </div>
       {cap.info && cap.info.headline && <div className="insp-headline">{cap.info.headline}</div>}
@@ -526,6 +538,32 @@ export default function Inspiration({ go }) {
   const [openId, setOpenId] = useState(null);
   const [states, setStates] = useState({});          // item key -> breakdown state, this tab only
 
+  // Picked ads and captures for a Recreate batch (lib/recreate.js), and its options.
+  const [picked, setPicked] = useState({});           // key -> { type, id, label }
+  const [rc, setRc] = useState({ store: '', make: 'auto', perAd: 2, aspect: '', notes: '' });
+  const [rcBusy, setRcBusy] = useState(false);
+  const [rcError, setRcError] = useState('');
+  const [batchRefresh, setBatchRefresh] = useState(0);
+  const pickedList = Object.values(picked);
+  const togglePick = (k, item) => setPicked((p) => {
+    const next = { ...p };
+    if (next[k]) delete next[k]; else next[k] = item;
+    return next;
+  });
+  const rcStore = rc.store || store || brand;
+  const rcTotal = pickedList.length * rc.perAd;
+  async function startBatch() {
+    setRcBusy(true); setRcError('');
+    try {
+      const res = await fetch('/api/recreate', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'start', brand: rcStore, picks: pickedList.map(({ type, id }) => ({ type, id })), make: rc.make, perAd: rc.perAd, aspect: rc.aspect, notes: rc.notes }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || 'Could not start the batch.');
+      setPicked({}); setBatchRefresh((n) => n + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) { setRcError(e.message); } finally { setRcBusy(false); }
+  }
+
   function load() {
     setLoading(true); setError('');
     fetch('/api/inspiration')
@@ -647,6 +685,8 @@ export default function Inspiration({ go }) {
       )}
       {error && <div className="flag" style={{ marginBottom: 14 }}><span className="ico">&#9873;</span><span>{error}</span></div>}
 
+      <Batches refresh={batchRefresh} go={go} />
+
       <div className="pf-chips" role="tablist" aria-label="What to show" style={{ marginBottom: 12 }}>
         {[['ads', 'Competitor ads'], ['captures', 'From my phone' + (data && data.captures.length ? ' (' + data.captures.length + ')' : '')], ['competitors', 'Competitors']].map(([k, l]) => (
           <button key={k} type="button" role="tab" aria-selected={view === k} className={'chip' + (view === k ? ' active' : '')}
@@ -736,7 +776,8 @@ export default function Inspiration({ go }) {
             const k = 'a' + ad.id;
             return (
               <div key={k} className={openId === k ? 'insp-cell wide' : 'insp-cell'}>
-                <AdCard ad={ad} open={openId === k} onOpen={() => openItem(k, ad.competitor)} onStar={() => star('ad', ad)} />
+                <AdCard ad={ad} open={openId === k} onOpen={() => openItem(k, ad.competitor)} onStar={() => star('ad', ad)}
+                  picked={Boolean(picked[k])} onPick={() => togglePick(k, { type: 'ad', id: ad.id, label: ad.competitor })} />
                 {openId === k && (
                   <Breakdown item={ad} brands={brands} brand={brand} setBrand={setBrand} state={states[k] || {}} setState={setStateFor(k)} go={go} onSaved={load} />
                 )}
@@ -748,6 +789,7 @@ export default function Inspiration({ go }) {
             return (
               <div key={k} className={openId === k ? 'insp-cell wide' : 'insp-cell'}>
                 <CaptureCard cap={cap} open={openId === k} onOpen={() => openItem(k, cap.competitor)} onStar={() => star('capture', cap)}
+                  picked={Boolean(picked[k])} onPick={() => togglePick(k, { type: 'capture', id: cap.id, label: cap.competitor || 'Capture' })}
                   onDelete={async () => {
                     if (!window.confirm('Delete this capture? The file is removed too.')) return;
                     try { await post({ action: 'delete-capture', id: cap.id }); if (openId === k) setOpenId(null); load(); } catch (e) { setError(e.message); }
@@ -763,6 +805,63 @@ export default function Inspiration({ go }) {
       {view !== 'competitors' && (view === 'ads' ? filtered.length : captures.length) > limit && (
         <div className="reply-actions" style={{ justifyContent: 'center', marginTop: 14 }}>
           <button className="btn btn-ghost" onClick={() => setLimit((n) => n + PAGE)}>Show more</button>
+        </div>
+      )}
+
+      {pickedList.length > 0 && (
+        <div className="card rc-bar">
+          <div className="rc-bar-top">
+            <span>Recreate {pickedList.length} ad{pickedList.length === 1 ? '' : 's'}</span>
+            <span className="rc-sub acc-count">
+              Our own version of each: {rcTotal} mockup{rcTotal === 1 ? '' : 's'} of our products from an original scene, then an ad from the brand kit, rendered and kept in Drafts.
+              Their pictures and words are never reused.
+            </span>
+            <button className="btn btn-ghost" type="button" onClick={() => setPicked({})}>Clear</button>
+          </div>
+          <div className="field-row">
+            <label className="field">
+              <span>For</span>
+              <select className="input" value={rcStore} onChange={(e) => setRc((o) => ({ ...o, store: e.target.value }))}>
+                {brands.map((b) => <option key={b.key} value={b.key}>{b.name}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              <span>Make</span>
+              <select className="input" value={rc.make} onChange={(e) => setRc((o) => ({ ...o, make: e.target.value }))}>
+                <option value="auto">Claude picks per ad</option>
+                <option value="image">Image ads</option>
+                <option value="video">Video ads</option>
+              </select>
+            </label>
+            <label className="field">
+              <span>Mockups per ad</span>
+              <select className="input" value={rc.perAd} onChange={(e) => setRc((o) => ({ ...o, perAd: Number(e.target.value) }))}>
+                {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+            <label className="field">
+              <span>Shape</span>
+              <select className="input" value={rc.aspect} onChange={(e) => setRc((o) => ({ ...o, aspect: e.target.value }))}>
+                <option value="">Videos 9:16, images 4:5</option>
+                <option value="9:16">9:16 Reels and Stories</option>
+                <option value="4:5">4:5 Feed</option>
+                <option value="1:1">1:1 Square</option>
+              </select>
+            </label>
+          </div>
+          <label className="field">
+            <span>Notes for every ad (optional)</span>
+            <input className="input" value={rc.notes} maxLength={600} onChange={(e) => setRc((o) => ({ ...o, notes: e.target.value }))}
+              placeholder="e.g. push the new hoodies, keep it moody" />
+          </label>
+          {rcTotal > 20 && <div className="login-error" style={{ marginTop: 8 }}>A batch makes at most 20 mockups. Pick fewer ads or fewer mockups per ad.</div>}
+          {rcError && <div className="login-error" style={{ marginTop: 8 }}>{rcError}</div>}
+          <div className="reply-actions" style={{ marginTop: 8 }}>
+            <button className="btn btn-primary" type="button" onClick={startBatch} disabled={rcBusy || rcTotal > 20 || pickedList.length > 10 || !rcStore}>
+              {rcBusy ? 'Starting...' : 'Recreate ' + pickedList.length}
+            </button>
+            {pickedList.length > 10 && <span className="acc-count">Up to 10 ads per batch.</span>}
+          </div>
         </div>
       )}
     </div>

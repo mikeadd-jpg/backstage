@@ -13,6 +13,8 @@
 //   - /api/inspiration-refresh, the competitor ads cron, same secrets as the others
 //   - /api/inspiration/capture, the iPhone Shortcut's upload door, which checks its own
 //     upload key (hash in app_settings) and can only hand out a capture upload link
+//   - /api/recreate/worker, which hands an Inspiration batch from one invocation to the
+//     next and checks INGEST_SECRET itself
 //   - /api/mcp, which authenticates with MCP_TOKEN or an OAuth access token
 //   - /api/oauth/* and /.well-known/*, the OAuth flow Claude uses to reach /api/mcp. Its
 //     consent screen does its own session check, so approval is still gated.
@@ -22,7 +24,7 @@ import { readSession, SESSION_COOKIE } from './lib/session.js';
 const PUBLIC_PATHS = [
   '/login', '/api/auth',
   '/api/ingest', '/api/scan', '/api/email-snapshot', '/api/printers-refresh', '/api/inspiration-refresh',
-  '/api/inspiration/capture',
+  '/api/inspiration/capture', '/api/recreate/worker',
   '/api/mcp', '/api/oauth', '/.well-known',
 ];
 

@@ -9,6 +9,7 @@
 import { NextResponse, after } from 'next/server';
 import { runIngest } from '../../../lib/pipeline.js';
 import { settleRenders } from '../../../lib/serverRender.js';
+import { wakeIdleBatches } from '../../../lib/recreate.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -25,6 +26,8 @@ async function run() {
   // the response, so a render started from a phone lands in Drafts even if nobody looks.
   // This rides the ingest cron rather than a cron of its own so Neon can still sleep.
   after(() => settleRenders().catch((err) => console.error('settleRenders', err)));
+  // Inspiration batches whose worker went quiet are restarted here too (lib/recreate.js).
+  after(() => wakeIdleBatches().catch((err) => console.error('wakeIdleBatches', err)));
   try {
     return NextResponse.json(await runIngest());
   } catch (err) {

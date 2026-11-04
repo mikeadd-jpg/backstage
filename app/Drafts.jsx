@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { OPEN_DRAFT_KEY, renderJob, renderFailed, renderStatusText, startServerRender, pollRenders } from './draftsClient.js';
 import { BRANDS } from './ui';
 import { ACCENTS } from '../lib/adPlans.js';
+import Batches from './Batches.jsx';
 
 const KIND_LABELS = { mockup: 'Mockup', video: 'Video ad', image: 'Image ad' };
 const PAGE = 48;
@@ -111,6 +112,7 @@ export default function Drafts({ go }) {
         or image ad to keep editing it.
       </p>
       {error && <div className="flag" style={{ marginBottom: 14 }}><span className="ico">&#9873;</span><span>{error}</span></div>}
+      <Batches onSettled={load} />
 
       <div className="card insp-filters">
         <div className="field-row">

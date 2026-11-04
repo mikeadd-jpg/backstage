@@ -1,0 +1,61 @@
+// Recreate competitor ads in bulk (lib/recreate.js): our own mockups, ad and render for
+// each picked ad, all kept in Drafts.
+//
+//   GET                       the latest batches with each ad's progress; wakes any whose
+//                             worker went quiet
+//   POST { action: 'start', brand, picks: [{ type: 'ad'|'capture', id }], make, perAd,
+//          aspect, notes }    starts a batch (at most 20 mockups) and works on it after
+//                             answering
+//   POST { action: 'stop', id }   stops a batch; what it already made stays in Drafts
+//
+// Needs the inspiration, mockups and ads areas: it spends on images and makes ad drafts.
+// Not exposed over MCP yet (phase 4).
+import { NextResponse, after } from 'next/server';
+import { requireArea } from '../../../lib/access.js';
+import { configuredShopifyBrands } from '../../../lib/brands.js';
+import { createBatch, stopBatch, listBatches, driveBatch, wakeIdleBatches, MAX_MOCKUPS, MAX_ITEMS, MAX_PER_AD } from '../../../lib/recreate.js';
+
+export const dynamic = 'force-dynamic';
+export const maxDuration = 800;
+
+async function gate(req) {
+  const g = await requireArea(req, 'inspiration');
+  if (g.error) return g;
+  if (!['mockups', 'ads'].every((a) => g.access.areas.includes(a))) {
+    return { error: NextResponse.json({ error: 'Recreating ads needs the Mockups and Ads screens too.' }, { status: 403 }) };
+  }
+  return g;
+}
+
+export async function GET(req) {
+  const g = await gate(req);
+  if (g.error) return g.error;
+  try {
+    const batches = await listBatches();
+    if (batches.some((b) => b.status === 'running')) after(() => wakeIdleBatches().catch((err) => console.error('[recreate] wake', err)));
+    return NextResponse.json({ batches, limits: { mockups: MAX_MOCKUPS, items: MAX_ITEMS, perAd: MAX_PER_AD } }, { headers: { 'Cache-Control': 'private, no-store' } });
+  } catch (err) {
+    return NextResponse.json({ error: String(err.message || err) }, { status: 500 });
+  }
+}
+
+export async function POST(req) {
+  const g = await gate(req);
+  if (g.error) return g.error;
+  try {
+    const b = await req.json();
+    if (b.action === 'start') {
+      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      const batch = await createBatch({
+        brand: b.brand, picks: b.picks, make: b.make, perAd: b.perAd, aspect: b.aspect, notes: b.notes,
+        by: g.access.email, origin: new URL(req.url).origin,
+      });
+      after(() => driveBatch(batch.id).catch((err) => console.error('[recreate] batch ' + batch.id, err)));
+      return NextResponse.json({ batch });
+    }
+    if (b.action === 'stop') { await stopBatch(b.id); return NextResponse.json({ ok: true }); }
+    throw new Error('Unknown action.');
+  } catch (err) {
+    return NextResponse.json({ error: String(err.message || err) }, { status: 400 });
+  }
+}

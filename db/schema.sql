@@ -307,3 +307,19 @@ CREATE TABLE IF NOT EXISTS creative_drafts (
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS creative_drafts_list_idx ON creative_drafts (brand, kind, status, updated_at DESC);
+
+-- Inspiration batches (lib/recreate.js): picked competitor ads, each made into our own
+-- mockups, an ad draft and a server render. `items` holds each ad's progress; a worker
+-- holds `lease_until` while it works, and an expired lease means it can be restarted.
+CREATE TABLE IF NOT EXISTS creative_batches (
+  id SERIAL PRIMARY KEY,
+  brand TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'running',     -- running | done | failed | stopped
+  options JSONB NOT NULL DEFAULT '{}'::jsonb,
+  items JSONB NOT NULL DEFAULT '[]'::jsonb,
+  lease_until TIMESTAMPTZ,
+  created_by TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS creative_batches_recent_idx ON creative_batches (created_at DESC);
