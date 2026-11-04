@@ -114,13 +114,14 @@ function Pic({ pic, picked, onPick, busy, badge }) {
 function ProductPictures({ brand, product, shots, drafts, isPicked, onPick, busy, onBack, onDraftMade, onUseProduct, note }) {
   const base = { handle: product.handle, title: product.title, productId: product.id };
   const library = shots.map((img) => ({ ...base, source: 'library', hash: img.hash, url: img.url, name: img.name, width: img.width, height: img.height, label: 'In Meta', lifestyle: true }));
-  const kept = drafts.map((d) => ({ ...base, source: 'draft', draftId: d.id, url: d.url, label: (d.color || 'Draft') + (d.favorite ? ' ★' : ''), lifestyle: true,
+  const kept = drafts.map((d) => ({ ...base, source: 'draft', draftId: d.id, url: d.url, label: (d.color || 'Draft') + (d.favorite ? ' ★' : ''), lifestyle: true, side: d.side || null,
     check: d.check }));
   // Each colour's front, and its back when the design has one.
   const store = (product.colors && product.colors.length ? product.colors : [{ name: '', front: product.image }])
     .flatMap((c) => [
-      { ...base, source: 'store', url: c.front, label: (c.name || 'Store photo') + (product.hasBack ? ' · front' : ''), lifestyle: false },
+      // The back design first: it leads unless the front is asked for.
       ...(product.hasBack && c.back ? [{ ...base, source: 'store', url: c.back, label: (c.name || 'Store photo') + ' · back', lifestyle: false, side: 'back' }] : []),
+      { ...base, source: 'store', url: c.front, label: (c.name || 'Store photo') + (product.hasBack ? ' · front' : ''), lifestyle: false, side: product.hasBack ? 'front' : null },
     ]);
   const [making, setMaking] = useState(false);
 
@@ -173,7 +174,7 @@ function MakeShot({ brand, product, onClose, onMade }) {
   const [writing, setWriting] = useState(false);
   const [size, setSize] = useState('portrait');
   const [shown, setShown] = useState(brand === 'wallspoke' ? 'room' : 'model');
-  const [side, setSide] = useState('front');
+  const [side, setSide] = useState(product.hasBack ? 'back' : 'front');
   const [state, setState] = useState(null);           // null | { busy } | { error } | { done }
   const pick = colors.find((c) => c.name === color) || {};
   const front = (side === 'back' && product.hasBack && pick.back) || pick.front || product.image;
@@ -194,7 +195,7 @@ function MakeShot({ brand, product, onClose, onMade }) {
     setState({ busy: true });
     try {
       const { ok, status, d } = await mockupsPost({ action: 'generate', brand, imageUrl: front, scene, size, quality: 'high',
-        variationIndex: shown === 'model' || shown === 'room' ? 0 : undefined, notes: presentationLine(shown), side,
+        variationIndex: shown === 'model' || shown === 'room' ? 0 : undefined, notes: presentationLine(shown), side: product.hasBack ? side : undefined,
         product: { id: product.id, title: product.title, handle: product.handle, color: color + (side === 'back' ? ', back' : '') } });
       if (status === 403) return setState({ error: 'Making mockups needs the Mockups area on your role.' });
       if (!ok || !d.draft) return setState({ error: d.error || 'The image could not be made.' });
@@ -219,8 +220,8 @@ function MakeShot({ brand, product, onClose, onMade }) {
           <label className="field">
             <span>Side</span>
             <select className="input" value={side} onChange={(e) => setSide(e.target.value)}>
-              <option value="front">Front design</option>
               <option value="back">Back design</option>
+              <option value="front">Front design</option>
             </select>
           </label>
         )}

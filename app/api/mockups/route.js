@@ -33,9 +33,9 @@ import { NextResponse, after } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
 import { listActiveProducts, addProductImage, setProductMainImage } from '../../../lib/shopify.js';
-import { printifyMockupIndex, mockupsFor } from '../../../lib/printifyMockups.js';
+import { printifyMockupIndex, mockupsFor, shotOf } from '../../../lib/printifyMockups.js';
 import {
-  generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, notesFor, SIZES, BACK_LINE,
+  generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, notesFor, SIZES, sideLine,
 } from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
 import { saveMockupDraft, getDraft, saveDraft } from '../../../lib/drafts.js';
@@ -120,8 +120,9 @@ export async function POST(req) {
       const out = products.map((p) => {
         const m = mockupsFor(index, p.skus);
         if (!m) return { ...p, colors: [], source: 'shopify' };
-        const def = m.colors.find((c) => c.name === m.defaultColor) || m.colors[0];
-        return { ...p, shopifyImage: p.image, image: def.front, color: def.name, colors: m.colors, back: m.back, hasBack: Boolean(m.hasBack), source: 'printify' };
+        // The back design leads where there is one (shotOf).
+        const shot = shotOf(m);
+        return { ...p, shopifyImage: p.image, image: shot.image, color: shot.color, side: shot.hasBack ? shot.side : null, colors: m.colors, back: m.back, hasBack: shot.hasBack, source: 'printify' };
       });
       return NextResponse.json({ products: out, printify: index ? { at: index.at, matched: out.filter((p) => p.source === 'printify').length } : null });
     }
@@ -136,7 +137,7 @@ export async function POST(req) {
         brand,
         imageUrl: body.imageUrl,
         scene: body.scene,
-        notes: [body.notes, body.side === 'back' ? BACK_LINE : ''].filter(Boolean).join(' '),
+        notes: [body.notes, sideLine(body.side)].filter(Boolean).join(' '),
         size: body.size,
         quality: body.quality,
         variation,
@@ -146,7 +147,7 @@ export async function POST(req) {
       let draft = null;
       try {
         draft = await saveMockupDraft({ brand, product: body.product || {}, b64: result.b64, sourceImage: body.imageUrl,
-          scene: body.scene, result, by: gate.access.email });
+          scene: body.scene, result, by: gate.access.email, extra: ['front', 'back'].includes(body.side) ? { side: body.side } : {} });
       } catch (err) {
         console.error('[mockups] draft save', err);
       }

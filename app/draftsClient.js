@@ -50,6 +50,7 @@ export async function persistAssets(brand, assets, plan, remember) {
       width: a.width || null, height: a.height || null, seconds: a.seconds || null, beat: a.beat || null,
       // A mockup picked from Drafts: cleanupDrafts keeps it while an ad draft uses it.
       ...(a.draftId ? { draftId: a.draftId } : {}),
+      ...(a.side ? { side: a.side } : {}),
     });
   }
   return out;

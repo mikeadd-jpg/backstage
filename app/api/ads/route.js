@@ -144,6 +144,7 @@ export async function POST(req) {
         if (!h || !d.output || !d.output.url) continue;
         (draftsByHandle[h] = draftsByHandle[h] || []).push({
           id: d.id, url: d.output.url, color: d.source.color || '', favorite: d.status === 'favorite',
+          side: d.source.side || (/,\s*back$/i.test(d.source.color || '') ? 'back' : null),
           check: d.source.check ? { pass: d.source.check.pass, score: d.source.check.score } : null, at: d.updatedAt || d.createdAt,
         });
       }

@@ -13,7 +13,7 @@ import { STILL_TEMPLATES, STILL_KEYS, PRESENTATIONS } from '../lib/stillPlans.js
 
 const OVERLAYS = { headline: 'Headline', sub: 'Line under', benefits: 'Benefits with icons', price: 'Price tags', button: 'Button', logo: 'Logo' };
 const IMAGE_COST = 0.25;
-const blank = { idea: '', direction: '', headlines: '', make: 'image', aspect: '', layout: '', overlays: ['headline', 'logo'], presentation: '', scene: '', composition: '', avoid: '' };
+const blank = { idea: '', direction: '', headlines: '', make: 'image', aspect: '', layout: '', overlays: ['headline', 'logo'], presentation: '', side: 'back', scene: '', composition: '', avoid: '' };
 
 async function api(path, payload) {
   const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -28,7 +28,7 @@ export function briefFromRecipe(r) {
     idea: r.hook || '', direction: '', headlines: (r.headlines || []).join('\n'),
     make: r.tool === 'video' ? 'video' : 'image', aspect: '', layout: r.layout || '',
     overlays: r.overlays && r.overlays.length ? r.overlays : ['headline', 'logo'],
-    presentation: r.presentation || '', scene: r.scene || '', composition: r.composition || '', avoid: r.avoid || '',
+    presentation: r.presentation || '', side: r.side === 'front' ? 'front' : 'back', scene: r.scene || '', composition: r.composition || '', avoid: r.avoid || '',
   };
 }
 
@@ -65,7 +65,8 @@ export default function BriefEditor({ brands, brand: startBrand, initial = null,
   const isPicked = (pic) => !!(chosen[pic.productId] && chosen[pic.productId].pictures[keyOf(pic)]);
   function entryFor(product, cur) {
     const colors = product.colors || [];
-    return cur[product.id] || { product, pictures: {}, newShots: 0, side: 'front', color: product.defaultColor || (colors[0] && colors[0].name) || '' };
+    // New shots of a product with a back design show the back, unless the brief asks for the front.
+    return cur[product.id] || { product, pictures: {}, newShots: 0, side: product.hasBack && b.side !== 'front' ? 'back' : 'front', color: product.defaultColor || (colors[0] && colors[0].name) || '' };
   }
   function togglePic(pic) {
     const product = (lib.products || []).find((p) => p.id === pic.productId);
@@ -206,6 +207,15 @@ export default function BriefEditor({ brands, brand: startBrand, initial = null,
           </label>
         )}
       </div>
+      <div className="field-row">
+        <label className="field">
+          <span>Design to show (products with a back design)</span>
+          <select className="input" value={b.side === 'front' ? 'front' : 'back'} onChange={(e) => set({ side: e.target.value })}>
+            <option value="back">Back design</option>
+            <option value="front">Front design</option>
+          </select>
+        </label>
+      </div>
       <div className="brief-checks">
         <span className="ledger-note">Over the picture:</span>
         {Object.entries(OVERLAYS).map(([k, v]) => (
@@ -243,9 +253,9 @@ export default function BriefEditor({ brands, brand: startBrand, initial = null,
                 {c.newShots > 0 && c.product.hasBack && (
                   <label className="field">
                     <span>Side</span>
-                    <select className="input" value={c.side || 'front'} onChange={(e) => setEntry(c.product.id, { side: e.target.value })}>
-                      <option value="front">Front design</option>
+                    <select className="input" value={c.side || 'back'} onChange={(e) => setEntry(c.product.id, { side: e.target.value })}>
                       <option value="back">Back design</option>
+                      <option value="front">Front design</option>
                     </select>
                   </label>
                 )}

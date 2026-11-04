@@ -278,7 +278,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
         action: 'plan-video', brand, aspect, notes, beat: firstSongBeat,
         previous: options.filter((o) => o.source === 'claude').map((o) => o.plan.title + ': ' + o.plan.why),
         assets: all.filter((a) => a.kind !== 'font').map((a) => ({
-          id: a.id, kind: a.kind, title: a.title, name: a.name, seconds: a.seconds, width: a.width, height: a.height,
+          id: a.id, kind: a.kind, title: a.title, name: a.name, side: a.side || undefined, seconds: a.seconds, width: a.width, height: a.height,
           approved: a.origin === 'kit',
           thumb: a.thumb ? { mediaType: a.thumb.mediaType, data: a.thumb.data } : null,
         })),

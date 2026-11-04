@@ -176,7 +176,7 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
         action: 'plan-still', brand, aspect, notes,
         previous: options.filter((o) => o.source === 'claude').map((o) => o.plan.title + ': ' + o.plan.headline),
         assets: all.filter((a) => a.kind === 'image' || a.kind === 'logo').map((a) => ({
-          id: a.id, kind: a.kind, title: a.title, name: a.name, width: a.width, height: a.height,
+          id: a.id, kind: a.kind, title: a.title, name: a.name, side: a.side || undefined, width: a.width, height: a.height,
           thumb: a.thumb ? { mediaType: a.thumb.mediaType, data: a.thumb.data } : null,
         })),
       });

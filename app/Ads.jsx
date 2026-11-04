@@ -493,7 +493,7 @@ export default function Ads() {
         // never uploaded again, and the draft it came from is kept from cleanup while used.
         const a = await assetFromLibrary({ url: pic.url, name: pic.handle, title: pic.title, handle: pic.handle });
         const own = pic.source === 'draft';
-        setSAssets((xs) => [...xs, { ...a, fromUrl: pic.url, storedUrl: own ? pic.url : undefined, draftId: pic.draftId || undefined, origin: pic.source }]);
+        setSAssets((xs) => [...xs, { ...a, fromUrl: pic.url, storedUrl: own ? pic.url : undefined, draftId: pic.draftId || undefined, origin: pic.source, side: pic.side || undefined }]);
       } else {
         const { ok, d } = await post({ action: 'url-to-meta', brand, url: pic.url, handle: pic.handle, lifestyle: pic.lifestyle });
         if (!ok) throw new Error(d.error || 'Could not copy the picture into the ad library.');

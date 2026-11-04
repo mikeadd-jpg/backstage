@@ -166,7 +166,7 @@ export default function Mockups() {
     if (jobs.length >= maxProducts) return setError('Up to ' + maxProducts + ' products at a time. Remove one to add another.');
     const seeded = seed && seed.brand === brand;
     const job = {
-      key, brand, product: p, color: p.color || null, image: p.image, side: 'front',
+      key, brand, product: p, color: p.color || null, image: p.image, side: p.side || 'front',
       scene: seeded ? seed.scene : scenes[brand] || defaults[brand] || '',
       notes: '', rotating: false, msg: seeded ? 'Scene from Inspiration.' : '', failures: [],
     };
@@ -240,7 +240,7 @@ export default function Mockups() {
     try {
       const { ok, d } = await post({
         action: 'generate', brand: job.brand, imageUrl: job.image || job.product.image, scene: job.scene,
-        notes: job.notes, size, quality, variationIndex: index, side: job.side || 'front',
+        notes: job.notes, size, quality, variationIndex: index, side: job.product.hasBack ? job.side || 'back' : undefined,
         // For the draft the server saves: which product and colour this shot is of.
         product: { id: job.product.id, title: job.product.title, handle: job.product.handle, color: (job.color || '') + (job.side === 'back' ? (job.color ? ', back' : 'Back') : '') || null },
       });

@@ -494,7 +494,17 @@ and `hasBack`, true only when a back print area holds an image (Printify shows a
 of every garment, blank or not); the cache key is `printify_mockups2_` since that change.
 Mockups cards, the Ads tab's store mockups and shot maker, and the brief offer Front or Back
 design where there is one, and a back shot carries `BACK_LINE` (show it from behind, never
-invent a front) to the image model. On 2026-11-04, 245 Elder Emo and 5 PopPunks products had one.
+invent a front) to the image model, a front shot `FRONT_LINE`. On 2026-11-04, 245 Elder Emo and
+5 PopPunks products had one.
+
+**The back design leads unless the front is asked for** (the owner's rule). `shotOf` in
+`lib/printifyMockups.js` picks the back by default, and everything that chooses a side on its
+own uses it: Mockups cards, the Ads tab's shot maker and store mockups (backs listed first),
+batches, briefs (`side`, which `fillBrief` sets to front only when the idea says so), and the
+creative MCP connection (`search_products` gives the back picture, `make_mockups` takes
+`side`, its instructions say so). Mockup drafts record `source.side`, and the image and video
+planners are told which side each picture shows, so copy never describes a front the
+picture does not show.
 
 **Product reads go through GraphQL, not REST.** Shopify made the REST product endpoints
 legacy, so `listActiveProducts` and `addProductImage` in `lib/shopify.js` use
