@@ -7,6 +7,8 @@
 //   mark-ad          { id, starred?, notes? }
 //   mark-capture     { id, starred?, note?, competitor? }
 //   delete-capture   { id }
+//   read-capture     { id, frame? }  Claude reads the advertiser and text off a capture
+//                    (a video sends a frame); fills its brand if blank
 //   add-capture      { url, note?, competitor? }  record a file the tab uploaded
 //   save-competitor  { id?, name, pageId, active?, notes? }
 //   remove-competitor { id }
@@ -21,7 +23,7 @@ import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
 import {
   readInspiration, analyzeAd, getAd, getCapture, setAdMark, setCaptureMark, deleteCapture, addCapture,
-  saveCompetitor, removeCompetitor, newUploadKey, uploadKeyInfo, CAPTURE_PREFIX,
+  saveCompetitor, removeCompetitor, newUploadKey, uploadKeyInfo, CAPTURE_PREFIX, readCapture, markCaptureRead,
 } from '../../../lib/inspiration.js';
 import { refreshCompetitorAds } from '../../../lib/adLibrary.js';
 
@@ -94,6 +96,14 @@ export async function POST(req) {
     if (body.action === 'mark-ad') { await setAdMark(body.id, body); return ok(); }
     if (body.action === 'mark-capture') { await setCaptureMark(body.id, body); return ok(); }
     if (body.action === 'delete-capture') { await deleteCapture(body.id); return ok(); }
+    if (body.action === 'read-capture') {
+      try { return NextResponse.json(await readCapture(body.id, body.frame)); }
+      catch (err) {
+        // Unreadable for good (no frame): don't ask again. Anything else retries next load.
+        if (/No frame|gone/.test(String(err.message))) await markCaptureRead(body.id).catch(() => {});
+        throw err;
+      }
+    }
 
     if (body.action === 'add-capture') {
       // Ask Blob rather than trusting the client's url, type or size.

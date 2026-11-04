@@ -54,6 +54,24 @@ function shrink(file) {
   });
 }
 
+// A frame about a second into a recording, as a JPEG data URL, for Claude to read the
+// advertiser from. Our Blob copies send CORS headers, so the canvas stays readable.
+function frameOf(url) {
+  return new Promise((resolve, reject) => {
+    const v = document.createElement('video');
+    v.crossOrigin = 'anonymous'; v.muted = true; v.playsInline = true; v.preload = 'auto';
+    const done = (fn) => { clearTimeout(t); v.removeAttribute('src'); v.load(); fn(); };
+    const t = setTimeout(() => done(() => reject(new Error('timeout'))), 20000);
+    v.onloadedmetadata = () => { v.currentTime = Math.min(1, (v.duration || 2) / 2); };
+    v.onseeked = () => {
+      try { const d = shrinkCanvas(v, v.videoWidth, v.videoHeight); done(() => resolve(d)); }
+      catch (e) { done(() => reject(e)); }
+    };
+    v.onerror = () => done(() => reject(new Error('unreadable')));
+    v.src = url;
+  });
+}
+
 async function post(body) {
   const res = await fetch('/api/inspiration', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const d = await res.json().catch(() => ({}));
@@ -117,7 +135,7 @@ function AdCard({ ad, open, onOpen, onStar }) {
   );
 }
 
-function CaptureCard({ cap, open, onOpen, onStar }) {
+function CaptureCard({ cap, open, onOpen, onStar, onDelete }) {
   return (
     <div className={'card insp-ad' + (open ? ' open' : '')}>
       {!open && (cap.kind === 'video'
@@ -128,12 +146,15 @@ function CaptureCard({ cap, open, onOpen, onStar }) {
         <button type="button" className={'insp-star-btn' + (cap.starred ? ' on' : '')} onClick={onStar} title={cap.starred ? 'Unstar' : 'Star'}>
           {cap.starred ? '★' : '☆'}
         </button>
-        <span className="insp-run">{cap.kind === 'video' ? 'recording' : 'screenshot'}</span>
+        <span className="insp-run">{cap.reading ? 'reading...' : (cap.info && cap.info.platform && cap.info.platform !== 'unknown' ? cap.info.platform + ' · ' : '') + (cap.kind === 'video' ? 'recording' : 'screenshot')}</span>
       </div>
+      {cap.info && cap.info.headline && <div className="insp-headline">{cap.info.headline}</div>}
+      {cap.info && cap.info.text && <div className="insp-text">{cap.info.text}</div>}
       {cap.note && <div className="insp-notes">{cap.note}</div>}
       <div className="insp-meta">{cap.source === 'shortcut' ? 'From the iPhone Shortcut' : 'Uploaded' + (cap.by ? ' by ' + cap.by.split('@')[0] : '')} · {ago(cap.at)}</div>
       <div className="reply-actions insp-actions">
         <button className={'btn ' + (open ? 'btn-ghost' : 'btn-primary')} onClick={onOpen}>{open ? 'Close' : 'How would I build this?'}</button>
+        <button className="btn btn-ghost" type="button" onClick={onDelete}>Delete</button>
       </div>
     </div>
   );
@@ -494,6 +515,33 @@ export default function Inspiration({ go }) {
     post(kind === 'ad' ? { action: 'mark-ad', id: item.id, starred: !item.starred } : { action: 'mark-capture', id: item.id, starred: !item.starred }).catch((e) => setError(e.message));
   }
 
+  // Captures nobody has read yet are read in the background, two at a time: Claude names
+  // the advertiser (filling the brand if it is blank) and the visible text. Recordings
+  // send a frame from a second in. A failure leaves the capture for the next load.
+  const reading = useRef(new Set());
+  useEffect(() => {
+    if (!data) return;
+    const todo = data.captures.filter((c) => !c.read && !reading.current.has(c.id));
+    if (!todo.length) return;
+    todo.forEach((c) => reading.current.add(c.id));
+    const patch = (id, p) => setData((d) => (d ? { ...d, captures: d.captures.map((x) => (x.id === id ? { ...x, ...p } : x)) } : d));
+    let i = 0;
+    const worker = async () => {
+      while (i < todo.length) {
+        const c = todo[i++];
+        patch(c.id, { reading: true });
+        try {
+          const frame = c.kind === 'video' ? await frameOf(c.url).catch(() => null) : undefined;
+          const r = await post({ action: 'read-capture', id: c.id, frame: frame || undefined });
+          patch(c.id, { reading: false, read: true, competitor: r.competitor, info: r.info });
+        } catch {
+          patch(c.id, { reading: false });
+        }
+      }
+    };
+    worker(); worker();
+  }, [data]);
+
   const ads = useMemo(() => (data ? data.ads : []).map((a) => {
     const key = copyKey(a);
     return { ...a, key, score: score(a), winner: a.active && ((a.rank && a.rank <= WIN_RANK) || a.days >= WIN_DAYS || a.copies >= WIN_COPIES) };
@@ -519,7 +567,8 @@ export default function Inspiration({ go }) {
   }, [ads, competitor, show, sort, search]);
   const captures = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (data ? data.captures : []).filter((c) => (show !== 'starred' || c.starred) && (!q || (c.competitor + ' ' + c.note).toLowerCase().includes(q)));
+    return (data ? data.captures : []).filter((c) => (show !== 'starred' || c.starred) &&
+      (!q || [c.competitor, c.note, c.info && c.info.advertiser, c.info && c.info.headline, c.info && c.info.text].join(' ').toLowerCase().includes(q)));
   }, [data, show, search]);
   useEffect(() => { setLimit(PAGE); }, [competitor, show, sort, search, view]);
 
@@ -635,17 +684,13 @@ export default function Inspiration({ go }) {
             const k = 'c' + cap.id;
             return (
               <div key={k} className={openId === k ? 'insp-cell wide' : 'insp-cell'}>
-                <CaptureCard cap={cap} open={openId === k} onOpen={() => setOpenId(openId === k ? null : k)} onStar={() => star('capture', cap)} />
+                <CaptureCard cap={cap} open={openId === k} onOpen={() => setOpenId(openId === k ? null : k)} onStar={() => star('capture', cap)}
+                  onDelete={async () => {
+                    if (!window.confirm('Delete this capture? The file is removed too.')) return;
+                    try { await post({ action: 'delete-capture', id: cap.id }); if (openId === k) setOpenId(null); load(); } catch (e) { setError(e.message); }
+                  }} />
                 {openId === k && (
-                  <>
-                    <Breakdown item={cap} isCapture brands={brands} brand={brand} setBrand={setBrand} state={states[k] || {}} setState={setStateFor(k)} go={go} onSaved={load} />
-                    <div className="reply-actions">
-                      <button type="button" className="link-inline" onClick={async () => {
-                        if (!window.confirm('Delete this capture? The file is removed too.')) return;
-                        try { await post({ action: 'delete-capture', id: cap.id }); setOpenId(null); load(); } catch (e) { setError(e.message); }
-                      }}>Delete capture</button>
-                    </div>
-                  </>
+                  <Breakdown item={cap} isCapture brands={brands} brand={brand} setBrand={setBrand} state={states[k] || {}} setState={setStateFor(k)} go={go} onSaved={load} />
                 )}
               </div>
             );

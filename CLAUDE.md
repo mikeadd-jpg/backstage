@@ -573,6 +573,16 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   third call: `syncCaptures` adds unseen capture files when the tab loads. The presigned
   link has no content-type check, because a Shortcut may send octet-stream; the fixed
   path's extension (sent as `ext`) stands in.
+- **Captures are read once by Claude** (`readCapture`, `CLASSIFY_MODEL`, a tool): the
+  advertiser (the posting account beside "Sponsored" first, then the store the ad sells
+  from, never a brand that only appears in the picture), platform, Sponsored, headline,
+  button and visible copy, kept in `read_info` and searched by the tab. It fills the
+  capture's brand only when blank, under a competitor's exact name when one matches. The
+  tab reads unread captures in the background two at a time; a recording sends a frame
+  from one second in (`frameOf`), since the server cannot decode video. `read_at` marks a
+  capture done; only a truly unreadable one (no frame) is marked without a result, so a
+  transient API error retries on the next load. On bare creatives with no account name it
+  can still mistake a label in the photo for the advertiser; typing a brand fixes it.
 - **"How would I build this?" sees the real creative**: the ad's saved images, or a
   video's poster, go to Claude by URL; a recording needs a frame picked in the player.
   `analyzeAd` (`DRAFT_MODEL`) returns, through a tool: format, hook, why, which of our

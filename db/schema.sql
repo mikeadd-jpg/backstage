@@ -272,3 +272,9 @@ CREATE TABLE IF NOT EXISTS inspiration_runs (
   credits_left INTEGER,
   errors       TEXT
 );
+
+-- What Claude read off a capture (lib/inspiration.js, readCapture): the advertiser named on
+-- the Facebook or Instagram ad, platform, Sponsored, and its visible headline, button and
+-- copy. read_at marks it read once, so a capture is never sent twice.
+ALTER TABLE inspiration_captures ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
+ALTER TABLE inspiration_captures ADD COLUMN IF NOT EXISTS read_info JSONB;
