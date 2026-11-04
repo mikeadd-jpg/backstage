@@ -1237,3 +1237,6 @@ span.as-trans { text-align: center; }
 .rc-bar-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; font-weight: 600; }
 .rc-bar-top .rc-sub { flex: 1; }
 @media (max-width: 680px) { .rc-bar { bottom: 76px; } }
+.insp-need-link { margin-top: 2px; }
+.insp-link-row { display: flex; gap: 6px; margin-top: 6px; }
+.insp-link-row .input { flex: 1; min-width: 0; }

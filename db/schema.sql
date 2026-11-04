@@ -323,3 +323,8 @@ CREATE TABLE IF NOT EXISTS creative_batches (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS creative_batches_recent_idx ON creative_batches (created_at DESC);
+
+-- Competitors read off phone captures are added before anyone has found their Ad Library
+-- Page, so page_id may be empty until then (fetching skips those). UNIQUE still holds for
+-- the ones that have one.
+ALTER TABLE competitors ALTER COLUMN page_id DROP NOT NULL;

@@ -615,6 +615,11 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   after them) that don't apply, and a breakdown opens on that store. **Adding a competitor
   scans it at once** (`scan-competitor`, `refreshCompetitorAds({ competitorId })`): only that
   competitor's ads, unread-ad lookups and media, so a new brand is useful straight away.
+- **A brand read off a capture that is not a competitor yet is added to Competitors**
+  (`addFoundCompetitor`) with no Page id, which is why `competitors.page_id` allows NULL.
+  Fetching skips those (`page_id IS NOT NULL`) until someone pastes the Ad Library link on
+  its row, which saves the Page and scans it. The row links to an Ad Library search for the
+  name. Our own stores and the platforms' names are never added.
 - Stars, notes, capture labels and the competitor list are edited in the tab and saved;
   breakdowns live in the tab and go when it closes.
 

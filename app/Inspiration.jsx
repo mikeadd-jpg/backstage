@@ -468,14 +468,26 @@ function Competitors({ list, brands, onChanged }) {
     onChanged();
   }
   // Paste an Ad Library link and the Page id is read out of it.
-  const pageId = (/view_all_page_id=(\d+)/.exec(page) || [])[1] || page.trim();
+  const idOf = (v) => (/view_all_page_id=(\d+)/.exec(v) || [])[1] || String(v || '').trim();
+  const pageId = idOf(page);
+  // Competitors found on phone captures arrive without a Page: a link pasted here adds it
+  // and scans them straight away.
+  const [links, setLinks] = useState({});      // id -> pasted link
+  async function addLink(c) {
+    const d = await act({ action: 'save-competitor', id: c.id, pageId: idOf(links[c.id]) });
+    if (d) { setLinks((l) => ({ ...l, [c.id]: '' })); scan(c.id); }
+  }
+  const searchUrl = (name) => 'https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=ALL&search_type=keyword_unordered&q=' + encodeURIComponent(name);
+  const needLink = list.filter((c) => !c.pageId).length;
   return (
     <div className="card">
       <div className="card-label">Competitors</div>
       <p className="pane-sub" style={{ marginTop: 0 }}>
         Backstage reads each active competitor's running ads every morning, and straight away when you add one. Tick the
-        stores each one matters for (none ticked means all). Removing one stops the reading; its ads stay.
+        stores each one matters for (none ticked means all). Removing one stops the reading; its ads stay. Brands read off
+        your phone captures are added here too, waiting for their Ad Library link.
       </p>
+      {needLink > 0 && <div className="ledger-note" style={{ marginBottom: 10 }}>{needLink} found on your phone captures {needLink === 1 ? 'needs its' : 'need their'} Ad Library link.</div>}
       <div className="insp-comp-list">
         {list.map((c) => (
           <div key={c.id} className="insp-comp-row">
@@ -484,15 +496,25 @@ function Competitors({ list, brands, onChanged }) {
             </label>
             <div className="insp-comp-name">
               <div className="li-name">{c.name}</div>
-              <div className="li-sub">
-                Page {c.pageId} · checked {ago(c.checkedAt)}{c.capped ? ' · more ads than one run reads' : ''}
-                {c.error && <span className="insp-err"> · {c.error}</span>}
-              </div>
+              {c.pageId ? (
+                <div className="li-sub">
+                  Page {c.pageId} · checked {ago(c.checkedAt)}{c.capped ? ' · more ads than one run reads' : ''}
+                  {c.error && <span className="insp-err"> · {c.error}</span>}
+                </div>
+              ) : (
+                <div className="insp-need-link">
+                  <div className="li-sub">Found on a phone capture. <a href={searchUrl(c.name)} target="_blank" rel="noreferrer">Find them in the Ad Library</a>, open their Page's ads and paste the link:</div>
+                  <div className="insp-link-row">
+                    <input className="input" value={links[c.id] || ''} onChange={(e) => setLinks((l) => ({ ...l, [c.id]: e.target.value }))} placeholder="view_all_page_id=..." />
+                    <button type="button" className="btn btn-ghost" disabled={!/^\d{5,25}$/.test(idOf(links[c.id]))} onClick={() => addLink(c)}>Add and scan</button>
+                  </div>
+                </div>
+              )}
               <StorePicks brands={brands} value={c.brands || []} onChange={(v) => act({ action: 'save-competitor', id: c.id, brands: v })} />
               {scanning[c.id] && <div className="li-sub" style={{ marginTop: 4 }}>{scanning[c.id]}</div>}
             </div>
-            <button type="button" className="link-inline" disabled={scanning[c.id] === 'Scanning their Ad Library...'} onClick={() => scan(c.id)}>Scan now</button>
-            <a className="link-inline" href={'https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=ALL&view_all_page_id=' + c.pageId} target="_blank" rel="noreferrer">Ad Library</a>
+            {c.pageId && <button type="button" className="link-inline" disabled={scanning[c.id] === 'Scanning their Ad Library...'} onClick={() => scan(c.id)}>Scan now</button>}
+            {c.pageId && <a className="link-inline" href={'https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=ALL&view_all_page_id=' + c.pageId} target="_blank" rel="noreferrer">Ad Library</a>}
             <button type="button" className="link-inline" onClick={() => window.confirm('Stop following ' + c.name + '? Their saved ads stay.') && act({ action: 'remove-competitor', id: c.id })}>Remove</button>
           </div>
         ))}
@@ -605,7 +627,7 @@ export default function Inspiration({ go }) {
     if (!todo.length) return;
     todo.forEach((c) => reading.current.add(c.id));
     const patch = (id, p) => setData((d) => (d ? { ...d, captures: d.captures.map((x) => (x.id === id ? { ...x, ...p } : x)) } : d));
-    let i = 0;
+    let i = 0, added = false;
     const worker = async () => {
       while (i < todo.length) {
         const c = todo[i++];
@@ -614,12 +636,14 @@ export default function Inspiration({ go }) {
           const frame = c.kind === 'video' ? await frameOf(c.url).catch(() => null) : undefined;
           const r = await post({ action: 'read-capture', id: c.id, frame: frame || undefined });
           patch(c.id, { reading: false, read: true, competitor: r.competitor, info: r.info });
+          if (r.addedCompetitor) added = true;
         } catch {
           patch(c.id, { reading: false });
         }
       }
     };
-    worker(); worker();
+    // A brand read off a capture that was new to the list was added to Competitors.
+    Promise.all([worker(), worker()]).then(() => { if (added) load(); });
   }, [data]);
 
   const ads = useMemo(() => (data ? data.ads : []).map((a) => {
