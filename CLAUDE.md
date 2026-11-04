@@ -1005,6 +1005,12 @@ music, which the video builder offers in every option.
   colour by contrast; with no style saved the templates look as they did before. A sticker
   font turns Quick cuts' words into tilted stickers. The guidelines go into Claude's plan
   prompt. Elder Emo's was filled from its brand kit document on 2026-11-03.
+- **Button case and shape are their own switches** (`uppercaseButtons`, `pillButtons`):
+  Wallspoke sets sentence-case headlines with capital, softly rounded (not pill) buttons.
+  Unset, buttons follow the headlines and stay pill shaped, as before.
+- Wallspoke's kit was built from its live theme on 2026-11-04: the horizontal logo (plus a
+  light copy for dark grounds), Hanken Grotesk Bold and Regular and Spectral Medium and
+  Italic from Google Fonts (OFL), and the theme's colour tokens.
 - Kit fonts hold one weight per file, so text in a kit font asks for weight 400 (`weight()`
   in `AdTemplates.jsx`); bold is its own file in the bold role. Variable fonts were skipped
   for the static cuts on purpose.

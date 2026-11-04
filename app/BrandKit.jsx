@@ -188,7 +188,8 @@ export default function BrandKit({ brand, brandName }) {
             ))}
           </div>
           <div className="kit-looks">
-            {[['uppercaseHeadlines', 'Uppercase headlines and buttons'], ['squareCorners', 'Square corners'], ['offsetShadow', 'Hard offset shadows, no blur'],
+            {[['uppercaseHeadlines', 'Uppercase headlines'], ['uppercaseButtons', 'Uppercase buttons'], ['squareCorners', 'Square corners'],
+              ['pillButtons', 'Round-ended (pill) buttons'], ['offsetShadow', 'Hard offset shadows, no blur'],
               ['borders', 'Thick borders on bars and stickers'], ['gradients', 'Gradients allowed']].map(([k, label]) => (
               <label className="check" key={k}>
                 <input type="checkbox" checked={Boolean(style.look[k])} onChange={(e) => setLook(k, e.target.checked)} /> {label}

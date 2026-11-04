@@ -372,8 +372,8 @@ function EndCard({ end, brandName, st, fadeIn }) {
       )}
       <div style={{
         backgroundColor: st.colors.primary, color: st.onPrimary, fontFamily: st.fonts.bold + SANS, fontWeight: weight(st.fonts.bold, 800), fontSize: Math.round(height * 0.026),
-        textTransform: upper, letterSpacing: st.look.uppercaseHeadlines ? 2 : 0,
-        padding: '24px 56px', borderRadius: st.look.squareCorners ? 0 : 999, border: st.look.borders ? '4px solid ' + st.colors.text : 'none',
+        textTransform: st.look.uppercaseButtons ? 'uppercase' : 'none', letterSpacing: st.look.uppercaseButtons ? 2 : 0,
+        padding: '24px 56px', borderRadius: st.look.squareCorners ? 0 : st.look.pillButtons === false ? 12 : 999, border: st.look.borders ? '4px solid ' + st.colors.text : 'none',
         boxShadow: st.look.offsetShadow ? st.shadow(st.colors.text) : 'none',
       }}>{end.cta || 'Shop now'}</div>
     </AbsoluteFill>

@@ -267,14 +267,14 @@ function Words({ plan, st, u, ig, logo, has, width, height }) {
     const fill = ROLE(st, cfg.color) || (onPrimaryGround ? st.colors.background : st.colors.primary);
     const fg = fill === st.colors.primary ? st.onPrimary : inkOn(st, fill);
     const fontSize = Math.round(sizes.cta * cfg.size * u);
-    const up = st.look.uppercaseHeadlines;
+    const up = st.look.uppercaseButtons === undefined ? st.look.uppercaseHeadlines : st.look.uppercaseButtons;
     button = (
       <Spot cfg={cfg} width={width} height={height}>
         <div style={{
           backgroundColor: fill, color: fg, fontFamily: st.fonts.bold + SANS, fontWeight: weight(st.fonts.bold, 800), fontSize, lineHeight: 1,
           padding: Math.round(fontSize * 0.55) + 'px ' + Math.round(fontSize * 1.2) + 'px', whiteSpace: 'nowrap',
           textTransform: up ? 'uppercase' : 'none', letterSpacing: up ? Math.round(fontSize * 0.06) : 0,
-          borderRadius: st.look.squareCorners ? 0 : 999,
+          borderRadius: st.look.squareCorners ? 0 : st.look.pillButtons === false ? Math.round(10 * u) : 999,
           boxShadow: st.look.offsetShadow ? Math.round(6 * u) + 'px ' + Math.round(6 * u) + 'px 0 ' + inkOn(st, fill) : '0 ' + Math.round(8 * u) + 'px ' + Math.round(24 * u) + 'px rgba(0,0,0,0.25)',
         }}>{plan.cta}</div>
       </Spot>
