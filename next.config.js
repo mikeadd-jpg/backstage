@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   reactStrictMode: true,
+  // Server renders ship this deploy's Remotion bundle (scripts/bundle-remotion.mjs) to the
+  // sandbox, so the files have to travel with the route.
+  outputFileTracingIncludes: { '/api/renders': ['./.remotion/**/*'] },
   // Claude looks for OAuth discovery documents under /.well-known/. Next's App Router
   // will not route a directory whose name starts with a dot, so map them onto real routes.
   async rewrites() {

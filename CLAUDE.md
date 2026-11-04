@@ -881,6 +881,48 @@ music, which the video builder offers in every option.
   `app/mediaProbe.js`, 1600px long edge): the web renderer drew nothing for an SVG loaded
   by URL.
 
+## Server renders (`lib/serverRender.js`, `/api/renders`, `remotion/`)
+
+Video and image drafts can render on **Vercel Sandbox** (`@remotion/vercel`) as well as on
+the device, so an ad started from a phone finishes with the page closed and lands in Drafts.
+"Render on server" in both builders, and "Render" on each Drafts card.
+
+- **The server renders the saved draft, never the client's copy.** The builder saves the
+  draft first (pictures to Blob), then `renderProps` rebuilds everything from the row, the
+  brand kit and the brand style, the same way the builders do (`normalizePlan`,
+  `normalizeStill`, `ASPECTS`, `timeline`).
+- **`remotion/` is the bundle's entry**: `Root.jsx` has the `ad` and `still` compositions
+  sized by props, and `ServerAd.jsx` wraps the same `AdVideo` / `StillAd` the browser uses,
+  making inside the render what a browser tab normally supplies: kit fonts (FontFace from
+  their Blob URLs), the looks' textures and the poster checker (`fxTextures`,
+  `checkerTexture`). `npm run build` bundles it into `.remotion/` first
+  (`scripts/bundle-remotion.mjs`, no source maps) and `outputFileTracingIncludes` ships it
+  with `/api/renders`. Headless Chrome draws full CSS, so filters, z-index and SVG all work
+  there; the web renderer's limits still bind the templates because the browser path uses them.
+- **Fonts on the box:** a Linux sandbox has no Helvetica, Arial, Times or Impact. The
+  snapshot installs the Liberation fonts (metric-compatible, fontconfig maps the names) and
+  Noto emoji, and `ServerAd` loads Anton under the name `Impact`. Brand kit fonts are
+  unaffected.
+- **One snapshot per Remotion version** (`app_settings.render_snapshot_<version>`): Chrome,
+  the renderer and those fonts, built by `ensureSnapshot` under `withSettingLock` the first
+  time it is needed (about 50s), never expiring. Each render restores it and uploads this
+  deploy's bundle (a few seconds). A snapshot that has vanished is rebuilt once.
+- **The job lives in the draft's `output.job`**, so there is no table: queued, preparing,
+  starting, rendering (with progress), uploading, failed. An earlier rendered file stays
+  in `output.url` until the new one replaces it. A video renders **detached** and uploads
+  itself to a Blob path chosen up front; an image renders inside the request's `after()`.
+- **`checkRender` settles a job** whenever the builders or Drafts poll, and `settleRenders`
+  rides the ingest cron (`after()`, so Neon still sleeps), so a render nobody watches still
+  lands. If the sandbox has expired, the file at the chosen Blob path is the proof it
+  finished. A job that never started within 8 minutes is marked failed. The detached
+  sandbox lives 20 minutes at most and is stopped as soon as its file is in.
+- `@vercel/sandbox` is **pinned to 1.6.0**, the version `@remotion/vercel` is built
+  against; 3.x renamed `sandboxId` and the calls Remotion makes. Sandboxes authenticate with
+  Vercel's OIDC token, automatic on Vercel; locally `vercel env pull` provides
+  `VERCEL_OIDC_TOKEN` (12 hours).
+- Measured 2026-11-03: an 8s 1080x1920 video with a VHS look and music, 30s from start
+  to file; an image, about 3s. The Remotion license key, if set, is passed to both.
+
 ## Drafts (`lib/drafts.js`, `/api/drafts`, `app/Drafts.jsx`, `app/draftsClient.js`)
 
 Every mockup, video ad and image ad is kept until someone deletes it, so work survives the
@@ -1247,7 +1289,8 @@ the three: it has no batching and no time budget at all, so hitting a ceiling lo
 entire run rather than degrading.
 
 `/api/builder` and `/api/printers-refresh` ask for 300 too, for the printer catalog rebuild.
-Still on 60: `/api/mcp`. `/api/ads` and `/api/ads/video-upload` ask for 120.
+Still on 60: `/api/mcp`. `/api/ads` and `/api/ads/video-upload` ask for 120. `/api/renders`
+asks for 800, so building the render snapshot inside `after()` can never be cut short.
 The builder's prepare-then-one-build-per-product split predates the 300s limit, but it has
 independent value (progress, and one failed product not killing the rest), so keep it.
 

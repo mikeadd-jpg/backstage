@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/bundle-remotion.mjs && next build",
+    "bundle-remotion": "node scripts/bundle-remotion.mjs",
     "start": "next start",
     "ingest": "node scripts/run-ingest.mjs",
     "seed": "node scripts/seed-db.mjs",
@@ -13,10 +14,13 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
+    "@remotion/bundler": "4.0.540",
     "@remotion/media": "4.0.540",
     "@remotion/player": "4.0.540",
+    "@remotion/vercel": "4.0.540",
     "@remotion/web-renderer": "4.0.540",
     "@vercel/blob": "2.8.2",
+    "@vercel/sandbox": "1.6.0",
     "googleapis": "^144.0.0",
     "next": "^15.1.0",
     "pg": "^8.13.0",

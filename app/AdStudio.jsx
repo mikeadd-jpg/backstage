@@ -13,7 +13,7 @@
 // /api/ads/video-upload. Nothing is stored anywhere, the same rule as Mockups: close the
 // tab and the uploads and renders are gone.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { persistAssets, storeRender, saveDraft as saveDraftApi } from './draftsClient.js';
+import { persistAssets, storeRender, saveDraft as saveDraftApi, startServerRender, pollRenders, renderJob, renderFailed, renderStatusText } from './draftsClient.js';
 import { Player } from '@remotion/player';
 import AdVideo from './AdTemplates.jsx';
 import {
@@ -206,8 +206,49 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
         source: o.source === 'draft' ? undefined : { madeWith: o.source } });
       setOptions((os) => os.map((x) => (x.key === key ? { ...x, draftId: d.id } : x)));
       setDraftMsg((m) => ({ ...m, [key]: output ? 'Saved to Drafts with the rendered file.' : 'Saved to Drafts.' }));
+      return d.id;
     } catch (err) {
       setDraftMsg((m) => ({ ...m, [key]: 'Not saved: ' + String(err.message || err) }));
+      return null;
+    }
+  }
+
+  // Renders on the server instead of this device (lib/serverRender.js): the option is saved
+  // as a draft, the server renders that, and the page only watches. Closing the page does
+  // not stop it; the video lands in Drafts either way.
+  const serverRun = useRef(0);
+  async function serverRender() {
+    if (!plan) return;
+    if (abort.current) abort.current.abort();
+    const run = ++serverRun.current;
+    const live = () => serverRun.current === run;
+    const key = opt.key, mine = stamp;
+    if (render && render.url) URL.revokeObjectURL(render.url);
+    const set = (r) => { if (live()) setRender({ key, stamp: mine, server: true, ...r }); };
+    set({ status: 'rendering', progress: 0, note: 'Saving the draft...' });
+    setSend(null); onReset();
+    try {
+      const id = await saveOption(key);
+      if (!id) throw new Error('The draft could not be saved, so the server has nothing to render.');
+      let job = await startServerRender(id, accent);
+      set({ status: 'rendering', progress: 0, note: renderStatusText(job), draftId: id });
+      while (live()) {
+        await new Promise((r) => setTimeout(r, 4000));
+        if (!live()) return;
+        const o = (await pollRenders([id]).catch(() => ({})))[id];
+        if (!o || o.error) continue;
+        if (renderFailed(o)) throw new Error(renderFailed(o));
+        job = renderJob(o);
+        if (job) { set({ status: 'rendering', progress: job.progress || 0, note: renderStatusText(job), draftId: id }); continue; }
+        if (!o.url) throw new Error('The render finished without a file. Try again.');
+        // The file is ours in Blob (CORS open), so it comes back as a blob for Send to Meta.
+        const blob = await (await fetch(o.url)).blob();
+        set({ status: 'done', progress: 1, blob, url: URL.createObjectURL(blob), draftId: id });
+        setDraftMsg((m) => ({ ...m, [key]: 'Rendered on the server and saved to Drafts.' }));
+        return;
+      }
+    } catch (err) {
+      set({ status: 'failed', error: String((err && err.message) || err) });
     }
   }
   const optionsRef = useRef([]);
@@ -269,6 +310,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
 
   async function doRender() {
     if (!plan) return;
+    serverRun.current++;
     if (abort.current) abort.current.abort();
     const ctl = new AbortController();
     abort.current = ctl;
@@ -672,10 +714,14 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
 
                 <div className="reply-actions" style={{ marginTop: 6 }}>
                   <button className="btn btn-primary" type="button" onClick={doRender} disabled={(render && render.status === 'rendering') || sending}>
-                    {render && render.status === 'rendering' ? 'Rendering ' + Math.round((render.progress || 0) * 100) + '%...'
+                    {render && render.status === 'rendering' ? (render.server ? render.note : 'Rendering ' + Math.round((render.progress || 0) * 100) + '%...')
                       : rendered ? '↻ Render again' : 'Render video'}
                   </button>
-                  {render && render.status === 'rendering' && (
+                  {!(render && render.status === 'rendering') && (
+                    <button className="btn btn-ghost" type="button" onClick={serverRender} disabled={sending}
+                      title="Renders on Backstage's server: works from a phone, and carries on if you close the page.">Render on server</button>
+                  )}
+                  {render && render.status === 'rendering' && !render.server && (
                     <button className="btn btn-ghost" type="button" onClick={() => abort.current && abort.current.abort()}>Cancel</button>
                   )}
                   <button className="btn btn-ghost" type="button" onClick={() => dropOption(opt.key)}>Remove option</button>
@@ -685,7 +731,9 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
                 {render && render.key === opt.key && render.status === 'failed' && <div className="login-error" style={{ marginTop: 10 }}>{render.error}</div>}
                 {renderStale && <div className="ledger-note" style={{ marginTop: 8 }}>Edited since the last render. Render again to send this version.</div>}
                 {render && render.status === 'rendering' && (
-                  <div className="ledger-note" style={{ marginTop: 8 }}>Keep this tab open and in front while it renders.</div>
+                  <div className="ledger-note" style={{ marginTop: 8 }}>
+                    {render.server ? 'Rendering on the server. You can close this page: the video lands in Drafts.' : 'Keep this tab open and in front while it renders.'}
+                  </div>
                 )}
               </div>
             </div>

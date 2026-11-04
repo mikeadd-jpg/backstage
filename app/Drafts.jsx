@@ -2,10 +2,13 @@
 // Every mockup, video ad and image ad the creative tools have made, kept until deleted
 // (lib/drafts.js), so nothing is lost when a tab closes and the same work shows on any
 // device. Favourite the keepers, delete the rest, download a file, or reopen a video or
-// image draft in its builder in the Ads tab to keep editing it.
-import { useEffect, useMemo, useState } from 'react';
-import { OPEN_DRAFT_KEY } from './draftsClient.js';
+// image draft in its builder in the Ads tab to keep editing it. Video and image ads can be
+// rendered on the server from here (lib/serverRender.js), which is the way to make one from
+// a phone: it carries on with the page closed, and the file shows here when it lands.
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { OPEN_DRAFT_KEY, renderJob, renderFailed, renderStatusText, startServerRender, pollRenders } from './draftsClient.js';
 import { BRANDS } from './ui';
+import { ACCENTS } from '../lib/adPlans.js';
 
 const KIND_LABELS = { mockup: 'Mockup', video: 'Video ad', image: 'Image ad' };
 const PAGE = 48;
@@ -25,14 +28,16 @@ async function post(body) {
 
 function Preview({ d }) {
   const o = d.output;
-  if (o && /^video\//.test(o.contentType || '')) return <video className="dr-media" src={o.url} controls playsInline preload="metadata" />;
-  if (o) return <img className="dr-media" src={o.url} alt="" loading="lazy" />;
-  // Not rendered yet: the first picture it uses stands in.
+  const job = renderJob(o);
+  if (o && o.url && !job && /^video\//.test(o.contentType || '')) return <video className="dr-media" src={o.url} controls playsInline preload="metadata" />;
+  if (o && o.url && !job) return <img className="dr-media" src={o.url} alt="" loading="lazy" />;
+  // Not rendered yet, or rendering: the first picture it uses stands in.
   const pic = (d.assets || []).find((a) => a.kind === 'image');
   return (
     <div className="dr-media dr-unrendered">
       {pic && <img src={pic.url} alt="" loading="lazy" />}
-      <span>Not rendered yet</span>
+      <span>{job ? renderStatusText(job) : 'Not rendered yet'}</span>
+      {job && <div className="dr-progress"><div style={{ width: Math.round((job.progress || 0) * 100) + '%' }} /></div>}
     </div>
   );
 }
@@ -54,6 +59,30 @@ export default function Drafts({ go }) {
     }).catch(() => setError('Could not load drafts.'));
   }
   useEffect(() => { load(); }, []);
+
+  // While any draft is rendering on the server, ask how it is going every few seconds.
+  const rendering = useMemo(() => (drafts || []).filter((d) => renderJob(d.output)).map((d) => d.id), [drafts]);
+  const busy = useRef(false);
+  useEffect(() => {
+    if (!rendering.length) return undefined;
+    const t = setInterval(async () => {
+      if (busy.current || document.hidden) return;
+      busy.current = true;
+      try {
+        const outs = await pollRenders(rendering);
+        setDrafts((xs) => xs.map((x) => (outs[x.id] && !outs[x.id].error ? { ...x, output: outs[x.id] } : x)));
+      } catch { /* try again on the next tick */ } finally { busy.current = false; }
+    }, 4000);
+    return () => clearInterval(t);
+  }, [rendering.join(',')]);
+
+  async function render(d) {
+    setError('');
+    try {
+      const job = await startServerRender(d.id, ACCENTS[d.brand]);
+      setDrafts((xs) => xs.map((x) => (x.id === d.id ? { ...x, output: { ...(x.output || {}), job } } : x)));
+    } catch (e) { setError(e.message); }
+  }
 
   const shown = useMemo(() => (drafts || []).filter((d) => (!brand || d.brand === brand) && (!kind || d.kind === kind) && (!status || d.status === status)), [drafts, brand, kind, status]);
   const brandsSeen = useMemo(() => Array.from(new Set((drafts || []).map((d) => d.brand))), [drafts]);
@@ -130,9 +159,14 @@ export default function Drafts({ go }) {
             <div className="insp-headline">{d.title || KIND_LABELS[d.kind]}</div>
             {d.kind === 'mockup' && d.source && d.source.scene && <div className="insp-text dr-scene">{d.source.scene}</div>}
             <div className="insp-meta">{when(d.updatedAt)}{d.by ? ' · ' + d.by.split('@')[0] : ''}</div>
+            {renderFailed(d.output) && <div className="dr-failed">Render failed: {renderFailed(d.output)}</div>}
             <div className="reply-actions insp-actions">
               {d.kind !== 'mockup' && <button className="btn btn-primary" type="button" onClick={() => open(d)}>Open in builder</button>}
-              {d.output && <a className="btn btn-ghost" href={d.output.url} target="_blank" rel="noreferrer" download>Download</a>}
+              {d.kind !== 'mockup' && !renderJob(d.output) && (
+                <button className="btn btn-ghost" type="button" onClick={() => render(d)}
+                  title="Renders on the server: you can close the page and come back.">{d.output && d.output.url ? 'Render again' : 'Render'}</button>
+              )}
+              {d.output && d.output.url && <a className="btn btn-ghost" href={d.output.url} target="_blank" rel="noreferrer" download>Download</a>}
               <button className="btn btn-ghost" type="button" onClick={() => remove(d)}>Delete</button>
             </div>
           </div>

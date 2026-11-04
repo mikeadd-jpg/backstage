@@ -6,8 +6,9 @@
 // a CRON_SECRET environment variable. It also stamps its own x-vercel-cron header on
 // scheduled invocations, and strips that header from outside requests, so we accept
 // either. Without both, a missing CRON_SECRET would silently 401 every scheduled run.
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { runIngest } from '../../../lib/pipeline.js';
+import { settleRenders } from '../../../lib/serverRender.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -20,6 +21,10 @@ function cronAuthorized(req) {
 }
 
 async function run() {
+  // Server renders whose page was closed are settled here too (lib/serverRender.js), after
+  // the response, so a render started from a phone lands in Drafts even if nobody looks.
+  // This rides the ingest cron rather than a cron of its own so Neon can still sleep.
+  after(() => settleRenders().catch((err) => console.error('settleRenders', err)));
   try {
     return NextResponse.json(await runIngest());
   } catch (err) {

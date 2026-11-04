@@ -70,3 +70,33 @@ export async function restoreAsset(a) {
   const blob = await (await fetch(a.url)).blob();
   return { ...a, src: URL.createObjectURL(blob), storedUrl: a.url, origin: a.origin || 'draft' };
 }
+
+// ---- server renders (lib/serverRender.js, /api/renders) ----------------------------------
+
+/** A render still in flight in a draft's output, or null. */
+export const renderJob = (output) => (output && output.job && output.job.stage !== 'failed' ? output.job : null);
+export const renderFailed = (output) => (output && output.job && output.job.stage === 'failed' ? output.job.error || 'The render failed.' : '');
+
+const STAGE_TEXT = { queued: 'Starting', preparing: 'Setting up the renderer (first time only)', starting: 'Starting', rendering: 'Rendering', uploading: 'Saving' };
+export function renderStatusText(job) {
+  if (!job) return '';
+  const pct = job.stage === 'rendering' && job.progress > 0 ? ' ' + Math.round(job.progress * 100) + '%' : '';
+  return (STAGE_TEXT[job.stage] || 'Rendering') + pct + '...';
+}
+
+/** Starts a server render of a saved draft. Returns the job. */
+export async function startServerRender(draftId, accent) {
+  const res = await fetch('/api/renders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ draftId, accent }) });
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(d.error || 'Could not start the render.');
+  return d.job;
+}
+
+/** Each draft's output as it now stands ({ id: output }), settling finished renders. */
+export async function pollRenders(ids) {
+  if (!ids.length) return {};
+  const res = await fetch('/api/renders?ids=' + ids.join(','), { cache: 'no-store' });
+  const d = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(d.error || 'Could not check the render.');
+  return d.outputs || {};
+}

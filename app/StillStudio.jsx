@@ -7,7 +7,7 @@
 // brand's Meta ad image library. The Ads tab's own form then builds a single image ad and,
 // optionally, a paused ad. Nothing is stored, the same rule as the video builder.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { persistAssets, storeRender, saveDraft as saveDraftApi } from './draftsClient.js';
+import { persistAssets, storeRender, saveDraft as saveDraftApi, startServerRender, pollRenders, renderJob, renderFailed, renderStatusText } from './draftsClient.js';
 import { Thumbnail } from '@remotion/player';
 import StillAd from './StillTemplates.jsx';
 import { loadKit, assetFromFile, releaseAssets } from './AdStudio.jsx';
@@ -116,8 +116,45 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
         source: o.source === 'draft' ? undefined : { madeWith: o.source } });
       setOptions((os) => os.map((x) => (x.key === key ? { ...x, draftId: d.id } : x)));
       setDraftMsg((m) => ({ ...m, [key]: output ? 'Saved to Drafts with the rendered file.' : 'Saved to Drafts.' }));
+      return d.id;
     } catch (err) {
       setDraftMsg((m) => ({ ...m, [key]: 'Not saved: ' + String(err.message || err) }));
+      return null;
+    }
+  }
+
+  // The image rendered on the server (lib/serverRender.js) from the saved draft, for a phone
+  // or a browser that cannot render; same flow as the video builder's.
+  const serverRun = useRef(0);
+  async function serverRender() {
+    if (!plan) return;
+    const run = ++serverRun.current;
+    const live = () => serverRun.current === run;
+    const key = opt.key, mine = stamp;
+    if (render && render.url) URL.revokeObjectURL(render.url);
+    const set = (r) => { if (live()) setRender({ key, stamp: mine, server: true, ...r }); };
+    set({ status: 'rendering', note: 'Saving the draft...' }); setSend(null); onReset();
+    try {
+      const id = await saveOption(key);
+      if (!id) throw new Error('The draft could not be saved, so the server has nothing to render.');
+      let job = await startServerRender(id, accent);
+      set({ status: 'rendering', note: renderStatusText(job) });
+      while (live()) {
+        await new Promise((r) => setTimeout(r, 3000));
+        if (!live()) return;
+        const o = (await pollRenders([id]).catch(() => ({})))[id];
+        if (!o || o.error) continue;
+        if (renderFailed(o)) throw new Error(renderFailed(o));
+        job = renderJob(o);
+        if (job) { set({ status: 'rendering', note: renderStatusText(job) }); continue; }
+        if (!o.url) throw new Error('The render finished without a file. Try again.');
+        const blob = await (await fetch(o.url)).blob();
+        set({ status: 'done', blob, url: URL.createObjectURL(blob) });
+        setDraftMsg((m) => ({ ...m, [key]: 'Rendered on the server and saved to Drafts.' }));
+        return;
+      }
+    } catch (err) {
+      set({ status: 'failed', error: String((err && err.message) || err) });
     }
   }
   const optionsRef = useRef([]);
@@ -183,6 +220,7 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
     if (!plan) return;
     const key = opt.key, mine = stamp;
     if (render && render.url) URL.revokeObjectURL(render.url);
+    serverRun.current++;
     setRender({ key, stamp: mine, status: 'rendering' }); setSend(null); onReset();
     try {
       const { renderStillOnWeb } = await import('@remotion/web-renderer');
@@ -382,8 +420,12 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
                 </div>
                 <div className="reply-actions" style={{ marginTop: 6 }}>
                   <button className="btn btn-primary" type="button" onClick={doRender} disabled={render && render.status === 'rendering'}>
-                    {render && render.status === 'rendering' ? 'Rendering...' : rendered ? '↻ Render again' : 'Render image'}
+                    {render && render.status === 'rendering' ? (render.server ? render.note : 'Rendering...') : rendered ? '↻ Render again' : 'Render image'}
                   </button>
+                  {!(render && render.status === 'rendering') && (
+                    <button className="btn btn-ghost" type="button" onClick={serverRender}
+                      title="Renders on Backstage's server: works from a phone, and carries on if you close the page.">Render on server</button>
+                  )}
                   <button className="btn btn-ghost" type="button" onClick={() => { setOptions((os) => os.filter((o) => o.key !== opt.key)); setCurrent(''); }}>Remove option</button>
                   <button className="btn btn-ghost" type="button" onClick={() => saveOption(opt.key)}>{opt.draftId ? 'Update draft' : 'Save draft'}</button>
                 </div>
