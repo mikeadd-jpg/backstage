@@ -278,3 +278,7 @@ CREATE TABLE IF NOT EXISTS inspiration_runs (
 -- copy. read_at marks it read once, so a capture is never sent twice.
 ALTER TABLE inspiration_captures ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
 ALTER TABLE inspiration_captures ADD COLUMN IF NOT EXISTS read_info JSONB;
+
+-- Which of our stores a competitor matters for (brand keys). Empty means all of them.
+-- The Inspiration tab filters by it and opens a breakdown on that store.
+ALTER TABLE competitors ADD COLUMN IF NOT EXISTS brands TEXT[] NOT NULL DEFAULT '{}';

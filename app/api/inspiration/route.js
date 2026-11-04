@@ -10,7 +10,9 @@
 //   read-capture     { id, frame? }  Claude reads the advertiser and text off a capture
 //                    (a video sends a frame); fills its brand if blank
 //   add-capture      { url, note?, competitor? }  record a file the tab uploaded
-//   save-competitor  { id?, name, pageId, active?, notes? }
+//   save-competitor  { id?, name, pageId, active?, notes?, brands? }  brands: our store
+//                    keys it applies to, empty for all. Returns { id }.
+//   scan-competitor  { id }  fetch that competitor's ads and media now
 //   remove-competitor { id }
 //   upload-key       make a new key for the iPhone Shortcut (settings area); shown once
 //
@@ -116,7 +118,15 @@ export async function POST(req) {
       return NextResponse.json({ id });
     }
 
-    if (body.action === 'save-competitor') { await saveCompetitor(body); return ok(); }
+    if (body.action === 'save-competitor') {
+      const ours = configuredShopifyBrands();
+      const brands = Array.isArray(body.brands) ? [...new Set(body.brands.filter((b) => ours.includes(b)))] : undefined;
+      return NextResponse.json({ id: await saveCompetitor({ ...body, brands }) });
+    }
+    if (body.action === 'scan-competitor') {
+      if (!body.id) throw new Error('Which competitor?');
+      return NextResponse.json(await refreshCompetitorAds({ budgetMs: 240000, competitorId: body.id }));
+    }
     if (body.action === 'remove-competitor') { await removeCompetitor(body.id); return ok(); }
 
     if (body.action === 'upload-key') {

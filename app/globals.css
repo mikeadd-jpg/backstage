@@ -1193,3 +1193,6 @@ span.as-trans { text-align: center; }
 .insp-comp-row:first-child { border-top: none; }
 .insp-comp-name { flex: 1; min-width: 0; }
 .insp-err { color: var(--red); }
+.insp-stores { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.insp-store { font: inherit; font-size: 11.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--muted); cursor: pointer; }
+.insp-store.on { border-color: var(--action); color: var(--text); background: var(--surface-2); font-weight: 600; }

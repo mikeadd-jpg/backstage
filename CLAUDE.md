@@ -596,6 +596,11 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   reads it once on load (a ref, so React's dev double effect cannot eat it), opens that
   store with the product hint as its search, and products picked there start with that
   scene instead of a freshly written one until "Stop using it".
+- **Each competitor lists which of our stores it applies to** (`competitors.brands`, store
+  keys, empty = all). The tab's "For our store" filter hides competitors (and captures named
+  after them) that don't apply, and a breakdown opens on that store. **Adding a competitor
+  scans it at once** (`scan-competitor`, `refreshCompetitorAds({ competitorId })`): only that
+  competitor's ads, unread-ad lookups and media, so a new brand is useful straight away.
 - Stars, notes, capture labels and the competitor list are edited in the tab and saved;
   breakdowns live in the tab and go when it closes.
 

@@ -417,13 +417,43 @@ function ShortcutSetup({ info, canMake, onMade }) {
   );
 }
 
-function Competitors({ list, onChanged }) {
+// Which of our stores a competitor matters for: none ticked means all of them.
+function StorePicks({ brands, value, onChange }) {
+  return (
+    <span className="insp-stores">
+      {brands.map((b) => {
+        const on = value.includes(b.key);
+        return (
+          <button key={b.key} type="button" className={'insp-store' + (on ? ' on' : '')}
+            onClick={() => onChange(on ? value.filter((x) => x !== b.key) : [...value, b.key])}>{b.name}</button>
+        );
+      })}
+      {!value.length && <span className="li-sub">all stores</span>}
+    </span>
+  );
+}
+
+function Competitors({ list, brands, onChanged }) {
   const [name, setName] = useState('');
   const [page, setPage] = useState('');
+  const [picks, setPicks] = useState([]);
   const [err, setErr] = useState('');
+  const [scanning, setScanning] = useState({});   // id -> message
   async function act(body) {
     setErr('');
-    try { await post(body); onChanged(); } catch (e) { setErr(e.message); }
+    try { const d = await post(body); onChanged(); return d; } catch (e) { setErr(e.message); return null; }
+  }
+  // Fetch one competitor's running ads and save their pictures now, rather than waiting
+  // for the morning run. Takes a minute or two for a big advertiser.
+  async function scan(id) {
+    setScanning((s) => ({ ...s, [id]: 'Scanning their Ad Library...' }));
+    try {
+      const r = await post({ action: 'scan-competitor', id });
+      setScanning((s) => ({ ...s, [id]: r.errors && r.errors.length ? r.errors.join(' ') : r.newAds + ' new ads, ' + r.mediaSaved + ' pictures saved' }));
+    } catch (e) {
+      setScanning((s) => ({ ...s, [id]: e.message }));
+    }
+    onChanged();
   }
   // Paste an Ad Library link and the Page id is read out of it.
   const pageId = (/view_all_page_id=(\d+)/.exec(page) || [])[1] || page.trim();
@@ -431,7 +461,8 @@ function Competitors({ list, onChanged }) {
     <div className="card">
       <div className="card-label">Competitors</div>
       <p className="pane-sub" style={{ marginTop: 0 }}>
-        Backstage reads each active competitor's running ads every morning. Removing one stops that; its ads stay.
+        Backstage reads each active competitor's running ads every morning, and straight away when you add one. Tick the
+        stores each one matters for (none ticked means all). Removing one stops the reading; its ads stay.
       </p>
       <div className="insp-comp-list">
         {list.map((c) => (
@@ -445,7 +476,10 @@ function Competitors({ list, onChanged }) {
                 Page {c.pageId} · checked {ago(c.checkedAt)}{c.capped ? ' · more ads than one run reads' : ''}
                 {c.error && <span className="insp-err"> · {c.error}</span>}
               </div>
+              <StorePicks brands={brands} value={c.brands || []} onChange={(v) => act({ action: 'save-competitor', id: c.id, brands: v })} />
+              {scanning[c.id] && <div className="li-sub" style={{ marginTop: 4 }}>{scanning[c.id]}</div>}
             </div>
+            <button type="button" className="link-inline" disabled={scanning[c.id] === 'Scanning their Ad Library...'} onClick={() => scan(c.id)}>Scan now</button>
             <a className="link-inline" href={'https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=ALL&view_all_page_id=' + c.pageId} target="_blank" rel="noreferrer">Ad Library</a>
             <button type="button" className="link-inline" onClick={() => window.confirm('Stop following ' + c.name + '? Their saved ads stay.') && act({ action: 'remove-competitor', id: c.id })}>Remove</button>
           </div>
@@ -456,9 +490,16 @@ function Competitors({ list, onChanged }) {
         <label className="field"><span>Name</span><input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vans" /></label>
         <label className="field"><span>Page ID or Ad Library link</span><input className="input" value={page} onChange={(e) => setPage(e.target.value)} placeholder="view_all_page_id=..." /></label>
       </div>
+      <div className="field" style={{ marginBottom: 10 }}>
+        <span>Applies to</span>
+        <StorePicks brands={brands} value={picks} onChange={setPicks} />
+      </div>
       <div className="reply-actions">
         <button className="btn btn-ghost" type="button" disabled={!name.trim() || !pageId}
-          onClick={async () => { await act({ action: 'save-competitor', name, pageId }); setName(''); setPage(''); }}>Add competitor</button>
+          onClick={async () => {
+            const d = await act({ action: 'save-competitor', name, pageId, brands: picks });
+            if (d && d.id) { setName(''); setPage(''); setPicks([]); scan(d.id); }
+          }}>Add and scan</button>
         <span className="ledger-note">Open the brand in the Meta Ad Library and paste the page's link.</span>
       </div>
       {err && <div className="login-error" style={{ marginTop: 8 }}>{err}</div>}
@@ -476,6 +517,7 @@ export default function Inspiration({ go }) {
 
   const [view, setView] = useState('ads');           // ads | captures | competitors
   const [competitor, setCompetitor] = useState('');
+  const [store, setStore] = useState('');             // '' = every store
   const [show, setShow] = useState('active');        // active | all | starred
   const [sort, setSort] = useState('winners');       // winners | newest | longest
   const [search, setSearch] = useState('');
@@ -546,11 +588,16 @@ export default function Inspiration({ go }) {
     const key = copyKey(a);
     return { ...a, key, score: score(a), winner: a.active && ((a.rank && a.rank <= WIN_RANK) || a.days >= WIN_DAYS || a.copies >= WIN_COPIES) };
   }), [data]);
+  // Which stores each competitor applies to, by name (captures carry only a name). A name
+  // we do not follow, or a competitor with none ticked, counts for every store.
+  const storesOf = useMemo(() => Object.fromEntries((data ? data.competitors : []).map((c) => [c.name.toLowerCase(), c.brands || []])), [data]);
+  const forStore = (name) => { const b = storesOf[String(name || '').toLowerCase()]; return !store || !b || !b.length || b.includes(store); };
   const names = useMemo(() => Array.from(new Set(ads.map((a) => a.competitor))).sort((a, b) => a.localeCompare(b)), [ads]);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = ads.filter((a) => {
       if (competitor && a.competitor !== competitor) return false;
+      if (!forStore(a.competitor)) return false;
       if (show === 'active' && !a.active) return false;
       if (show === 'starred' && !a.starred) return false;
       if (q && !(a.headline + ' ' + a.text + ' ' + a.notes + ' ' + a.competitor).toLowerCase().includes(q)) return false;
@@ -564,14 +611,23 @@ export default function Inspiration({ go }) {
     return list.sort(sort === 'longest'
       ? (a, b) => b.days - a.days || b.startDate.localeCompare(a.startDate)
       : (a, b) => b.startDate.localeCompare(a.startDate) || b.days - a.days);
-  }, [ads, competitor, show, sort, search]);
+  }, [ads, competitor, show, sort, search, store, storesOf]);
   const captures = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (data ? data.captures : []).filter((c) => (show !== 'starred' || c.starred) &&
+    return (data ? data.captures : []).filter((c) => (show !== 'starred' || c.starred) && forStore(c.competitor) &&
       (!q || [c.competitor, c.note, c.info && c.info.advertiser, c.info && c.info.headline, c.info && c.info.text].join(' ').toLowerCase().includes(q)));
-  }, [data, show, search]);
+  }, [data, show, search, store, storesOf]);
   useEffect(() => { setLimit(PAGE); }, [competitor, show, sort, search, view]);
 
+  // A breakdown opens on the store being browsed, or the competitor's own store when it
+  // applies to just some of ours.
+  function openItem(k, name) {
+    if (openId === k) return setOpenId(null);
+    const b = storesOf[String(name || '').toLowerCase()] || [];
+    if (store) setBrand(store);
+    else if (b.length && !b.includes(brand)) setBrand(b[0]);
+    setOpenId(k);
+  }
   const setStateFor = (k) => (patch) => setStates((s) => ({ ...s, [k]: { ...(s[k] || {}), ...patch } }));
   const run = data && data.lastRun;
 
@@ -598,7 +654,7 @@ export default function Inspiration({ go }) {
         ))}
       </div>
 
-      {view === 'competitors' && data && <Competitors list={data.competitors} onChanged={load} />}
+      {view === 'competitors' && data && <Competitors list={data.competitors} brands={brands} onChanged={load} />}
 
       {view === 'captures' && data && (
         <>
@@ -610,6 +666,13 @@ export default function Inspiration({ go }) {
       {view !== 'competitors' && (
         <div className="card insp-filters">
           <div className="field-row">
+            <label className="field">
+              <span>For our store</span>
+              <select className="input" value={store} onChange={(e) => { setStore(e.target.value); if (e.target.value) setBrand(e.target.value); }}>
+                <option value="">All stores</option>
+                {brands.map((b) => <option key={b.key} value={b.key}>{b.name}</option>)}
+              </select>
+            </label>
             {view === 'ads' && (
               <label className="field">
                 <span>Competitor</span>
@@ -673,7 +736,7 @@ export default function Inspiration({ go }) {
             const k = 'a' + ad.id;
             return (
               <div key={k} className={openId === k ? 'insp-cell wide' : 'insp-cell'}>
-                <AdCard ad={ad} open={openId === k} onOpen={() => setOpenId(openId === k ? null : k)} onStar={() => star('ad', ad)} />
+                <AdCard ad={ad} open={openId === k} onOpen={() => openItem(k, ad.competitor)} onStar={() => star('ad', ad)} />
                 {openId === k && (
                   <Breakdown item={ad} brands={brands} brand={brand} setBrand={setBrand} state={states[k] || {}} setState={setStateFor(k)} go={go} onSaved={load} />
                 )}
@@ -684,7 +747,7 @@ export default function Inspiration({ go }) {
             const k = 'c' + cap.id;
             return (
               <div key={k} className={openId === k ? 'insp-cell wide' : 'insp-cell'}>
-                <CaptureCard cap={cap} open={openId === k} onOpen={() => setOpenId(openId === k ? null : k)} onStar={() => star('capture', cap)}
+                <CaptureCard cap={cap} open={openId === k} onOpen={() => openItem(k, cap.competitor)} onStar={() => star('capture', cap)}
                   onDelete={async () => {
                     if (!window.confirm('Delete this capture? The file is removed too.')) return;
                     try { await post({ action: 'delete-capture', id: cap.id }); if (openId === k) setOpenId(null); load(); } catch (e) { setError(e.message); }
