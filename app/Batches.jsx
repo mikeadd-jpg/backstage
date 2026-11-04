@@ -22,6 +22,7 @@ function itemText(it) {
 
 export default function Batches({ refresh = 0, go, onSettled }) {
   const [batches, setBatches] = useState(null);
+  const [month, setMonth] = useState(null);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState({});
   const running = (batches || []).some((b) => b.status === 'running');
@@ -32,7 +33,7 @@ export default function Batches({ refresh = 0, go, onSettled }) {
       const res = await fetch('/api/recreate', { cache: 'no-store' });
       if (res.status === 403 || res.status === 404) return setHidden(true);
       const d = await res.json();
-      if (res.ok) setBatches(d.batches || []);
+      if (res.ok) { setBatches(d.batches || []); setMonth(d.month || null); }
     } catch { /* keep what is shown */ }
   }
   useEffect(() => { load(); }, [refresh]);
@@ -56,11 +57,19 @@ export default function Batches({ refresh = 0, go, onSettled }) {
     load();
   }
 
-  if (hidden || !batches || !batches.length) return null;
+  if (hidden || !batches) return null;
+  const monthLine = month && month.total > 0 && (
+    <div className="acc-count rc-month">
+      This month so far, estimated: <strong>${month.total.toFixed(2)}</strong> · {month.images.count} image{month.images.count === 1 ? '' : 's'} ${month.images.cost.toFixed(2)}
+      · {month.renders.count} render{month.renders.count === 1 ? '' : 's'} ${month.renders.cost.toFixed(2)}
+    </div>
+  );
+  if (!batches.length) return monthLine ? <div className="card rc-batches">{monthLine}</div> : null;
   // Running batches, plus the latest finished one so its result is easy to find.
   const shown = [...batches.filter((b) => b.status === 'running'), ...batches.filter((b) => b.status !== 'running').slice(0, 1)];
   return (
     <div className="card rc-batches">
+      {monthLine}
       {shown.map((b) => {
         const done = b.items.filter((it) => it.stage === 'done').length;
         const failed = b.items.filter((it) => it.stage === 'failed').length;
@@ -71,7 +80,7 @@ export default function Batches({ refresh = 0, go, onSettled }) {
               <button type="button" className="rc-title" onClick={() => setOpen((o) => ({ ...o, [b.id]: !isOpen }))}>
                 {b.status === 'running' ? <span className="rc-spin" /> : null}
                 Recreating {b.items.length} ad{b.items.length === 1 ? '' : 's'} for {(BRANDS[b.brand] || {}).name || b.brand}
-                <span className="rc-sub"> · {b.status === 'running' ? done + ' done' + (failed ? ', ' + failed + ' failed' : '') : b.status === 'stopped' ? 'stopped' : 'finished, ' + done + ' made' + (failed ? ', ' + failed + ' failed' : '')}</span>
+                <span className="rc-sub"> · {b.spend && b.spend.cost ? '~$' + b.spend.cost.toFixed(2) + ' · ' : ''}{b.status === 'running' ? done + ' done' + (failed ? ', ' + failed + ' failed' : '') : b.status === 'stopped' ? 'stopped' : 'finished, ' + done + ' made' + (failed ? ', ' + failed + ' failed' : '')}</span>
               </button>
               {b.status === 'running' && <button className="btn btn-ghost" type="button" onClick={() => stop(b)}>Stop</button>}
               {go && <button className="btn btn-ghost" type="button" onClick={() => go('drafts')}>Drafts</button>}

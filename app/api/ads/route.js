@@ -47,10 +47,11 @@ import {
   metaAccountFor, listAdImages, createCarouselCreative, listBuiltCreatives,
   resolveMetaPage, resolveInstagram, listAdSets, createPausedAd, CTA_TYPES,
   uploadAdVideoFromUrl, adVideoStatus, createVideoCreative, checkMetaAccess,
-  uploadAdImage, createImageCreative,
+  uploadAdImage, createImageCreative, creativeNamePrefix, pageForBrand, adIdentity,
 } from '../../../lib/meta.js';
 import { planVideos } from '../../../lib/adVideo.js';
 import { planStills } from '../../../lib/stillPlan.js';
+import { recordMeta } from '../../../lib/adResults.js';
 import { canvaStatus, listDesigns, startVideoExport, exportStatus } from '../../../lib/canva.js';
 
 export const dynamic = 'force-dynamic';
@@ -68,9 +69,7 @@ function handleFromName(brand, name) {
   return n.slice(brand.length + 1, -MOCKUP_SUFFIX.length) || null;
 }
 
-// Built creatives are named with this prefix so the tab can find them again. One ad
-// account serves two brands, so the brand is part of it.
-const namePrefix = (brand) => 'Backstage · ' + BRANDS[brand].name + ' · ';
+const namePrefix = creativeNamePrefix;
 
 function checkBrand(brand) {
   if (!brand || !configuredShopifyBrands().includes(brand) || !metaAccountFor(brand)) {
@@ -79,25 +78,8 @@ function checkBrand(brand) {
   return brand;
 }
 
-// Page lookup needs to know whether another brand advertises from the same account,
-// because then "the account's only Page" is not a safe guess.
-function pageFor(brand) {
-  const account = metaAccountFor(brand);
-  const shared = configuredShopifyBrands().some((b) => b !== brand && metaAccountFor(b) === account);
-  return resolveMetaPage(brand, { brandName: BRANDS[brand].name, shared });
-}
-
-// The Page and Instagram account a creative posts as, or an error naming the fix.
-async function identity(brand) {
-  const { page, candidates } = await pageFor(brand);
-  if (!page) {
-    throw new Error('Could not tell which Facebook Page ' + BRANDS[brand].name + ' ads post as' +
-      (candidates.length ? ' (found: ' + candidates.map((p) => p.name + ' ' + p.id).join(', ') + ')' : '') +
-      '. Set ' + brand.toUpperCase() + '_META_PAGE_ID in Vercel.');
-  }
-  const instagram = await resolveInstagram(brand, page.id).catch(() => null);
-  return { pageId: page.id, instagramId: instagram && instagram.id };
-}
+const pageFor = pageForBrand;
+const identity = adIdentity;
 
 const isUrl = (u) => /^https?:\/\/\S+$/i.test(String(u || ''));
 
@@ -231,6 +213,8 @@ export async function POST(req) {
         headline: String(body.headline || '').trim(),
         link, cta: body.cta,
       });
+      // A builder draft remembers its creative, so its results come back to Drafts.
+      if (body.draftId) await recordMeta(body.draftId, { creativeId: result.id }, gate.access.email).catch(() => {});
       return NextResponse.json({ ...result, name: creativeName });
     }
 
@@ -287,6 +271,7 @@ export async function POST(req) {
         link,
         cta: body.cta,
       });
+      if (body.draftId) await recordMeta(body.draftId, { creativeId: result.id, videoId }, gate.access.email).catch(() => {});
       return NextResponse.json({ ...result, name: creativeName });
     }
 
@@ -338,7 +323,9 @@ export async function POST(req) {
       if (!/^\d+$/.test(creativeId)) throw new Error('No carousel to add.');
       if (!/^\d+$/.test(adsetId)) throw new Error('Pick an ad set.');
       const name = String(body.name || '').trim() || namePrefix(brand) + 'carousel';
-      return NextResponse.json(await createPausedAd(brand, { adsetId, creativeId, name }));
+      const ad = await createPausedAd(brand, { adsetId, creativeId, name });
+      if (body.draftId) await recordMeta(body.draftId, { creativeId, adId: ad.id, adSetId: adsetId }, gate.access.email).catch(() => {});
+      return NextResponse.json(ad);
     }
 
     if (body.action === 'recent') {

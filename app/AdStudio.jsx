@@ -389,7 +389,7 @@ export default function AdStudio({ brand, brandName, accent, assets, setAssets, 
           const sent = options.find((o) => o.key === key);
           const handles = [...new Set((sent ? sent.plan.scenes : []).map((s) => (byId[s.asset] || {}).handle).filter(Boolean))];
           const texts = (sent ? sent.plan.scenes : []).map((s) => s.text).filter(Boolean);
-          return onSent({ videoId, title: sent ? sent.plan.title : '', headline: sent ? sent.plan.end.headline : '', handles, texts });
+          return onSent({ videoId, title: sent ? sent.plan.title : '', headline: sent ? sent.plan.end.headline : '', handles, texts, draftId: (sent && sent.draftId) || (rendered && rendered.draftId) || null });
         }
       }
       fail('Meta is still processing the video. Send it again in a few minutes.');

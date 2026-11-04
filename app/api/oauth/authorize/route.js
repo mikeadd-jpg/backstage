@@ -4,14 +4,40 @@
 // gate so the OAuth handshake can reach it, which means it has to check the session
 // itself: without that, anyone who found the URL could approve a connector.
 //
-// Being signed in is not enough: the role must include the connect area (owner, admin).
-// A connection reads every inquiry and order with no per-person identity, so letting a
-// Creative approve one would hand out the customer data their role deliberately omits.
-import { checkRedirect, issueCode, SCOPE } from '../../../../lib/oauth.js';
+// Being signed in is not enough. For the customer-service connection (scope
+// backstage:read) the role must include the connect area (owner, admin): it reads every
+// inquiry and order with no per-person identity, so letting a Creative approve one would
+// hand out the customer data their role deliberately omits. The creative connection
+// (backstage:creative, /api/mcp/creative) holds no customer data and acts as the person
+// who approved it, so anyone with the inspiration, mockups and ads areas may approve it,
+// and their email rides on the code and tokens.
+import { checkRedirect, issueCode, scopeFor, CREATIVE_SCOPE } from '../../../../lib/oauth.js';
 import { readSession, SESSION_COOKIE } from '../../../../lib/session.js';
 import { getAccess } from '../../../../lib/access.js';
 
 const NOT_ALLOWED = "Your role can't connect Claude to Backstage. Ask an admin or owner to approve the connection.";
+const NOT_ALLOWED_CREATIVE = "Your role can't connect Claude to Backstage's creative tools: it needs Inspiration, Mockups and Ads.";
+const CREATIVE_AREAS = ['inspiration', 'mockups', 'ads'];
+const allowed = (access, scope) => Boolean(access) && (scope === CREATIVE_SCOPE
+  ? CREATIVE_AREAS.every((a) => access.areas.includes(a)) : access.areas.includes('connect'));
+
+const WHAT = {
+  read: {
+    title: 'Connect Backstage to Claude',
+    lead: 'Claude is asking to read your Backstage data. It will be able to:',
+    items: ['Read at-risk orders and support inquiries', 'Look up orders across your Shopify stores', 'Draft replies, without sending anything'],
+  },
+  creative: {
+    title: 'Connect Backstage creative tools to Claude',
+    lead: 'Claude is asking to work in Backstage\'s creative tools as you. It will be able to:',
+    items: [
+      'Read Inspiration, your products, brand kits and Drafts',
+      'Make mockups and recreate ads in bulk (paid images, at most 20 per batch)',
+      'Plan, render and favourite video and image ads in Drafts',
+      'Send a finished ad to Meta as a creative, and add it to an ad set paused. Never live, never a budget',
+    ],
+  },
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -19,11 +45,11 @@ const esc = (v) => String(v == null ? '' : v)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 function page({ params, error, user }) {
-  const hidden = ['client_id', 'redirect_uri', 'state', 'code_challenge', 'code_challenge_method', 'scope']
+  const hidden = ['client_id', 'redirect_uri', 'state', 'code_challenge', 'code_challenge_method', 'scope', 'resource']
     .map((k) => '<input type="hidden" name="' + k + '" value="' + esc(params[k]) + '">').join('');
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Connect Backstage to Claude</title>
+<title>${esc(params.what.title)}</title>
 <style>
   :root { color-scheme: light; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f7;
@@ -41,13 +67,9 @@ function page({ params, error, user }) {
   .who { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: #666;
          background: #f2f2f4; padding: 8px 10px; border-radius: 7px; word-break: break-all; }
 </style></head><body><div class="card">
-  <h1>Connect Backstage to Claude</h1>
-  <p>Claude is asking to read your Backstage data. It will be able to:</p>
-  <ul>
-    <li>Read at-risk orders and support inquiries</li>
-    <li>Look up orders across your Shopify stores</li>
-    <li>Draft replies, without sending anything</li>
-  </ul>
+  <h1>${esc(params.what.title)}</h1>
+  <p>${esc(params.what.lead)}</p>
+  <ul>${params.what.items.map((i) => '<li>' + esc(i) + '</li>').join('')}</ul>
   <div class="who">${esc(params.client_name || params.client_id)}</div>
   <p style="margin:14px 0 0;font-size:13px;color:#555">Signed in as <strong>${esc(user.email)}</strong></p>
   <form method="POST" style="margin-top:10px">${hidden}
@@ -71,7 +93,8 @@ function readParams(sp) {
     state: sp.get('state') || '',
     code_challenge: sp.get('code_challenge') || '',
     code_challenge_method: sp.get('code_challenge_method') || '',
-    scope: sp.get('scope') || SCOPE,
+    scope: sp.get('scope') || '',
+    resource: sp.get('resource') || '',
     client_name: sp.get('client_name') || '',
   };
 }
@@ -98,11 +121,13 @@ export async function GET(req) {
     return Response.redirect(new URL('/api/auth/google/start?next=' + encodeURIComponent(next), req.url).toString(), 302);
   }
 
+  const scope = scopeFor(p);
   const access = await getAccess(req);
-  if (!access || !access.areas.includes('connect')) return fail(NOT_ALLOWED);
+  if (!allowed(access, scope)) return fail(scope === CREATIVE_SCOPE ? NOT_ALLOWED_CREATIVE : NOT_ALLOWED);
 
   const client = await checkRedirect(p.client_id, p.redirect_uri);
-  return html(page({ params: { ...p, client_name: client.client.client_name }, error: null, user: session }));
+  const what = WHAT[scope === CREATIVE_SCOPE ? 'creative' : 'read'];
+  return html(page({ params: { ...p, client_name: client.client.client_name, what }, error: null, user: session }));
 }
 
 export async function POST(req) {
@@ -113,14 +138,16 @@ export async function POST(req) {
 
   const session = await readSession(req.cookies.get(SESSION_COOKIE)?.value);
   if (!session) return fail('Your session expired before you approved. Start the connection again.');
+  const scope = scopeFor(p);
   const access = await getAccess(req);
-  if (!access || !access.areas.includes('connect')) return fail(NOT_ALLOWED);
+  if (!allowed(access, scope)) return fail(scope === CREATIVE_SCOPE ? NOT_ALLOWED_CREATIVE : NOT_ALLOWED);
 
   const code = await issueCode({
     clientId: p.client_id,
     redirectUri: p.redirect_uri,
     codeChallenge: p.code_challenge,
-    scope: p.scope,
+    scope,
+    userEmail: access.email,
   });
 
   const dest = new URL(p.redirect_uri);

@@ -1,6 +1,7 @@
 // RFC 9728 protected resource metadata, served at /.well-known/oauth-protected-resource
 // via a rewrite in next.config.js (App Router will not route a literal .well-known dir).
-// `resource` must match the MCP URL exactly as the user types it into Claude.
+// `resource` must match the MCP URL exactly as the user types it into Claude. The creative
+// connection's metadata is ./creative.
 import { NextResponse } from 'next/server';
 import { baseUrl, SCOPE } from '../../../../lib/oauth.js';
 

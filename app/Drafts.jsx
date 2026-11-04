@@ -43,6 +43,20 @@ function Preview({ d }) {
   );
 }
 
+// How an ad sent to Meta is doing, read back daily (lib/adResults.js).
+function MetaLine({ meta }) {
+  const r = meta.results;
+  if (!r) return <div className="dr-meta">In Meta{meta.adId ? ' as a paused ad' : ' as a creative'}; results show the day after it runs.</div>;
+  if (!r.ads) return <div className="dr-meta">In Meta, not in any ad yet.</div>;
+  if (!r.spend) return <div className="dr-meta">In {r.ads} ad{r.ads === 1 ? '' : 's'}{r.active ? ', running' : ', not running'}; nothing spent yet.</div>;
+  return (
+    <div className="dr-meta">
+      Meta: <strong>${r.spend.toFixed(2)}</strong> spent · {r.purchases} purchase{r.purchases === 1 ? '' : 's'} · ROAS <strong>{r.roas == null ? 'n/a' : r.roas}</strong> · CTR {r.ctr}%
+      {r.active ? ' · running' : ''}
+    </div>
+  );
+}
+
 export default function Drafts({ go }) {
   const [drafts, setDrafts] = useState(null);
   const [kinds, setKinds] = useState([]);
@@ -108,8 +122,8 @@ export default function Drafts({ go }) {
     <div className="pane">
       <div className="pane-head">Drafts</div>
       <p className="pane-sub">
-        Every mockup, video ad and image ad made here, kept until you delete it, on any device. Star the keepers; reopen a video
-        or image ad to keep editing it.
+        Every mockup, video ad and image ad made here, on any device. Star the keepers: plain drafts nobody touches for 60 days
+        are cleared out, but never favourites or anything sent to Meta. Reopen a video or image ad to keep editing it.
       </p>
       {error && <div className="flag" style={{ marginBottom: 14 }}><span className="ico">&#9873;</span><span>{error}</span></div>}
       <Batches onSettled={load} />
@@ -159,7 +173,13 @@ export default function Drafts({ go }) {
                 title={d.status === 'favorite' ? 'Unfavourite' : 'Favourite'}>{d.status === 'favorite' ? '★' : '☆'}</button>
             </div>
             <div className="insp-headline">{d.title || KIND_LABELS[d.kind]}</div>
+            {d.kind === 'mockup' && d.source && d.source.check && (
+              d.source.check.pass
+                ? <div className="dr-check ok" title={'Print check ' + d.source.check.score + '/10'}>✓ Print checked</div>
+                : <div className="dr-check bad">Print may be off ({d.source.check.score}/10){d.source.check.problems.length ? ': ' + d.source.check.problems.join('; ') : ''}</div>
+            )}
             {d.kind === 'mockup' && d.source && d.source.scene && <div className="insp-text dr-scene">{d.source.scene}</div>}
+            {d.kind !== 'mockup' && d.source && d.source.meta && <MetaLine meta={d.source.meta} />}
             <div className="insp-meta">{when(d.updatedAt)}{d.by ? ' · ' + d.by.split('@')[0] : ''}</div>
             {renderFailed(d.output) && <div className="dr-failed">Render failed: {renderFailed(d.output)}</div>}
             <div className="reply-actions insp-actions">

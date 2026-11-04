@@ -503,7 +503,22 @@ function Competitors({ list, brands, onChanged }) {
                 </div>
               ) : (
                 <div className="insp-need-link">
-                  <div className="li-sub">Found on a phone capture. <a href={searchUrl(c.name)} target="_blank" rel="noreferrer">Find them in the Ad Library</a>, open their Page's ads and paste the link:</div>
+                  {c.candidates && c.candidates.length > 0 && (
+                    <div className="insp-cands">
+                      <div className="li-sub">No Page matched the name exactly. Is it one of these?</div>
+                      {c.candidates.map((p) => (
+                        <button key={p.pageId} type="button" className="btn btn-ghost insp-cand"
+                          onClick={async () => { const d = await act({ action: 'save-competitor', id: c.id, pageId: p.pageId }); if (d) scan(c.id); }}>
+                          {p.name}{p.ig ? ' @' + p.ig : ''}{p.likes ? ' · ' + (p.likes >= 1000 ? Math.round(p.likes / 1000) + 'k' : p.likes) + ' likes' : ''}{p.verified ? ' ✓' : ''}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="li-sub">
+                    {c.lookedUp ? 'Found on a phone capture.' : 'Found on a phone capture; Backstage will look its Page up.'}{' '}
+                    {!c.lookedUp && <button type="button" className="link-inline" onClick={async () => { setScanning((x) => ({ ...x, [c.id]: 'Looking it up...' })); const d = await act({ action: 'find-page', id: c.id }); setScanning((x) => ({ ...x, [c.id]: d && d.pageId ? 'Found its Page; scanning its ads.' : 'No exact match; pick one below or paste the link.' })); }}>Look it up now</button>}
+                    {' '}Or <a href={searchUrl(c.name)} target="_blank" rel="noreferrer">find them in the Ad Library</a>, open their Page's ads and paste the link:
+                  </div>
                   <div className="insp-link-row">
                     <input className="input" value={links[c.id] || ''} onChange={(e) => setLinks((l) => ({ ...l, [c.id]: e.target.value }))} placeholder="view_all_page_id=..." />
                     <button type="button" className="btn btn-ghost" disabled={!/^\d{5,25}$/.test(idOf(links[c.id]))} onClick={() => addLink(c)}>Add and scan</button>
@@ -537,6 +552,74 @@ function Competitors({ list, brands, onChanged }) {
         <span className="ledger-note">Open the brand in the Meta Ad Library and paste the page's link.</span>
       </div>
       {err && <div className="login-error" style={{ marginTop: 8 }}>{err}</div>}
+    </div>
+  );
+}
+
+// Ads from our own idea rather than a competitor's (lib/recreate.js createBriefBatch):
+// Claude writes the angles, and each becomes mockups, an ad and a render in Drafts.
+function BriefCard({ brands, defaultStore, onStarted }) {
+  const [open, setOpen] = useState(false);
+  const [o, setO] = useState({ store: '', brief: '', count: 3, make: 'auto', perAd: 2, aspect: '' });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const store = o.store || defaultStore || (brands[0] && brands[0].key) || '';
+  const total = o.count * o.perAd;
+  async function start() {
+    setBusy(true); setErr('');
+    try {
+      const res = await fetch('/api/recreate', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'brief', brand: store, brief: o.brief, count: o.count, make: o.make, perAd: o.perAd, aspect: o.aspect }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || 'Could not start.');
+      setO((x) => ({ ...x, brief: '' })); setOpen(false); onStarted();
+    } catch (e) { setErr(e.message); } finally { setBusy(false); }
+  }
+  if (!open) {
+    return (
+      <div className="reply-actions" style={{ marginBottom: 12 }}>
+        <button className="btn btn-ghost" type="button" onClick={() => setOpen(true)}>Make ads from your own idea</button>
+      </div>
+    );
+  }
+  return (
+    <div className="card" style={{ marginBottom: 14 }}>
+      <div className="card-label">Make ads from your own idea</div>
+      <label className="field">
+        <span>The idea</span>
+        <textarea className="input" rows={3} value={o.brief} maxLength={2000} onChange={(e) => setO((x) => ({ ...x, brief: e.target.value }))}
+          placeholder="e.g. the new hoodie drop, moody, basement shows and parking lots after the show" />
+      </label>
+      <div className="field-row">
+        <label className="field"><span>For</span>
+          <select className="input" value={store} onChange={(e) => setO((x) => ({ ...x, store: e.target.value }))}>
+            {brands.map((b) => <option key={b.key} value={b.key}>{b.name}</option>)}
+          </select>
+        </label>
+        <label className="field"><span>Ads</span>
+          <select className="input" value={o.count} onChange={(e) => setO((x) => ({ ...x, count: Number(e.target.value) }))}>
+            {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </label>
+        <label className="field"><span>Make</span>
+          <select className="input" value={o.make} onChange={(e) => setO((x) => ({ ...x, make: e.target.value }))}>
+            <option value="auto">Claude picks per ad</option><option value="image">Image ads</option><option value="video">Video ads</option>
+          </select>
+        </label>
+        <label className="field"><span>Mockups per ad</span>
+          <select className="input" value={o.perAd} onChange={(e) => setO((x) => ({ ...x, perAd: Number(e.target.value) }))}>
+            {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="acc-count">{total} mockup{total === 1 ? '' : 's'} in all (at most 20).</div>
+      {err && <div className="login-error" style={{ marginTop: 8 }}>{err}</div>}
+      <div className="reply-actions" style={{ marginTop: 8 }}>
+        <button className="btn btn-primary" type="button" disabled={busy || total > 20 || o.brief.trim().length < 8 || !store} onClick={start}>
+          {busy ? 'Writing the angles...' : 'Make ' + o.count + ' ad' + (o.count === 1 ? '' : 's')}
+        </button>
+        <button className="btn btn-ghost" type="button" onClick={() => setOpen(false)}>Cancel</button>
+      </div>
     </div>
   );
 }
@@ -710,6 +793,7 @@ export default function Inspiration({ go }) {
       {error && <div className="flag" style={{ marginBottom: 14 }}><span className="ico">&#9873;</span><span>{error}</span></div>}
 
       <Batches refresh={batchRefresh} go={go} />
+      {brands.length > 0 && <BriefCard brands={brands} defaultStore={store || brand} onStarted={() => setBatchRefresh((n) => n + 1)} />}
 
       <div className="pf-chips" role="tablist" aria-label="What to show" style={{ marginBottom: 12 }}>
         {[['ads', 'Competitor ads'], ['captures', 'From my phone' + (data && data.captures.length ? ' (' + data.captures.length + ')' : '')], ['competitors', 'Competitors']].map(([k, l]) => (

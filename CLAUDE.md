@@ -308,16 +308,23 @@ descriptions. Markets are US, CA, UK, AU (`MARKETS`).
   not restrict where a product ships; the tag and title are the whole mechanism. On a
   Global Fulfillment garment they exist too but start unticked, for a market-specific
   design (build that design with only that market ticked).
-- **Nothing the builder makes reaches a market on its own any more.** Every Elder Emo
+- **Nothing the builder makes reaches a market on its own any more.**
+  "Add new products to their markets" at the top of the Products tab (`lib/marketPublish.js`,
+  `/api/markets`) now does the adding: products created since `PUBLISH_SINCE` (2026-10-16)
+  whose market tags name a catalog they are not in, previewed, then published on a click
+  (`publishablePublish`; the server re-runs the preview and publishes only what it finds).
+  Only adds; older products are never touched, because they still carry tags from before
+  the CA and AU catalogs were pruned. Stores without market catalogs have nothing to do.
+  The background: every Elder Emo
   market catalog (US, CA, UK, AU) was set to `autoPublish: false` on 2026-10-16, so a new
   product lands in **no** market catalog and is invisible to every buyer until it is
   published to the catalogs its tags name. Before that, US, CA and UK auto-published and
-  the manual step was *pruning*; now it is *adding*, which is the opposite habit. The tags
-  are still only a label: no code reads them to publish anything. The reason for the change
-  is that Elder Emo's CA and AU catalogs are deliberately narrow (only the 98 Global
-  Fulfillment `-int` listings, so an overseas buyer never meets import shipping), and
-  auto-publish would refill them from every US build. Publishing by tag would be a sensible
-  thing for the builder to learn; until it does, it is a step in the Shopify admin.
+  the manual step was *pruning*; now it is *adding*, which is the opposite habit. The reason
+  for the change is that Elder Emo's CA and AU catalogs are deliberately narrow (the Global
+  Fulfillment `-int` listings and the per-market listings printed locally, so an overseas
+  buyer never meets import shipping), and auto-publish would refill them from every US
+  build. A tag is only ever added for a market the listing was built for, which is why
+  publishing by tag is safe for new products and not for old ones.
 - **Printer pick (`rankCandidates`)**, per market, over every printer of every blueprint
   that can fill the slot (the toddler tee compares B+C 3001T and Rabbit Skins 3321
   printers together). Filters, relaxed only if nothing passes: stocks the garment's colour
@@ -620,6 +627,12 @@ sent from a phone, and Claude's take on how to build our own version. Area `insp
   Fetching skips those (`page_id IS NOT NULL`) until someone pastes the Ad Library link on
   its row, which saves the Page and scans it. The row links to an Ad Library search for the
   name. Our own stores and the platforms' names are never added.
+- **Their Page is looked up** (`findCompetitorPage` in `lib/adLibrary.js`, ScrapeCreators'
+  company search, one credit): right after the capture is read, and for any still waiting
+  at the start of the daily run. A Page whose name, Instagram handle or alias matches the
+  name exactly is taken (most liked first) and scanned; otherwise up to five candidates
+  are kept in `page_candidates` and shown on the row as buttons. Tried once
+  (`page_looked_up_at`); "Look it up now" on the row retries.
 - Stars, notes, capture labels and the competitor list are edited in the tab and saved;
   breakdowns live in the tab and go when it closes.
 
@@ -658,6 +671,41 @@ phone and left.
   `x-worker-key`). An expired lease is restarted by the tabs' polling and by the ingest
   cron (`wakeIdleBatches`), so a dead worker never strands a batch.
 - Measured 2026-11-04: one ad, two mockups and an image ad, rendered, in 90 seconds.
+- **From our own brief too** (`createBriefBatch`, "Make ads from your own idea" in
+  Inspiration, `make_ads_from_brief` over MCP): Claude writes `count` distinct angles
+  shaped like a breakdown (hook, product, headlines, scene), and each runs from the
+  products step on. Same cap.
+- **Every batch mockup is checked** (`lib/mockupCheck.js`): Claude compares it with the
+  flat mockup it came from (same artwork, lettering intact, same product and colour) and
+  scores it; under 7, or any of those false, fails. A failed shot is redone once while the
+  batch's `MAX_RETRIES` (5 extra images) lasts; the failed one stays in Drafts, flagged,
+  and the planner prefers passing shots. The Mockups tab runs the same check after
+  answering and stores the verdict on the draft (`source.check`). A check that could not
+  run is "not checked", never a pass or a fail.
+- **The planners are told what has worked** for the store (`whatWorked` in
+  `lib/adResults.js`): its best and weakest ads by ROAS among those that spent $5+.
+- A finished batch posts to Slack (`postBatchDone` in `lib/notify.js`) with what it made,
+  what it cost and a link to Drafts.
+
+### Ad results, spend and cleanup
+
+- **Results come back to Drafts** (`lib/adResults.js`). A draft sent to Meta keeps its
+  creative, video and paused ad ids in `source.meta` (`recordMeta`, from the Ads tab's
+  build and create-ad actions with the builder's `draftId`, and from `create_meta_ad`).
+  The daily Inspiration cron reads lifetime results of every ad using those creatives
+  (`creativeResults` in `lib/meta.js`) into `source.meta.results`. Meta filters neither
+  ads nor insights by creative, so it lists the account's ads with their creative (cheap),
+  then reads insights at ad level filtered by ad id. Purchases are the pixel purchase
+  action. Read only.
+- **Spend is logged as an estimate** (`lib/spend.js`, `spend_events`): every image
+  (`generateMockup` records it, tagged with batch and person) at a per-quality price
+  (`MOCKUP_COST_<QUALITY>` overrides), every server render by its seconds
+  (`RENDER_COST_PER_MIN`). Batches show their cost and the Batches panel the month so far.
+  Claude calls are left out. OpenAI and Vercel bill the real amounts.
+- **Old drafts are cleared** daily (`cleanupDrafts`, `CLEANUP_DAYS` = 60): plain drafts
+  untouched that long, never favourites, anything sent to Meta, anything rendering, or a
+  mockup a recent ad draft uses (`assets[].draftId`). Files go only when no other draft uses
+  them. At most 200 a day.
 
 ## Sending a mockup to Meta (`lib/meta.js`)
 
@@ -1254,6 +1302,9 @@ and `/api/scan` use, and `/api/mcp` is exempted from the password middleware for
 reason. **An unset `MCP_TOKEN` closes the server rather than opening it** — check
 `authorized()` keeps that behaviour if you touch it.
 
+This is the customer-service connection; the creative tools have their own server (below,
+"Creative MCP server").
+
 **Writes are off by default** and appear only when `MCP_ALLOW_WRITES` is set, limited to
 reversible actions. Nothing exposed spends money, creates Printify products, or contacts a
 customer. This is deliberate: inquiry bodies are emails written by strangers, so a customer
@@ -1264,6 +1315,44 @@ reach. If you add write tools, weigh them against that, not just against conveni
 Tool errors are returned in-band as `isError: true` content rather than as JSON-RPC errors,
 so the model can read the failure and recover instead of seeing an opaque transport error.
 
+## Creative MCP server (`lib/mcpCreative.js`, `app/api/mcp/creative/route.js`)
+
+A second MCP connection, `https://backstage-theta-two.vercel.app/api/mcp/creative`, for doing
+the creative work from Claude (phone included): Inspiration, product search, mockups,
+Drafts, recreate batches, ad planning and server renders, and Meta up to a paused ad.
+
+- **Separate from `/api/mcp` on purpose.** That one reads the inbox and orders with no
+  per-person identity, so only `connect` (owner, admin) may approve it. This one holds
+  **no customer data** and **acts as the person who approved it**: the email rides on the
+  OAuth code and tokens (`user_email`), the role is re-read from `allowed_users` on every
+  call (removed or demoted means locked out at once), tools are listed and gated by that
+  role's areas, and drafts and batches are credited to them. Anyone with inspiration,
+  mockups and ads may approve it, Creatives included.
+- **Scopes keep the two apart.** `backstage:read` for `/api/mcp`, `backstage:creative` for
+  this. The authorize step picks the scope from the `resource` Claude names (or the scope
+  it asks for); each server refuses the other's tokens. Metadata for this one is at
+  `/.well-known/oauth-protected-resource/api/mcp/creative`
+  (`app/api/oauth/protected-resource/creative`, its own route because a rewrite's query
+  string did not reach the handler).
+- **Write surface:** spends only on images, through batches capped at 20 per call
+  (`recreate_ads`, `make_mockups`); renders; favourites; `create_meta_ad` makes an
+  unpublished creative and, given an ad set, a PAUSED ad (`createPausedAd`). It never
+  deletes, never creates a campaign or ad set, never touches a budget. Competitor ad text
+  comes back from `list_inspiration` and is fenced in the server instructions as data;
+  with paused-only ads and the spend cap that is the accepted risk.
+- Slow work runs in the background (`after()`): batches go through the batch worker,
+  renders through `startRender`; tools return at once and say what to poll (`list_batches`,
+  `get_draft`). A video sent to Meta is waited on for up to 90s; if Meta is still
+  processing, calling `create_meta_ad` again with the same draft continues (the video id
+  is kept in the draft's `source.meta`, with the creative and ad ids once made).
+- `MCP_CREATIVE_TOKEN` is a static bearer for Claude Code, acting as `ADMIN_EMAIL`. Unset
+  means that door is closed; OAuth still works.
+- Moved to `lib/meta.js` for it: `adIdentity` (the Page and Instagram an ad posts as),
+  `pageForBrand`, `creativeNamePrefix`; the Ads route uses the same functions.
+- `shopifyGraphql` now waits out Shopify's `THROTTLED` answer (it says how fast the budget
+  refills) up to five times: a product list is 20 costly pages, and two close together ran
+  out of budget.
+
 ## OAuth for the MCP server (`lib/oauth.js`, `app/api/oauth/*`)
 
 Claude's connector UI accepts OAuth or no authentication, with nothing in between, so
@@ -1271,9 +1360,10 @@ reaching `/api/mcp` from claude.ai, Desktop or mobile means being an authorizati
 A static bearer token only works in Claude Code, which can send an arbitrary header.
 
 Deliberately narrow: public clients with PKCE S256, authorization code and refresh grants,
-no client secrets, **no user accounts**. The consent screen authenticates against the same
-`APP_PASSWORD` the dashboard uses, so there is no second identity system to maintain.
-Anyone who can open the dashboard can approve a connection, which is the right bar.
+no client secrets, no accounts of its own. The consent screen needs a Backstage Google
+sign-in; the customer-service connection then needs the `connect` area, the creative one
+(above) the inspiration, mockups and ads areas, and the approver's email is stored on the
+code and tokens.
 
 Things that will break the flow if changed carelessly:
 

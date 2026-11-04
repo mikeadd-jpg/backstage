@@ -38,7 +38,8 @@ import {
   generateMockup, sceneFor, defaultScene, saveScene, suggestScene, variationsFor, notesFor, SIZES,
 } from '../../../lib/mockups.js';
 import { uploadAdImage, metaAccountFor } from '../../../lib/meta.js';
-import { saveMockupDraft } from '../../../lib/drafts.js';
+import { saveMockupDraft, getDraft, saveDraft } from '../../../lib/drafts.js';
+import { checkMockup } from '../../../lib/mockupCheck.js';
 import { uploadToCanva, canvaStatus } from '../../../lib/canva.js';
 
 export const dynamic = 'force-dynamic';
@@ -139,6 +140,7 @@ export async function POST(req) {
         size: body.size,
         quality: body.quality,
         variation,
+        spend: { by: gate.access.email },
       });
       // Saved to Drafts. A failure here never loses the image: the client still has it.
       let draft = null;
@@ -147,6 +149,15 @@ export async function POST(req) {
           scene: body.scene, result, by: gate.access.email });
       } catch (err) {
         console.error('[mockups] draft save', err);
+      }
+      // The same print check as batches (lib/mockupCheck.js), after answering so the tab
+      // never waits on it; the verdict lands on the draft.
+      if (draft) {
+        after(async () => {
+          const check = await checkMockup({ source: body.imageUrl, result: result.b64 });
+          const d = check && await getDraft(draft.id);
+          if (d) await saveDraft({ id: d.id, source: { ...d.source, check } });
+        });
       }
       return NextResponse.json({ ...result, draft: draft ? { id: draft.id, url: draft.output.url } : null });
     }

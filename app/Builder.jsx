@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { designFamily } from '../lib/colors';
+import MarketPublish from './MarketPublish.jsx';
 
 // Product builder. One upload builds every product's listings:
 //   - Global Fulfillment (Gildan, Comfort Colors): one Printify Choice listing made and
@@ -567,6 +568,7 @@ export default function Builder() {
   return (
     <div className="pane">
       <div className="pane-head">Product Builder</div>
+      <MarketPublish />
       <div className="tabs" style={{ marginBottom: 10 }}>
         <button className={'tab' + (mode === 'adults' ? ' active' : '')} onClick={() => switchMode('adults')}>Adults</button>
         <button className={'tab' + (mode === 'kids' ? ' active' : '')} onClick={() => switchMode('kids')}>Kids</button>

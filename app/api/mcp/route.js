@@ -8,7 +8,7 @@
 // own secret. The path is exempt from the password middleware for the same reason they are.
 import { NextResponse } from 'next/server';
 import { listTools, callTool, writesEnabled } from '../../../lib/mcp.js';
-import { verifyAccessToken, baseUrl } from '../../../lib/oauth.js';
+import { verifyAccessToken, baseUrl, SCOPE } from '../../../lib/oauth.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -29,7 +29,9 @@ async function authorized(req) {
   const staticToken = process.env.MCP_TOKEN;
   if (staticToken && bearer === staticToken) return true; // unset means closed, not open
 
-  return Boolean(await verifyAccessToken(bearer));
+  // A creative-connection token (/api/mcp/creative) does not open this one.
+  const t = await verifyAccessToken(bearer);
+  return Boolean(t && t.scope === SCOPE);
 }
 
 // Claude only follows this handshake on a 401, and needs the pointer to know where the

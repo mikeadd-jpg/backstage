@@ -14,12 +14,13 @@
 //                    keys it applies to, empty for all. Returns { id }.
 //   scan-competitor  { id }  fetch that competitor's ads and media now
 //   remove-competitor { id }
+//   find-page        { id }  look up a capture-found competitor's Ad Library Page
 //   upload-key       make a new key for the iPhone Shortcut (settings area); shown once
 //
 // Ads and captures are looked up by id here, never taken from the client, so what Claude
 // reads is what Backstage holds. Area `inspiration` (owner, admin, creative). Not exposed
 // over MCP.
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { head } from '@vercel/blob';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
@@ -27,7 +28,7 @@ import {
   readInspiration, analyzeAd, getAd, getCapture, setAdMark, setCaptureMark, deleteCapture, addCapture,
   saveCompetitor, removeCompetitor, newUploadKey, uploadKeyInfo, CAPTURE_PREFIX, readCapture, markCaptureRead,
 } from '../../../lib/inspiration.js';
-import { refreshCompetitorAds } from '../../../lib/adLibrary.js';
+import { refreshCompetitorAds, findCompetitorPage } from '../../../lib/adLibrary.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -99,7 +100,17 @@ export async function POST(req) {
     if (body.action === 'mark-capture') { await setCaptureMark(body.id, body); return ok(); }
     if (body.action === 'delete-capture') { await deleteCapture(body.id); return ok(); }
     if (body.action === 'read-capture') {
-      try { return NextResponse.json(await readCapture(body.id, body.frame)); }
+      try {
+        const r = await readCapture(body.id, body.frame);
+        // A brand new to the list: look up its Ad Library Page, and scan it when certain.
+        if (r.addedCompetitor) {
+          after(async () => {
+            const f = await findCompetitorPage(r.addedCompetitor).catch((err) => ({ error: err.message }));
+            if (f.pageId) await refreshCompetitorAds({ budgetMs: 200000, competitorId: r.addedCompetitor }).catch(() => {});
+          });
+        }
+        return NextResponse.json(r);
+      }
       catch (err) {
         // Unreadable for good (no frame): don't ask again. Anything else retries next load.
         if (/No frame|gone/.test(String(err.message))) await markCaptureRead(body.id).catch(() => {});
@@ -128,6 +139,11 @@ export async function POST(req) {
       return NextResponse.json(await refreshCompetitorAds({ budgetMs: 240000, competitorId: body.id }));
     }
     if (body.action === 'remove-competitor') { await removeCompetitor(body.id); return ok(); }
+    if (body.action === 'find-page') {
+      const f = await findCompetitorPage(body.id);
+      if (f.pageId) after(() => refreshCompetitorAds({ budgetMs: 200000, competitorId: body.id }).catch(() => {}));
+      return NextResponse.json(f);
+    }
 
     if (body.action === 'upload-key') {
       if (!gate.access.areas.includes('settings')) throw new Error('Only an owner or admin can make the Shortcut key.');

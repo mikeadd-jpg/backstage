@@ -63,9 +63,10 @@ export default function Ads() {
   // Video builder: assets picked from the library or uploaded, in order (blob: URLs).
   const [sAssets, setSAssets] = useState([]);
   const [sLoading, setSLoading] = useState(0);            // library images being copied in
-  const [sTexts, setSTexts] = useState([]);
+  const [sTexts, setSTexts] = useState([]);               // on-screen text of the sent cut, for the copy
   const [imageHash, setImageHash] = useState('');          // image builder: the sent image
-  const [openDraft, setOpenDraft] = useState(null);        // a draft reopened from Drafts               // on-screen text of the sent cut, for the copy
+  const [sentDraftId, setSentDraftId] = useState(null);  // the builder draft being sent, so its results come back
+  const [openDraft, setOpenDraft] = useState(null);        // a draft reopened from Drafts
   // Video from Canva.
   const [designs, setDesigns] = useState(null);           // null = not loaded yet
   const [designsCont, setDesignsCont] = useState(null);
@@ -330,7 +331,7 @@ export default function Ads() {
     try {
       const { ok, d } = await post({
         action: 'build-video', brand, videoId, name, message, cta,
-        headline: vHeadline, link: vLink,
+        headline: vHeadline, link: vLink, draftId: sentDraftId,
       });
       if (!ok) setError(d.error || 'Meta would not create the video ad.');
       else { setResult(d); loadRecent(brand); startAttach({ id: d.id, name: d.name }); }
@@ -475,8 +476,8 @@ export default function Ads() {
 
   // The builder sent a video and Meta has processed it: fill the ad form from the cut.
   // The image builder sent an image: same form, built as a single image ad.
-  function stillSent({ hash, title, headline, handles, texts }) {
-    setImageHash(hash); setResult(null);
+  function stillSent({ hash, title, headline, handles, texts, draftId }) {
+    setImageHash(hash); setResult(null); setSentDraftId(draftId || null);
     setSTexts(texts || []);
     if (!name) setName(title);
     setVPicked(handles);
@@ -487,7 +488,7 @@ export default function Ads() {
   async function buildImage() {
     setError(''); setResult(null); setBuilding(true);
     try {
-      const { ok, d } = await post({ action: 'build-image', brand, hash: imageHash, name, message, cta, headline: vHeadline, link: vLink });
+      const { ok, d } = await post({ action: 'build-image', brand, hash: imageHash, name, message, cta, headline: vHeadline, link: vLink, draftId: sentDraftId });
       if (!ok) setError(d.error || 'Meta would not create the image ad.');
       else { setResult(d); loadRecent(brand); startAttach({ id: d.id, name: d.name }); }
     } catch {
@@ -497,8 +498,8 @@ export default function Ads() {
     }
   }
 
-  function studioSent({ videoId: id, title, headline, handles, texts }) {
-    setVideoId(id); setVStage('ready'); setResult(null);
+  function studioSent({ videoId: id, title, headline, handles, texts, draftId }) {
+    setVideoId(id); setVStage('ready'); setResult(null); setSentDraftId(draftId || null);
     setSTexts(texts || []);
     if (!name) setName(title);
     setVPicked(handles);
@@ -595,7 +596,7 @@ export default function Ads() {
   async function addToAdSet() {
     setAdError(''); setAdResult(null); setAdding(true);
     try {
-      const { ok, d } = await post({ action: 'create-ad', brand, creativeId: attach.id, adsetId, name: adName });
+      const { ok, d } = await post({ action: 'create-ad', brand, creativeId: attach.id, adsetId, name: adName, draftId: sentDraftId });
       if (!ok) setAdError(d.error || 'Meta would not create the ad.');
       else setAdResult(d);
     } catch {

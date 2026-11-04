@@ -1240,3 +1240,14 @@ span.as-trans { text-align: center; }
 .insp-need-link { margin-top: 2px; }
 .insp-link-row { display: flex; gap: 6px; margin-top: 6px; }
 .insp-link-row .input { flex: 1; min-width: 0; }
+.insp-cands { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; align-items: center; }
+.insp-cands .li-sub { flex-basis: 100%; }
+.insp-cand { font-size: 12px; padding: 4px 10px; }
+.dr-check { font-size: 12px; margin-top: 4px; }
+.dr-check.ok { color: var(--ok, #15803d); }
+.dr-check.bad { color: var(--danger, #b91c1c); }
+.dr-meta { font-size: 12px; margin-top: 4px; opacity: 0.85; }
+.mp-list { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto; margin-top: 8px; }
+.mp-row { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.mp-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-markets { font-size: 11px; opacity: 0.7; letter-spacing: 0.04em; }

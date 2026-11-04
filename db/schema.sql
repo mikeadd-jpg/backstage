@@ -328,3 +328,30 @@ CREATE INDEX IF NOT EXISTS creative_batches_recent_idx ON creative_batches (crea
 -- Page, so page_id may be empty until then (fetching skips those). UNIQUE still holds for
 -- the ones that have one.
 ALTER TABLE competitors ALTER COLUMN page_id DROP NOT NULL;
+
+-- The creative MCP connection (/api/mcp/creative) acts as the person who approved it, so
+-- codes and tokens carry that email; the customer-service connection ignores it.
+ALTER TABLE oauth_codes ADD COLUMN IF NOT EXISTS user_email TEXT;
+ALTER TABLE oauth_tokens ADD COLUMN IF NOT EXISTS user_email TEXT;
+
+-- Looking up a capture-found competitor's Ad Library Page (lib/adLibrary.js
+-- findCompetitorPage): the candidates kept when no Page matched the name exactly, and when
+-- it was tried, so it is tried once.
+ALTER TABLE competitors ADD COLUMN IF NOT EXISTS page_candidates JSONB;
+ALTER TABLE competitors ADD COLUMN IF NOT EXISTS page_looked_up_at TIMESTAMPTZ;
+
+-- Estimated spend of the creative tools (lib/spend.js): one row per paid image and per
+-- server render, tagged with the batch and draft when there is one.
+CREATE TABLE IF NOT EXISTS spend_events (
+  id SERIAL PRIMARY KEY,
+  kind TEXT NOT NULL,                 -- image | render
+  brand TEXT,
+  batch_id INT,
+  draft_id INT,
+  units NUMERIC NOT NULL DEFAULT 1,   -- images, or render seconds
+  cost_usd NUMERIC NOT NULL DEFAULT 0,
+  created_by TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS spend_events_month_idx ON spend_events (created_at);
+CREATE INDEX IF NOT EXISTS spend_events_batch_idx ON spend_events (batch_id);

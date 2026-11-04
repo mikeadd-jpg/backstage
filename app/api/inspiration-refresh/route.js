@@ -3,11 +3,18 @@
 //   Manual:      POST with x-ingest-key: $INGEST_SECRET
 // Exempt from the sign-in gate like the other crons. Refresh in the tab runs the same
 // function through /api/inspiration.
-import { NextResponse } from 'next/server';
+//
+// The same daily run, after answering, also reads back how the ads Backstage made are
+// doing on Meta (lib/adResults.js) and clears out old drafts nobody kept (lib/drafts.js).
+// They ride this cron rather than taking their own.
+import { NextResponse, after } from 'next/server';
 import { refreshCompetitorAds } from '../../../lib/adLibrary.js';
+import { refreshAdResults } from '../../../lib/adResults.js';
+import { cleanupDrafts } from '../../../lib/drafts.js';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+// The fetch keeps to 270s; the room above it is for the two jobs that follow it.
+export const maxDuration = 600;
 
 function cronAuthorized(req) {
   if (req.headers.get('x-vercel-cron')) return true;
@@ -16,6 +23,10 @@ function cronAuthorized(req) {
 }
 
 async function run() {
+  after(async () => {
+    console.log('[daily] ad results', JSON.stringify(await refreshAdResults().catch((err) => ({ error: err.message }))));
+    console.log('[daily] draft cleanup', JSON.stringify(await cleanupDrafts().catch((err) => ({ error: err.message }))));
+  });
   try { return NextResponse.json(await refreshCompetitorAds({ budgetMs: 270000 })); }
   catch (err) { return NextResponse.json({ error: String(err.message || err) }, { status: 500 }); }
 }

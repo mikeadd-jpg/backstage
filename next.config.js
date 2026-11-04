@@ -9,6 +9,8 @@ module.exports = {
   async rewrites() {
     return [
       { source: '/.well-known/oauth-protected-resource', destination: '/api/oauth/protected-resource' },
+      // The creative connection (/api/mcp/creative) has metadata of its own, by path (RFC 9728).
+      { source: '/.well-known/oauth-protected-resource/api/mcp/creative', destination: '/api/oauth/protected-resource/creative' },
       { source: '/.well-known/oauth-protected-resource/:path*', destination: '/api/oauth/protected-resource' },
       { source: '/.well-known/oauth-authorization-server', destination: '/api/oauth/authorization-server' },
       { source: '/.well-known/oauth-authorization-server/:path*', destination: '/api/oauth/authorization-server' },

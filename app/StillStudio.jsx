@@ -251,7 +251,8 @@ export default function StillStudio({ brand, brandName, accent, assets, setAsset
       if (!ok) return setSend({ key, stage: 'failed', error: d.error || 'Meta would not take the image.' });
       setSend({ key, stage: 'ready' });
       const handles = [...new Set(plan.images.map((id) => (byId[id] || {}).handle).filter(Boolean))];
-      onSent({ hash: d.hash, title: plan.title, headline: plan.headline, handles, texts: [plan.headline, plan.sub].filter(Boolean) });
+      onSent({ hash: d.hash, title: plan.title, headline: plan.headline, handles, texts: [plan.headline, plan.sub].filter(Boolean),
+        draftId: (options.find((o) => o.key === key) || {}).draftId || null });
     } catch {
       setSend({ key, stage: 'failed', error: 'Request failed.' });
     }
