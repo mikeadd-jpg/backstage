@@ -113,7 +113,7 @@ while typing. Shared brand and status display constants are in `app/ui.js`.
 
 ## Entry points
 
-Four crons in `vercel.json`, all exempt from the sign-in gate because they carry
+Five crons in `vercel.json`, all exempt from the sign-in gate because they carry
 their own auth:
 
 | Route | Schedule | Auth |
@@ -122,6 +122,7 @@ their own auth:
 | `/api/scan` | every 4 hours | same |
 | `/api/email-snapshot` | daily 04:30 UTC | same |
 | `/api/printers-refresh` | Mondays 05:00 UTC | same |
+| `/api/inspiration-refresh` | daily 11:00 UTC | same |
 
 Both accept either GET form on purpose: Vercel only sends the Bearer token when a
 `CRON_SECRET` env var exists, so checking it alone would 401 every scheduled run.
@@ -537,53 +538,56 @@ model to photograph, so it gets room and camera variants instead. Nothing in a v
 may touch the product; that is `HARD_RULES`' job and the two must not argue. `MAX_BATCH`
 in the route is a spending guard, not a technical ceiling.
 
-## Inspiration tab (`lib/inspiration.js`, `/api/inspiration`, `app/Inspiration.jsx`)
+## Inspiration tab (`lib/inspiration.js`, `lib/adLibrary.js`, `/api/inspiration`, `app/Inspiration.jsx`)
 
-Competitor Meta ads to borrow ideas from, and Claude's take on how to build our own
-version. Area `inspiration` (owner, admin, creative).
+Competitors' running Meta ads with their pictures and videos, screenshots and recordings
+sent from a phone, and Claude's take on how to build our own version. Area `inspiration`
+(owner, admin, creative).
 
-- **The data is a Google Sheet that Backstage only reads.** "Competitor Ads"
-  (`INSPIRATION_SHEET_ID`), shared with the service account as Viewer like the profit
-  sheet; `lib/sheets.js` is the client both use. Tabs: `competitors` (name, page_id,
-  active, notes), `ads` (one row per ad, keyed by `ad_id`) and `digest` (one row per day
-  with a patterns note). Columns are matched by header name. Cached 5 minutes; Refresh
-  skips it.
-- **A scheduled Claude task fills it, not Backstage.** `competitor-ads-daily`, a desktop
-  scheduled task on the owner's Mac (~8am, `~/.claude/scheduled-tasks/competitor-ads-daily/`),
-  searches the Meta Ad Library per Page ID through the Meta connector and writes the sheet
-  through the Google Sheets connector. So it only runs while that app is open, and the
-  prompt lives there, not in this repo. Rules it follows that are easy to break: IDs are
-  plain-text columns (16 digits otherwise turn into scientific notation), rows are written
-  with `update_values` at exact ranges and **never appended** (append inserted rows without
-  the date formats, and pre-filled checkboxes made it land at row 2001), and the people's
-  `starred` / `notes` columns are never overwritten.
-- **The Ad Library search returns at most 50 ads per Page and no image or body text**,
-  only the link headline, start date and a link. Vans, Little Trouble, Rebel Bro and H&M
-  run hundreds, so only their newest 50 are seen, and the task never marks a capped
-  competitor's ads inactive. `ad_text` stays empty.
-- **So "How would I build this?" reads the headline, plus a screenshot if pasted.**
-  `analyzeAd` (`DRAFT_MODEL`) returns, through a tool like the briefing: format, hook, why,
-  which of our tools (mockup, carousel, video), steps, headline ideas, a Mockups scene and
-  what not to copy. `TOOLS` in that file says exactly what each tab can do; keep it exact,
-  because a vaguer version had people building single-image ads in the Ads tab, which only
-  does carousels and video. Headlines and scenes never name a band or other brand, and
-  never invent offers. The ad is looked up by id from the sheet, not taken from the client,
-  and its text is fenced as data: competitors wrote it.
+- **Backstage fetches the ads itself** (`lib/adLibrary.js`) through ScrapeCreators
+  (`SCRAPECREATORS_API_KEY`, pay-as-you-go credits, one per request), daily by the
+  `/api/inspiration-refresh` cron (11:00 UTC) or "Fetch now". It replaced the Mac
+  scheduled task and the Competitor Ads Google Sheet, whose Ad Library search gave 50 ads
+  per Page and no image or text. Data lives in Postgres: `competitors`, `competitor_ads`,
+  `inspiration_captures`, `inspiration_runs`. On first load with no competitors,
+  `importFromSheet` copies the sheet's competitors, ads, stars and notes in once; after
+  that the sheet is a record. Turn the Mac task off.
+- **Ads are read in the Ad Library's impressions order** (`sort_by=total_impressions`),
+  up to `ADLIB_MAX_PAGES` (5) requests per competitor per run, and each ad's place is saved
+  as `impression_rank`: Meta's only reach signal for US commercial ads, and what "Likely
+  winners" leans on now (top 3, 30+ days, or 3+ versions). **An ad is only marked ended
+  when the run read all of that competitor's running ads**: a capped or timed-out read did
+  not see the tail, and not seeing an ad is not proof it stopped (`capped` on the row).
+- **Media is copied to Vercel Blob when an ad is first seen** (`saveMedia`): the video
+  (HD, SD as fallback, up to 60MB) with its poster, and up to four images. Meta's links
+  are signed and expire within days, so until the copy works the row keeps Meta's latest
+  links in `media_source`, refreshed every run while the ad is live, retried up to
+  `MAX_MEDIA_TRIES`. The run works to a time budget inside the route's 300s.
+- **Phone captures** come two ways, both straight to Blob under `inspiration/captures/`
+  (so recordings of any length fit): the tab's upload button (`/api/inspiration/upload`
+  token, then `add-capture`), and an **iPhone Share sheet Shortcut** that POSTs to
+  `/api/inspiration/capture` with the upload key and PUTs the file to the presigned link
+  it gets back (`issueSignedToken` + `presignUrl`). That route is exempt from the sign-in
+  gate and checks the key against a SHA-256 hash in `app_settings.inspiration_upload_key`;
+  the key is made in the tab by an owner or admin and shown once. The Shortcut makes no
+  third call: `syncCaptures` adds unseen capture files when the tab loads. The presigned
+  link has no content-type check, because a Shortcut may send octet-stream; the fixed
+  path's extension (sent as `ext`) stands in.
+- **"How would I build this?" sees the real creative**: the ad's saved images, or a
+  video's poster, go to Claude by URL; a recording needs a frame picked in the player.
+  `analyzeAd` (`DRAFT_MODEL`) returns, through a tool: format, hook, why, which of our
+  tools (mockup, image builder, carousel, video builder), steps, headline ideas, a Mockups
+  scene and what not to copy. `TOOLS` says exactly what each tab can do; keep it exact.
+  Headlines and scenes never name a band or other brand and never invent offers, and the
+  ad's text is fenced as data: competitors wrote it.
 - **"Make one like it" never sends the competitor's image to an image model.** Claude
   writes an original scene, surroundings only, and the button leaves
   `{ brand, scene, search, source }` in `sessionStorage` (`backstage.mockupSeed`). Mockups
   reads it once on load (a ref, so React's dev double effect cannot eat it), opens that
   store with the product hint as its search, and products picked there start with that
-  scene instead of a freshly written one until "Stop using it". Generation, review and
-  sending are the normal Mockups flow.
-- Nothing here is stored: breakdowns live in the tab and go when it closes, like mockups.
-- **"Likely winners" is inferred, never impressions.** Meta publishes no impressions for
-  US commercial ads and the search returns none (its order is newest first). The tab flags
-  an active ad as a likely winner when it has run 30+ days or has 3+ live copies (same
-  advertiser, same headline ignoring case and punctuation), scores days + 10 per extra
-  copy capped at 10 copies, and shows one card per set of copies. The cap exists because
-  some brands launch 30+ copies on day one, which buried 99-day ads. Constants are at the
-  top of `app/Inspiration.jsx`; it is the default sort.
+  scene instead of a freshly written one until "Stop using it".
+- Stars, notes, capture labels and the competitor list are edited in the tab and saved;
+  breakdowns live in the tab and go when it closes.
 
 ## Sending a mockup to Meta (`lib/meta.js`)
 

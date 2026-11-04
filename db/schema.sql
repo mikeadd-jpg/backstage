@@ -191,3 +191,84 @@ CREATE TABLE IF NOT EXISTS brand_assets (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS brand_assets_brand_idx ON brand_assets (brand_key, kind, sort_order);
+
+-- ===== Inspiration (competitor ads and phone captures) =====
+-- Backstage fetches competitors' Meta ads itself (lib/adLibrary.js, ScrapeCreators, daily
+-- cron /api/inspiration-refresh) and keeps them here. It replaced the Competitor Ads sheet
+-- the Mac scheduled task filled; the sheet's competitors, stars and notes were imported
+-- once on first load (lib/inspiration.js, importFromSheet).
+CREATE TABLE IF NOT EXISTS competitors (
+  id          SERIAL PRIMARY KEY,
+  name        TEXT NOT NULL,
+  page_id     TEXT NOT NULL UNIQUE,      -- the Facebook Page id the Ad Library knows them by
+  active      BOOLEAN NOT NULL DEFAULT true,
+  notes       TEXT NOT NULL DEFAULT '',
+  checked_at  TIMESTAMPTZ,               -- last fetch attempt
+  last_error  TEXT,
+  capped      BOOLEAN NOT NULL DEFAULT false, -- more live ads than one run reads
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- One row per ad (Meta's ad_archive_id). `media` holds our own copies in Vercel Blob,
+-- saved the first time the ad is seen, because Meta's media links expire within days;
+-- `media_source` keeps Meta's latest links until that has worked. `impression_rank` is
+-- the ad's place in the Ad Library's own impressions order for its Page on the last run
+-- (1 = most seen), the only reach signal Meta gives for US commercial ads.
+CREATE TABLE IF NOT EXISTS competitor_ads (
+  ad_id            TEXT PRIMARY KEY,
+  page_id          TEXT NOT NULL,
+  competitor       TEXT NOT NULL,
+  headline         TEXT NOT NULL DEFAULT '',
+  body             TEXT NOT NULL DEFAULT '',
+  link_url         TEXT,
+  cta              TEXT,
+  display_format   TEXT,
+  start_date       DATE,
+  end_date         DATE,
+  first_seen       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_seen        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  active           BOOLEAN NOT NULL DEFAULT true,
+  collation_id     TEXT,
+  collation_count  INTEGER,
+  impression_rank  INTEGER,
+  media            JSONB NOT NULL DEFAULT '[]'::jsonb,
+  media_source     JSONB,
+  media_saved      BOOLEAN NOT NULL DEFAULT false,
+  media_tries      INTEGER NOT NULL DEFAULT 0,
+  starred          BOOLEAN NOT NULL DEFAULT false,
+  notes            TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS competitor_ads_page_idx ON competitor_ads (page_id, active);
+CREATE INDEX IF NOT EXISTS competitor_ads_media_idx ON competitor_ads (media_saved) WHERE media_saved = false;
+
+-- Screenshots and screen recordings sent from a phone: the iPhone Share sheet Shortcut
+-- (/api/inspiration/capture, presigned upload) or the tab's own upload button. Files in
+-- Vercel Blob under inspiration/captures/.
+CREATE TABLE IF NOT EXISTS inspiration_captures (
+  id            SERIAL PRIMARY KEY,
+  kind          TEXT NOT NULL,          -- image | video
+  url           TEXT NOT NULL,
+  pathname      TEXT NOT NULL UNIQUE,
+  content_type  TEXT,
+  size_bytes    BIGINT,
+  competitor    TEXT NOT NULL DEFAULT '',
+  note          TEXT NOT NULL DEFAULT '',
+  source        TEXT NOT NULL DEFAULT 'upload',   -- upload | shortcut
+  starred       BOOLEAN NOT NULL DEFAULT false,
+  created_by    TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- One row per fetch run, for the tab's "last checked" line and the credit count.
+CREATE TABLE IF NOT EXISTS inspiration_runs (
+  id           SERIAL PRIMARY KEY,
+  started_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  finished_at  TIMESTAMPTZ,
+  checked      INTEGER NOT NULL DEFAULT 0,
+  new_ads      INTEGER NOT NULL DEFAULT 0,
+  ended_ads    INTEGER NOT NULL DEFAULT 0,
+  media_saved  INTEGER NOT NULL DEFAULT 0,
+  credits_used INTEGER NOT NULL DEFAULT 0,
+  credits_left INTEGER,
+  errors       TEXT
+);

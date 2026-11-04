@@ -1,8 +1,24 @@
 {
   "crons": [
-    { "path": "/api/ingest", "schedule": "*/20 * * * *" },
-    { "path": "/api/scan", "schedule": "0 */4 * * *" },
-    { "path": "/api/email-snapshot", "schedule": "30 4 * * *" },
-    { "path": "/api/printers-refresh", "schedule": "0 5 * * 1" }
+    {
+      "path": "/api/ingest",
+      "schedule": "*/20 * * * *"
+    },
+    {
+      "path": "/api/scan",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/email-snapshot",
+      "schedule": "30 4 * * *"
+    },
+    {
+      "path": "/api/printers-refresh",
+      "schedule": "0 5 * * 1"
+    },
+    {
+      "path": "/api/inspiration-refresh",
+      "schedule": "0 11 * * *"
+    }
   ]
 }

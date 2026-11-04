@@ -10,6 +10,9 @@
 //   - /api/ingest, /api/scan, /api/email-snapshot and /api/printers-refresh, the cron
 //     endpoints, which authenticate with their own secret headers (x-ingest-key or the
 //     Vercel Bearer token)
+//   - /api/inspiration-refresh, the competitor ads cron, same secrets as the others
+//   - /api/inspiration/capture, the iPhone Shortcut's upload door, which checks its own
+//     upload key (hash in app_settings) and can only hand out a capture upload link
 //   - /api/mcp, which authenticates with MCP_TOKEN or an OAuth access token
 //   - /api/oauth/* and /.well-known/*, the OAuth flow Claude uses to reach /api/mcp. Its
 //     consent screen does its own session check, so approval is still gated.
@@ -18,7 +21,8 @@ import { readSession, SESSION_COOKIE } from './lib/session.js';
 
 const PUBLIC_PATHS = [
   '/login', '/api/auth',
-  '/api/ingest', '/api/scan', '/api/email-snapshot', '/api/printers-refresh',
+  '/api/ingest', '/api/scan', '/api/email-snapshot', '/api/printers-refresh', '/api/inspiration-refresh',
+  '/api/inspiration/capture',
   '/api/mcp', '/api/oauth', '/.well-known',
 ];
 
