@@ -1,5 +1,6 @@
-// GET  /api/gmail                          -> which mailbox Backstage reads and sends from
-// POST /api/gmail { action: 'disconnect' } -> forget it (ingest falls back to the env token)
+// GET  /api/gmail                                 -> the mailboxes Backstage reads and sends from
+// POST /api/gmail { action: 'disconnect', email } -> forget one (with none left, ingest falls
+//                                                    back to the env token)
 //
 // Status is open to the Inbox too, so it can say whether Send works. Disconnecting is
 // settings only: it changes which mailbox every inquiry comes from.
@@ -25,7 +26,8 @@ export async function POST(req) {
   try {
     const body = await req.json();
     if (body.action === 'disconnect') {
-      await disconnectGmail();
+      if (!body.email) return NextResponse.json({ error: 'Which mailbox?' }, { status: 400 });
+      await disconnectGmail(String(body.email).toLowerCase());
       return NextResponse.json(await gmailStatus());
     }
     return NextResponse.json({ error: 'unknown action' }, { status: 400 });

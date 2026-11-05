@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { requireArea } from '../../../../lib/access.js';
 import { getInquiryForReply } from '../../../../lib/db.js';
 import { findMessageId, getThread, replyPlan } from '../../../../lib/gmail.js';
+import { brandDomain } from '../../../../lib/brands.js';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -19,15 +20,15 @@ export async function GET(req) {
     const inq = id && await getInquiryForReply(id);
     if (!inq) return NextResponse.json({ error: 'No such inquiry.' }, { status: 404 });
 
-    const msgId = await findMessageId({ gmailId: inq.gmail_id, from: inq.from_email, subject: inq.subject, receivedAt: inq.received_at });
-    if (!msgId) {
+    const found = await findMessageId({ gmailId: inq.gmail_id, from: inq.from_email, subject: inq.subject, receivedAt: inq.received_at, brandDomain: brandDomain(inq.brand) });
+    if (!found) {
       return NextResponse.json({ messages: [], plan: null, cantSend: 'This email is not in the connected mailbox, so it can only be answered from wherever it arrived.' });
     }
-    const messages = await getThread(msgId);
+    const messages = await getThread(found.id, found.mailbox);
     let plan = null; let cantSend = null;
     try {
-      const p = await replyPlan(msgId);
-      plan = { to: p.to, from: p.from.email, fromName: p.from.name, subject: p.subject, hasSignature: Boolean(p.from.signature) };
+      const p = await replyPlan(found.id, found.mailbox);
+      plan = { mailbox: found.mailbox, to: p.to, from: p.from.email, fromName: p.from.name, subject: p.subject, hasSignature: Boolean(p.from.signature) };
     } catch (err) { cantSend = String(err.message || err); }
     return NextResponse.json({ messages, plan, cantSend });
   } catch (err) {

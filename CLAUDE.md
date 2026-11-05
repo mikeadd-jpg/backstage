@@ -149,12 +149,17 @@ Order matters and is deliberate:
    would not have stayed invisible at 25.
 4. Brand routing, classify, order lookup, draft, insert.
 
-### The support mailbox (`lib/gmailAuth.js`, `/api/gmail`, Settings → Support mailbox)
+### The support mailboxes (`lib/gmailAuth.js`, `/api/gmail`, Settings → Support mailboxes)
 
-All three brands deliver into one Google Workspace mailbox (mike@elderemo.com): brand
-addresses are aliases on it, PopPunks' are Google Groups because Admin's alias picker
-refused poppunks.com. Backstage reads and sends from the mailbox connected in Settings;
-until one is connected it falls back to `GMAIL_REFRESH_TOKEN` (the old read-only inbox).
+One Google Workspace user per brand, so customers see that brand's name and picture:
+mike@elderemo.com, mike@wallspoke.com, mike@poppunks.com, with the brand's hello@ /
+support@ (and orders@, marina@) as aliases on its user. All three are in one Workspace.
+Backstage reads every mailbox connected in Settings (`app_settings.gmail_mailboxes`,
+keyed by address; the old single `gmail_auth` row is folded in on first read) and
+replies from the mailbox an email arrived in. Inquiries have no mailbox column:
+`findMessageId` tries the brand's own mailbox first, then the others. With nothing
+connected it falls back to `GMAIL_REFRESH_TOKEN` (the old read-only inbox). Mail that
+routes to no brand address is credited to the mailbox's brand (`brandForAddress`).
 
 - **Consent rides the sign-in callback.** `/api/gmail/connect` signs a state with
   `purpose: 'gmail'`, and `/api/auth/google/callback` branches on it, so no new redirect

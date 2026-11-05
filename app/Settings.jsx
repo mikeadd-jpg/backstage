@@ -70,7 +70,7 @@ export default function Settings() {
     const sp = new URLSearchParams(window.location.search);
     if (sp.get('canva') === 'connected') setCanvaMsg('Canva connected.');
     else if (sp.get('canva_error')) setCanvaMsg(sp.get('canva_error'));
-    if (sp.get('gmail')) setGmailMsg('Connected ' + sp.get('gmail') + '. New mail is read from here from now on.');
+    if (sp.get('gmail')) setGmailMsg('Connected ' + sp.get('gmail') + '. Its new mail is read from now on.');
     else if (sp.get('gmail_error')) setGmailMsg(sp.get('gmail_error'));
     if (['canva', 'canva_error', 'gmail', 'gmail_error'].some((k) => sp.has(k))) {
       window.history.replaceState(null, '', window.location.pathname + window.location.hash);
@@ -81,13 +81,13 @@ export default function Settings() {
     const d = await fetch('/api/gmail').then((r) => r.json()).catch(() => null);
     if (d && !d.error) setGmail(d);
   }
-  async function disconnectGmail() {
-    if (!window.confirm('Disconnect Gmail? Backstage goes back to reading the old mailbox and can no longer send replies. Nothing in Gmail is touched.')) return;
+  async function disconnectGmail(email) {
+    if (!window.confirm('Disconnect ' + email + '? Backstage stops reading its mail and can no longer send replies from it. Nothing in Gmail is touched.')) return;
     const d = await fetch('/api/gmail', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'disconnect' }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'disconnect', email }),
     }).then((r) => r.json()).catch(() => ({ error: 'Request failed' }));
     if (d.error) setGmailMsg(d.error);
-    else { setGmail(d); setGmailMsg('Gmail disconnected.'); }
+    else { setGmail(d); setGmailMsg(email + ' disconnected.'); }
   }
 
   async function loadCanva() {
@@ -217,37 +217,40 @@ export default function Settings() {
       })}
 
       <Section top id="shared" title="All stores" sub="Support mailbox, reply structure, Canva and the store list">
-        <Section id="shared:gmail" title="Support mailbox (Gmail)" sub={gmail && gmail.connected ? gmail.email : 'Not connected'}>
+        <Section id="shared:gmail" title="Support mailboxes (Gmail)" sub={gmail && gmail.connected ? gmail.mailboxes.filter((m) => m.readable).map((m) => m.email).join(', ') : 'Not connected'}>
           <p className="pane-sub" style={{ marginTop: 0 }}>
-            The mailbox the Inbox reads customer emails from and sends replies from. Replies go out
-            from the brand address the customer wrote to, with that address's Gmail signature, as long as
-            the address is on the mailbox's Send mail as list. Sign in to Google as the support mailbox
-            itself and tick every permission.
+            One mailbox per brand. The Inbox reads customer emails from every mailbox here, and a reply
+            goes out from the mailbox it arrived in, from the address the customer wrote to (if that
+            address is on the mailbox's Send mail as list), with that address's Gmail signature. To add
+            one, press Connect and sign in to Google as that mailbox itself, ticking every permission.
           </p>
-          {!gmail ? <p className="pane-sub">Loading...</p>
-            : gmail.connected ? (
-              <div className="build-row">
-                <span className="li-name">
-                  {gmail.email}
-                  <span className="li-sub" style={{ display: 'inline' }}>
-                    {' '}connected by {gmail.by || 'someone'}{gmail.at ? ' on ' + new Date(gmail.at).toLocaleDateString() : ''}
+          {!gmail ? <p className="pane-sub">Loading...</p> : (
+            <>
+              {gmail.mailboxes.map((m) => (
+                <div className="build-row" key={m.email}>
+                  <span className="li-name">
+                    {m.email}
+                    <span className="li-sub" style={{ display: 'inline' }}>
+                      {m.readable
+                        ? ' connected by ' + (m.by || 'someone') + (m.at ? ' on ' + new Date(m.at).toLocaleDateString() : '')
+                        : ' can no longer be read (the session secret changed). Connect it again.'}
+                    </span>
                   </span>
-                </span>
-                <a className="btn btn-ghost" href="/api/gmail/connect">Reconnect</a>
-                <button className="btn btn-ghost" onClick={disconnectGmail}>Disconnect</button>
-              </div>
-            ) : (
-              <>
-                <a className="btn btn-primary" style={{ alignSelf: 'flex-start' }} href="/api/gmail/connect">Connect Gmail</a>
-                <div className="ledger-note" style={{ marginTop: 8 }}>
-                  {gmail.unreadable
-                    ? 'The stored connection can no longer be read (the session secret changed). Connect again.'
-                    : gmail.envFallback
-                      ? 'Until a mailbox is connected, Backstage reads the old one set on the server and cannot send.'
-                      : 'No mailbox is set up, so nothing is being read.'}
+                  <button className="btn btn-ghost" onClick={() => disconnectGmail(m.email)}>Disconnect</button>
                 </div>
-              </>
-            )}
+              ))}
+              <a className={'btn ' + (gmail.connected ? 'btn-ghost' : 'btn-primary')} style={{ alignSelf: 'flex-start', marginTop: 6 }} href="/api/gmail/connect">
+                {gmail.connected ? 'Connect another mailbox' : 'Connect Gmail'}
+              </a>
+              {!gmail.connected && (
+                <div className="ledger-note" style={{ marginTop: 8 }}>
+                  {gmail.envFallback
+                    ? 'Until a mailbox is connected, Backstage reads the old one set on the server and cannot send.'
+                    : 'No mailbox is set up, so nothing is being read.'}
+                </div>
+              )}
+            </>
+          )}
           {gmailMsg && <div className="ledger-note" style={{ marginTop: 8 }}>{gmailMsg}</div>}
         </Section>
         <Section id="shared:reply" title="Customer-service reply structure" sub="The skeleton every reply follows">
