@@ -245,6 +245,15 @@ every freshly approved Wallspoke map as high risk on day 0. Only draft (after th
 grace), on hold, failed, cancelled and error count; a pending order that sits too long is
 caught by the generic "in production N days" rule at `RISK_DAYS.production`.
 
+**"Manual" does not always mean you.** Elder Emo's sticker pack is manual and mailed by
+hand, so an order whose Printify garment shipped still flags until the pack is marked
+fulfilled in Shopify; the reason names the items ("Not marked fulfilled N days: Elder Emo
+Sticker Pack (the rest shipped)") because a bare "awaiting fulfillment" read as a false
+positive next to a shipped order. Wallspoke's maps are also "manual" in Shopify, since the
+generator sends them to Printful by API, but Printful makes and ships them, so a
+Printful-only store treats manual items as Printful's (`manualFulfiller` in
+`lib/brands.js`): "in production", not "awaiting your fulfillment".
+
 A shipment counts as delivered if Shopify says so **or** Printify has seen its tracking
 number delivered, since Shopify's DHL eCommerce feed sometimes stops updating. A Printful
 `draft` was never submitted, so it is flagged after the same grace period as a manual item.
