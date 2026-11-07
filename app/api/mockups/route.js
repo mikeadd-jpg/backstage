@@ -32,6 +32,7 @@
 import { NextResponse, after } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { BRANDS, creativeBrands } from '../../../lib/brands.js';
+import { locateDesign } from '../../../lib/designBox.js';
 import { listActiveProducts, addProductImage, setProductMainImage } from '../../../lib/shopify.js';
 import { printifyMockupIndex, mockupsFor, shotOf } from '../../../lib/printifyMockups.js';
 import {
@@ -161,6 +162,24 @@ export async function POST(req) {
         });
       }
       return NextResponse.json({ ...result, draft: draft ? { id: draft.id, url: draft.output.url } : null });
+    }
+
+    // Where the design sits in a result, for the tab's square and 4:5 crops around it.
+    if (body.action === 'locate') {
+      if (!body.b64) throw new Error('No image to look at.');
+      return NextResponse.json({ box: await locateDesign(body.b64) });
+    }
+
+    // A finished shot (cropped around the design and/or with a look) kept as its own draft,
+    // next to the original the generate step already saved.
+    if (body.action === 'save-finished') {
+      const brand = checkBrand(body.brand);
+      if (!body.b64) throw new Error('No image to save.');
+      const f = body.finish || {};
+      const draft = await saveMockupDraft({ brand, product: body.product || {}, b64: body.b64, sourceImage: body.imageUrl,
+        scene: body.scene, result: { prompt: body.prompt, variation: body.variation }, by: gate.access.email,
+        extra: { finish: { crop: String(f.crop || ''), look: String(f.look || ''), strength: Number(f.strength) || 0 }, ...(body.fromDraft ? { fromDraft: Number(body.fromDraft) } : {}) } });
+      return NextResponse.json({ draft: { id: draft.id, url: draft.output.url } });
     }
 
     if (body.action === 'attach') {

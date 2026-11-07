@@ -512,6 +512,24 @@ whatever Shopify holds as the featured image, which is a mockup with the design 
 small in frame. If fidelity is still not there, the answer is to generate the scene with
 a blank garment and composite the real print file with `sharp`, not to loosen the review.
 
+**Finishing: crop around the design, and looks** (`app/mockupFinish.js`, owner's request
+2026-11-07). Each result can be cropped Square or 4:5 **centred on the printed design**, and
+given one of the video builder's looks (`FILTERS`, minus the motion parts) at a strength,
+all in the browser from the kept original; the finished JPEG is what Download and every
+Send use, and "Save this version to Drafts" keeps it (`save-finished`). The design is
+found by `lib/designBox.js` (`DESIGN_BOX_MODEL`, default `claude-haiku-5-5`, within about
+half a percent; the 4.x models were off by 10%). This exists because asking the image
+model to put the print in the vertical middle of a portrait never worked, in words or with
+the product laid out on the canvas first (tried 2026-11-07): with no face in frame, a
+tee's chest physically lands in the top third of a 2:3 picture, so a centred square crop
+cut the print off. Don't retry the prompt route; crop around the design. The CSS part of a
+look is pixel maths, not `ctx.filter`, which Safari ignores. Shopify and Drafts uploads
+read JPEG or PNG off the bytes.
+
+**The shot's own direction outranks the store's.** `buildPrompt` orders store notes, then
+Models, then the variation (marked "only where it does not conflict"), then the notes typed
+for that shot ("wins over the store defaults and the variation"), then the hard rules.
+
 **Every generated image is saved to Drafts** (see Drafts below) by the route as it is
 made: Vercel Blob plus a `creative_drafts` row with the product, colour, scene and
 prompt. This replaced the old rule that generated images lived only in the tab; the

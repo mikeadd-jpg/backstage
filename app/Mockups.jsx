@@ -7,6 +7,7 @@
 // On Printify stores each product starts from its original Printify mockup in the colour
 // picked on its card (lib/printifyMockups.js), not from whatever image is on the listing.
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { CROPS, LOOKS, finishImage, smallJpeg } from './mockupFinish.js';
 
 const QUALITIES = ['low', 'medium', 'high', 'xhigh', 'max', 'auto'];
 const SIZE_LABELS = { portrait: 'Portrait', square: 'Square', landscape: 'Landscape' };
@@ -247,7 +248,8 @@ export default function Mockups() {
       if (!ok) return { ok: false, error: d.error || 'Generation failed.' };
       shotSeq.current += 1;
       setShots((s) => [{
-        key: job.key + '-' + shotSeq.current, jobKey: job.key, b64: d.b64, prompt: d.prompt || '',
+        key: job.key + '-' + shotSeq.current, jobKey: job.key, b64: d.b64, orig: d.b64, mime: 'image/png', prompt: d.prompt || '',
+        finish: { crop: 'original', look: '', strength: 1 }, scene: job.scene,
         variation: d.variation || '', product: { ...job.product, image: job.image || job.product.image }, brand: job.brand, dest: {},
         draftId: d.draft ? d.draft.id : null,
       }, ...s]);
@@ -286,6 +288,48 @@ export default function Mockups() {
     await Promise.all(workers);
     setBusy(false);
   }
+
+  const patchShot = (key, patch) => setShots((s) => s.map((sh) => (sh.key === key ? { ...sh, ...(typeof patch === 'function' ? patch(sh) : patch) } : sh)));
+
+  // Crop around the design and/or a look, baked in the browser from the original, which
+  // is always kept. The finished picture is what every Send button and Download use, so a
+  // change clears what was sent. The design is found once per shot (a small Claude call).
+  const finishSeq = useRef({});
+  async function refinish(shot, change) {
+    const finish = { ...shot.finish, ...change };
+    const seq = (finishSeq.current[shot.key] || 0) + 1;
+    finishSeq.current[shot.key] = seq;
+    patchShot(shot.key, { finish, finishing: true, finishMsg: '' });
+    try {
+      let box = shot.box;
+      if (CROPS[finish.crop].aspect && box === undefined) {
+        const { ok, d } = await post({ action: 'locate', b64: await smallJpeg(shot.orig) });
+        box = ok ? d.box || null : null;
+        patchShot(shot.key, { box });
+      }
+      const out = await finishImage({ b64: shot.orig, crop: finish.crop, box, look: finish.look, strength: finish.strength });
+      if (finishSeq.current[shot.key] !== seq) return;
+      patchShot(shot.key, {
+        b64: out.b64, mime: out.mime, finishing: false, dest: {}, finishedDraft: null,
+        finishMsg: CROPS[finish.crop].aspect && !box ? 'Could not find the design, so this crop is centred on the picture.' : '',
+      });
+    } catch (err) {
+      if (finishSeq.current[shot.key] === seq) patchShot(shot.key, { finishing: false, finishMsg: err.message || 'Could not finish the picture.' });
+    }
+  }
+
+  async function saveFinished(shot) {
+    patchShot(shot.key, { finishedDraft: 'saving' });
+    const { ok, d } = await post({
+      action: 'save-finished', brand: shot.brand, b64: shot.b64, finish: shot.finish, fromDraft: shot.draftId,
+      imageUrl: shot.product.image, scene: shot.scene, prompt: shot.prompt, variation: shot.variation,
+      product: { id: shot.product.id, title: shot.product.title, handle: shot.product.handle, color: shot.product.color || null },
+    }).catch(() => ({ ok: false, d: {} }));
+    patchShot(shot.key, { finishedDraft: ok ? 'saved' : null, finishMsg: ok ? '' : (d.error || 'Could not save to Drafts.') });
+  }
+
+  const isFinished = (shot) => shot.mime === 'image/jpeg';
+  const fileName = (shot) => shot.product.handle + '-lifestyle' + (isFinished(shot) ? '.jpg' : '.png');
 
   function mark(key, dest, state, message, extra) {
     setShots((s) => s.map((sh) => (sh.key === key
@@ -329,7 +373,7 @@ export default function Mockups() {
         }
       : {
           action: dest === 'canva' ? 'attach-canva' : 'attach-meta', brand: shot.brand, b64: shot.b64,
-          name: shot.product.handle + '-lifestyle.png',
+          name: fileName(shot),
         };
     try {
       const { ok, d } = await post(payload);
@@ -387,9 +431,48 @@ export default function Mockups() {
             <figcaption>{shot.product.source === 'printify' ? 'Printify mockup' : 'Store image'}</figcaption>
           </figure>
           <figure>
-            <img src={'data:image/png;base64,' + shot.b64} alt="" />
-            <figcaption>Generated{shot.draftId ? ' · saved to Drafts' : ''}</figcaption>
+            <img src={'data:' + (shot.mime || 'image/png') + ';base64,' + shot.b64} alt="" style={shot.finishing ? { opacity: 0.5 } : undefined} />
+            <figcaption>{isFinished(shot) ? 'Finished' : 'Generated'}{shot.draftId ? ' · original saved to Drafts' : ''}</figcaption>
           </figure>
+        </div>
+
+        <div className="mk-finish">
+          <div className="mk-finish-row">
+            <span className="mk-finish-label">Crop</span>
+            <div className="mk-colors">
+              {Object.entries(CROPS).map(([k, c]) => (
+                <button key={k} className={'mk-color' + (shot.finish.crop === k ? ' on' : '')} disabled={shot.finishing}
+                  onClick={() => refinish(shot, { crop: k })}>{c.label}</button>
+              ))}
+            </div>
+            {CROPS[shot.finish.crop].aspect && shot.box && <span className="mk-finish-note">centred on the design</span>}
+          </div>
+          <div className="mk-finish-row">
+            <span className="mk-finish-label">Look</span>
+            <select className="input" style={{ width: "auto" }} value={shot.finish.look} disabled={shot.finishing}
+              onChange={(e) => refinish(shot, { look: e.target.value })}>
+              <option value="">None</option>
+              {Object.entries(LOOKS).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            </select>
+            {shot.finish.look && (
+              <label className="mk-finish-note mk-strength">
+                Strength
+                <input type="range" min="0.2" max="1" step="0.1" value={shot.finish.strength}
+                  onChange={(e) => refinish(shot, { strength: Number(e.target.value) })} />
+              </label>
+            )}
+          </div>
+          {shot.finishing && <div className="mk-finish-note">Working...</div>}
+          {shot.finishMsg && <div className="mk-finish-note">{shot.finishMsg}</div>}
+          {isFinished(shot) && (
+            <div className="mk-finish-row">
+              <button className="btn btn-ghost" onClick={() => refinish(shot, { crop: 'original', look: '', strength: 1 })} disabled={shot.finishing}>Back to the original</button>
+              <button className={'btn btn-ghost' + (shot.finishedDraft === 'saved' ? ' copied' : '')} onClick={() => saveFinished(shot)}
+                disabled={shot.finishing || shot.finishedDraft === 'saving' || shot.finishedDraft === 'saved'}>
+                {shot.finishedDraft === 'saving' ? 'Saving...' : shot.finishedDraft === 'saved' ? 'Saved to Drafts' : 'Save this version to Drafts'}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flag warn" style={{ marginTop: 12 }}>
@@ -407,8 +490,8 @@ export default function Mockups() {
         <div className="reply-actions" style={{ marginTop: 14 }}>
           <a
             className="btn btn-ghost"
-            href={'data:image/png;base64,' + shot.b64}
-            download={shot.product.handle + '-lifestyle.png'}
+            href={'data:' + (shot.mime || 'image/png') + ';base64,' + shot.b64}
+            download={fileName(shot)}
           >Download</a>
 
           <button
