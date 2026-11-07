@@ -23,7 +23,7 @@
 import { NextResponse, after } from 'next/server';
 import { head } from '@vercel/blob';
 import { requireArea } from '../../../lib/access.js';
-import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
+import { BRANDS, creativeBrands } from '../../../lib/brands.js';
 import {
   readInspiration, analyzeAd, getAd, getCapture, setAdMark, setCaptureMark, deleteCapture, addCapture,
   saveCompetitor, removeCompetitor, newUploadKey, uploadKeyInfo, CAPTURE_PREFIX, readCapture, markCaptureRead,
@@ -36,7 +36,7 @@ export const maxDuration = 300;
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 const MAX_IMAGE_B64 = 5 * 1024 * 1024; // the client shrinks screenshots well under this
 
-const brandsList = () => configuredShopifyBrands().map((b) => ({ key: b, name: BRANDS[b].name }));
+const brandsList = () => creativeBrands().map((b) => ({ key: b, name: BRANDS[b].name }));
 
 export async function GET(req) {
   const gate = await requireArea(req, 'inspiration');
@@ -60,7 +60,7 @@ export async function POST(req) {
 
     if (body.action === 'analyze') {
       const brand = body.brand;
-      if (!brand || !configuredShopifyBrands().includes(brand)) throw new Error('Pick one of our stores first.');
+      if (!brand || !creativeBrands().includes(brand)) throw new Error('Pick one of our stores first.');
       let image = null;
       if (body.image) {
         const m = /^data:([^;]+);base64,(.+)$/.exec(String(body.image));
@@ -130,7 +130,7 @@ export async function POST(req) {
     }
 
     if (body.action === 'save-competitor') {
-      const ours = configuredShopifyBrands();
+      const ours = creativeBrands();
       const brands = Array.isArray(body.brands) ? [...new Set(body.brands.filter((b) => ours.includes(b)))] : undefined;
       return NextResponse.json({ id: await saveCompetitor({ ...body, brands }) });
     }

@@ -33,8 +33,10 @@ function Section({ id, title, sub, children, top }) {
   );
 }
 
-const CS_BRANDS = ['elderemo', 'poppunks', 'wallspoke'];
-const BRAND_NAMES = { elderemo: 'Elder Emo', poppunks: 'PopPunks', wallspoke: 'Wallspoke' };
+// Stores with mockup notes, models and a brand kit: the three CS stores plus the
+// creative-only ones (lib/brands.js).
+const CS_BRANDS = ['elderemo', 'poppunks', 'wallspoke', 'transworld'];
+const BRAND_NAMES = { elderemo: 'Elder Emo', poppunks: 'PopPunks', wallspoke: 'Wallspoke', transworld: 'Transworld Skateboarding' };
 
 export default function Settings() {
   const [data, setData] = useState(null);

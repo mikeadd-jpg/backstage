@@ -40,7 +40,7 @@
 // in Ads Manager. See the header of lib/meta.js before widening that. Not exposed over MCP.
 import { NextResponse, after } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
-import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
+import { BRANDS, creativeBrands } from '../../../lib/brands.js';
 import { listActiveProducts, shopPrimaryUrl, createLandingCollection, listCollections, bestSellers } from '../../../lib/shopify.js';
 import { printifyMockupIndex, mockupsFor } from '../../../lib/printifyMockups.js';
 import { listDrafts } from '../../../lib/drafts.js';
@@ -77,7 +77,7 @@ function handleFromName(brand, name) {
 const namePrefix = creativeNamePrefix;
 
 function checkBrand(brand) {
-  if (!brand || !configuredShopifyBrands().includes(brand) || !metaAccountFor(brand)) {
+  if (!brand || !creativeBrands().includes(brand) || !metaAccountFor(brand)) {
     throw new Error('No ad account is configured for ' + brand + '.');
   }
   return brand;
@@ -92,7 +92,7 @@ export async function GET(req) {
   const gate = await requireArea(req, 'ads');
   if (gate.error) return gate.error;
   const tokenSet = Boolean(process.env.META_ACCESS_TOKEN);
-  const keys = configuredShopifyBrands().filter((b) => metaAccountFor(b));
+  const keys = creativeBrands().filter((b) => metaAccountFor(b));
   const pages = await Promise.all(keys.map((b) => (tokenSet
     ? pageFor(b).catch((err) => ({ page: null, candidates: [], error: String(err.message || err) }))
     : { page: null, candidates: [] })));

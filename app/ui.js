@@ -6,6 +6,8 @@ export const BRANDS = {
   elderemo:  { name: 'Elder Emo', short: 'EE', color: 'var(--violet)', bg: 'var(--violet-bg)' },
   poppunks:  { name: 'PopPunks',  short: 'PP', color: 'var(--pink)',   bg: 'var(--pink-bg)' },
   wallspoke: { name: 'Wallspoke', short: 'WS', color: 'var(--blue)',   bg: 'var(--blue-bg)' },
+  // Creative only (lib/brands.js), so it is not in RAIL_BRANDS: no inbox or risk rail.
+  transworld: { name: 'Transworld Skateboarding', short: 'TW', color: 'var(--emerald)', bg: 'var(--emerald-bg)' },
   unknown:   { name: 'Unknown',   short: '?',  color: 'var(--muted)',  bg: 'var(--surface-2)' },
 };
 export const RAIL_BRANDS = ['elderemo', 'poppunks', 'wallspoke'];

@@ -10,7 +10,7 @@
 // Not exposed over MCP yet (phase 4 adds a creative connection of its own).
 import { NextResponse } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
-import { configuredShopifyBrands } from '../../../lib/brands.js';
+import { creativeBrands } from '../../../lib/brands.js';
 import { listDrafts, getDraft, saveDraft, setDraftStatus, deleteDraft } from '../../../lib/drafts.js';
 
 export const dynamic = 'force-dynamic';
@@ -39,7 +39,7 @@ export async function GET(req) {
       brand: q.get('brand') || null,
       status: q.get('status') || null,
     });
-    return NextResponse.json({ drafts, kinds, brands: configuredShopifyBrands() }, { headers: { 'Cache-Control': 'private, no-store' } });
+    return NextResponse.json({ drafts, kinds, brands: creativeBrands() }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (err) {
     return NextResponse.json({ error: String(err.message || err) }, { status: 500 });
   }
@@ -61,7 +61,7 @@ export async function POST(req) {
     if (b.action !== 'save') throw new Error('Unknown action.');
 
     const brand = existing ? existing.brand : b.brand;
-    if (!configuredShopifyBrands().includes(brand)) throw new Error('Unknown store.');
+    if (!creativeBrands().includes(brand)) throw new Error('Unknown store.');
     // Only our own stored files: a draft can never point at an arbitrary URL.
     for (const a of b.assets || []) if (a.url && !inStore(a.url)) throw new Error('A picture in this draft is not stored yet.');
     if (b.output && (!inStore(b.output.url) || (b.output.poster && !inStore(b.output.poster)))) throw new Error('The rendered file is not stored yet.');

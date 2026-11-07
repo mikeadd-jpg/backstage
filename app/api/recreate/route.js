@@ -15,7 +15,7 @@
 import { NextResponse, after } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
 import { batchSpend, monthSpend } from '../../../lib/spend.js';
-import { configuredShopifyBrands, BRANDS } from '../../../lib/brands.js';
+import { creativeBrands, BRANDS } from '../../../lib/brands.js';
 import { createBatch, createBriefBatch, createApprovedBrief, fillBrief, listBriefTemplates, saveBriefTemplate, deleteBriefTemplate, stopBatch, listBatches, driveBatch, wakeIdleBatches, MAX_MOCKUPS, MAX_ITEMS, MAX_PER_AD, MAX_BRIEF_SHOTS } from '../../../lib/recreate.js';
 
 export const dynamic = 'force-dynamic';
@@ -38,7 +38,7 @@ export async function GET(req) {
     const [spend, month] = await Promise.all([batchSpend(list.map((b) => b.id)).catch(() => ({})), monthSpend().catch(() => null)]);
     const batches = list.map((b) => ({ ...b, spend: spend[b.id] || { cost: 0, images: 0 } }));
     if (batches.some((b) => b.status === 'running')) after(() => wakeIdleBatches().catch((err) => console.error('[recreate] wake', err)));
-    return NextResponse.json({ batches, month, brands: configuredShopifyBrands().map((k) => ({ key: k, name: BRANDS[k].name })), limits: { mockups: MAX_MOCKUPS, items: MAX_ITEMS, perAd: MAX_PER_AD } }, { headers: { 'Cache-Control': 'private, no-store' } });
+    return NextResponse.json({ batches, month, brands: creativeBrands().map((k) => ({ key: k, name: BRANDS[k].name })), limits: { mockups: MAX_MOCKUPS, items: MAX_ITEMS, perAd: MAX_PER_AD } }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (err) {
     return NextResponse.json({ error: String(err.message || err) }, { status: 500 });
   }
@@ -50,7 +50,7 @@ export async function POST(req) {
   try {
     const b = await req.json();
     if (b.action === 'start') {
-      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      if (!creativeBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
       const batch = await createBatch({
         brand: b.brand, picks: b.picks, make: b.make, perAd: b.perAd, aspect: b.aspect, notes: b.notes, recipe: b.recipe || null,
         by: g.access.email, origin: new URL(req.url).origin,
@@ -59,7 +59,7 @@ export async function POST(req) {
       return NextResponse.json({ batch });
     }
     if (b.action === 'brief') {
-      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      if (!creativeBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
       const batch = await createBriefBatch({
         brand: b.brand, brief: b.brief, count: b.count, make: b.make, perAd: b.perAd, aspect: b.aspect,
         by: g.access.email, origin: new URL(req.url).origin,
@@ -69,7 +69,7 @@ export async function POST(req) {
     }
     // A brief the person approved in the editor: their products, pictures and words.
     if (b.action === 'approve') {
-      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      if (!creativeBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
       const batch = await createApprovedBrief({
         brand: b.brand, brief: b.brief, products: b.products, pickCount: b.pickCount, source: b.source || null,
         by: g.access.email, origin: new URL(req.url).origin,
@@ -78,15 +78,15 @@ export async function POST(req) {
       return NextResponse.json({ batch, maxShots: MAX_BRIEF_SHOTS });
     }
     if (b.action === 'fill-brief') {
-      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      if (!creativeBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
       return NextResponse.json({ brief: await fillBrief({ brand: b.brand, idea: b.idea }) });
     }
     if (b.action === 'templates') {
-      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      if (!creativeBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
       return NextResponse.json({ templates: await listBriefTemplates(b.brand) });
     }
     if (b.action === 'save-template') {
-      if (!configuredShopifyBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
+      if (!creativeBrands().includes(b.brand)) throw new Error('Pick one of our stores.');
       return NextResponse.json({ template: await saveBriefTemplate({ brand: b.brand, name: b.name, brief: b.brief, by: g.access.email }) });
     }
     if (b.action === 'delete-template') { await deleteBriefTemplate(b.id); return NextResponse.json({ ok: true }); }

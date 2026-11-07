@@ -31,7 +31,7 @@
 // a click: the review step stays, it just no longer forgets.
 import { NextResponse, after } from 'next/server';
 import { requireArea } from '../../../lib/access.js';
-import { BRANDS, configuredShopifyBrands } from '../../../lib/brands.js';
+import { BRANDS, creativeBrands } from '../../../lib/brands.js';
 import { listActiveProducts, addProductImage, setProductMainImage } from '../../../lib/shopify.js';
 import { printifyMockupIndex, mockupsFor, shotOf } from '../../../lib/printifyMockups.js';
 import {
@@ -53,7 +53,7 @@ const MAX_BATCH = 6;
 const MAX_PRODUCTS = 10;
 
 function checkBrand(brand) {
-  if (!brand || !configuredShopifyBrands().includes(brand)) {
+  if (!brand || !creativeBrands().includes(brand)) {
     throw new Error('Unknown or unconfigured brand: ' + brand);
   }
   return brand;
@@ -64,7 +64,7 @@ function checkBrand(brand) {
 export async function GET(req) {
   const gate = await requireArea(req, 'mockups');
   if (gate.error) return gate.error;
-  const brands = configuredShopifyBrands();
+  const brands = creativeBrands();
   const scenes = {};
   const defaults = {};
   const variations = {};

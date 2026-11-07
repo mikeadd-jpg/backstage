@@ -11,7 +11,7 @@
 // Canva video, and the creative is built with { action: 'build-video' }.
 import { NextResponse } from 'next/server';
 import { requireArea } from '../../../../lib/access.js';
-import { configuredShopifyBrands } from '../../../../lib/brands.js';
+import { creativeBrands } from '../../../../lib/brands.js';
 import { metaAccountFor, startAdVideoUpload, transferAdVideoChunk, finishAdVideoUpload } from '../../../../lib/meta.js';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,7 @@ export async function POST(req) {
   try {
     const q = new URL(req.url).searchParams;
     const brand = q.get('brand') || '';
-    if (!configuredShopifyBrands().includes(brand) || !metaAccountFor(brand)) {
+    if (!creativeBrands().includes(brand) || !metaAccountFor(brand)) {
       throw new Error('No ad account is configured for ' + brand + '.');
     }
     const phase = q.get('phase');

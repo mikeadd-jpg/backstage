@@ -5,7 +5,7 @@
 import { NextResponse } from 'next/server';
 import { handleUpload } from '@vercel/blob/client';
 import { requireArea } from '../../../../lib/access.js';
-import { configuredShopifyBrands } from '../../../../lib/brands.js';
+import { creativeBrands } from '../../../../lib/brands.js';
 import { DRAFT_PREFIX } from '../../../../lib/drafts.js';
 
 export const dynamic = 'force-dynamic';
@@ -21,7 +21,7 @@ export async function POST(req) {
       request: req,
       onBeforeGenerateToken: async (pathname) => {
         const brand = pathname.slice(DRAFT_PREFIX.length).split('/')[0];
-        if (!pathname.startsWith(DRAFT_PREFIX) || pathname.includes('..') || !configuredShopifyBrands().includes(brand)) throw new Error('Bad path.');
+        if (!pathname.startsWith(DRAFT_PREFIX) || pathname.includes('..') || !creativeBrands().includes(brand)) throw new Error('Bad path.');
         return { allowedContentTypes: ['image/*', 'video/*', 'audio/*'], maximumSizeInBytes: MAX_BYTES, addRandomSuffix: true };
       },
     });
