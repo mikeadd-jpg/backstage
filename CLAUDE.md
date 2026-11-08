@@ -549,11 +549,17 @@ Wallspoke (Printful) keeps its Shopify listing images, by the owner's choice.
 
 **Back designs are shot from the back mockup.** The sweep keeps each colour's `back` view
 and `hasBack`, true only when a back print area holds an image (Printify shows a back view
-of every garment, blank or not); the cache key is `printify_mockups2_` since that change.
+of every garment, blank or not); the cache key is `printify_mockups3_` since views became found by camera label (below).
 Mockups cards, the Ads tab's store mockups and shot maker, and the brief offer Front or Back
 design where there is one, and a back shot carries `BACK_LINE` (show it from behind, never
 invent a front) to the image model, a front shot `FRONT_LINE`. On 2026-11-04, 245 Elder Emo and
 5 PopPunks products had one.
+
+**Views are found by the `camera_label` on the mockup URL, not `position`.** `position` names
+the print area: a trucker hat's front shot is `other`, shorts `left_leg_front`, a letterman
+jacket `left_chest`. Matching `position: front` alone left those products out of the index,
+so `make_mockups` refused them as "No active product" (113 Elder Emo and 6 Transworld
+products, 2026-11-07).
 
 **The back design leads unless the front is asked for** (the owner's rule). `shotOf` in
 `lib/printifyMockups.js` picks the back by default, and everything that chooses a side on its
